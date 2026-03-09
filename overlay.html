@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; font-family: 'Impact', sans-serif; letter-spacing: 1px; }
+        body { background: transparent; color: #FFE80A; overflow: hidden; }
+        
+        #drag-bar {
+            -webkit-app-region: drag; background: rgba(0, 0, 0, 0.85); border: 2px solid #FFE80A; border-bottom: none;
+            padding: 6px 10px; display: flex; justify-content: space-between; align-items: center;
+        }
+        .title { font-size: 14px; text-shadow: 1px 1px 0 #000; }
+        .lock-btn { -webkit-app-region: no-drag; background: #ff2a2a; color: white; border: 1px solid white; cursor: pointer; padding: 2px 8px; font-size: 12px; }
+        .lock-btn:hover { background: white; color: #ff2a2a; }
+
+        #list-container { display: flex; flex-direction: column; gap: 4px; padding: 4px;padding-right: 20px; }
+        
+        .stratagem-item {
+            display: flex; align-items: center; gap: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid rgba(255, 232, 10, 0.3); 
+            padding: 4px 8px;
+            transition: all 0.15s ease-in-out; 
+            border-radius: 4px;
+            width: 100%;
+        }
+        
+        .stratagem-item.selected-box {
+            border: 2px solid white !important;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(8px); 
+            box-shadow: -4px 0px 0px white;
+        }
+
+        .stratagem-item.active-glow {
+            background: rgba(255, 232, 10, 0.6) !important;
+            box-shadow: 0 0 20px rgba(255, 232, 10, 1);
+            border-color: #FFE80A !important;
+            transform: scale(1.05) translateX(8px); 
+        }
+
+        .icon { width: 36px; height: 36px; object-fit: contain; border: 1px solid #333; background: black; }
+        .hotkey { font-size: 18px; text-shadow: 2px 2px 0px #000; -webkit-text-stroke: 1px black; }
+
+        body.locked #drag-bar { display: none; }
+        body.locked .stratagem-item { border-color: transparent; background: rgba(0,0,0,0.5); }
+        body.locked .stratagem-item.selected-box { border-color: white; background: rgba(255, 255, 255, 0.3); }
+    </style>
+</head>
+<body>
+    <div id="drag-bar">
+        <span class="title">DRAG TO MOVE</span>
+        <button class="lock-btn" onclick="lockOverlay()">LOCK</button>
+    </div>
+    <div id="list-container"></div>
+
+    <script>
+        function lockOverlay() { window.electronAPI.lockOverlay(); }
+        window.electronAPI.onOverlayLocked(() => document.body.classList.add('locked'));
+        window.electronAPI.onOverlayUnlocked(() => document.body.classList.remove('locked'));
+
+        window.electronAPI.onRenderOverlay((loadout) => {
+            const container = document.getElementById('list-container');
+            container.innerHTML = '';
+            const validItems = loadout.filter(item => item !== null);
+            if(validItems.length === 0) return;
+
+            validItems.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'stratagem-item';
+                div.id = `strat-idx-${index}`; 
+                
+                const iconSrc = item.icon || 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
+                const hkDisplay = item.hotkey ? `[ ${item.hotkey} ]` : ``; 
+                
+                div.innerHTML = `
+                    <img class="icon" src="${iconSrc}">
+                    <div class="hotkey">${hkDisplay}</div>
+                `;
+                container.appendChild(div);
+            });
+        });
+        window.electronAPI.onSelectionChanged((index) => {
+            document.querySelectorAll('.stratagem-item').forEach((el, i) => {
+                if (i === index) el.classList.add('selected-box');
+                else el.classList.remove('selected-box');
+            });
+        });
+
+        window.electronAPI.onHighlightItem((data) => {
+            const { index, duration } = data;
+            const el = document.getElementById(`strat-idx-${index}`);
+            if (el) {
+                el.classList.add('active-glow'); 
+                setTimeout(() => el.classList.remove('active-glow'), duration);
+            }
+        });
+    </script>
+</body>
+</html>

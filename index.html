@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HELLDIVERS 2 MACRO TERMINAL</title>
+    <style>
+        :root {
+            --hd-yellow: #FFE80A;
+            --hd-black: #000000;
+            --hd-panel: #141414;
+            --hd-gray: #2a2a2a;
+            --hd-light-gray: #888888;
+            --hd-white: #e0e0e0;
+            --hd-red: #ff2a2a;
+        }
+
+        * {
+            box-sizing: border-box; margin: 0; padding: 0; user-select: none;
+            border-radius: 0 !important; 
+            font-family: 'Impact', 'Segoe UI Black', 'Arial Black', sans-serif;
+            letter-spacing: 1px;
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--hd-black); }
+        ::-webkit-scrollbar-thumb { background: var(--hd-gray); }
+        ::-webkit-scrollbar-thumb:hover { background: var(--hd-yellow); }
+
+        body {
+            background-color: var(--hd-black); color: var(--hd-white);
+            height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+            border: 1px solid var(--hd-gray);
+        }
+
+        #titlebar {
+            height: 36px; background-color: var(--hd-black); display: flex;
+            justify-content: space-between; align-items: center; padding-left: 15px;
+            -webkit-app-region: drag; border-bottom: 2px solid var(--hd-yellow); z-index: 100;
+        }
+        .title-text { color: var(--hd-yellow); font-size: 16px; font-weight: normal; }
+        .titlebar-controls { display: flex; height: 100%; -webkit-app-region: no-drag; }
+        .lang-btn {
+            background: var(--hd-black); border: 1px solid var(--hd-gray); color: var(--hd-white);
+            cursor: pointer; margin: 4px 10px; padding: 0 10px; font-size: 12px; transition: 0.2s;
+        }
+        .lang-btn:hover { border-color: var(--hd-yellow); color: var(--hd-yellow); }
+        
+        .window-btn {
+            width: 46px; height: 100%; background: transparent; border: none;
+            color: var(--hd-light-gray); cursor: pointer; transition: 0.2s; font-size: 14px;
+        }
+        .window-btn:hover { background-color: var(--hd-gray); color: var(--hd-white); }
+        .window-btn.close:hover { background-color: var(--hd-red); color: var(--hd-white); }
+        #app-content {
+            flex-grow: 1; display: flex; flex-direction: column; padding: 20px; gap: 20px; overflow-y: auto;
+            background: repeating-linear-gradient(45deg, #050505, #050505 2px, transparent 2px, transparent 4px);
+        }
+
+        .top-controls { display: flex; justify-content: space-between; gap: 10px; }
+        .btn-square {
+            background-color: var(--hd-gray); color: var(--hd-white); border: 2px solid var(--hd-gray);
+            padding: 10px 15px; font-size: 15px; cursor: pointer; text-transform: uppercase;
+            transition: all 0.2s ease; display: flex; align-items: center; gap: 8px; justify-content: center;
+        }
+        .top-controls .btn-square { flex-grow: 1; }
+        
+        .btn-square:hover { background-color: var(--hd-yellow); color: var(--hd-black); border-color: var(--hd-yellow); }
+        .btn-square.primary { background-color: var(--hd-yellow); color: var(--hd-black); border-color: var(--hd-yellow); }
+        .btn-square.primary:hover { background-color: var(--hd-white); border-color: var(--hd-white); }
+
+        .list-container { display: flex; flex-direction: column; gap: 10px; flex-grow: 1; }
+        
+        .list-row {
+            display: flex; align-items: stretch; background-color: var(--hd-panel);
+            border: 2px solid var(--hd-gray); height: 68px; transition: 0.2s; position: relative;
+        }
+        .list-row:hover { border-color: var(--hd-yellow); }
+        .list-row.empty {
+            justify-content: center; align-items: center; border-style: dashed;
+            color: var(--hd-light-gray); font-size: 16px; cursor: pointer;
+        }
+        .list-row.empty:hover { background-color: rgba(255, 232, 10, 0.05); color: var(--hd-yellow); }
+
+        .row-icon-box {
+            width: 68px; height: 100%; background-color: #000; border-right: 2px solid var(--hd-gray);
+            display: flex; justify-content: center; align-items: center; padding: 5px; position: relative;
+        }
+        .row-icon-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        
+        .btn-remove {
+            position: absolute; top: 2px; left: 2px; background: rgba(0,0,0,0.8); color: var(--hd-red);
+            border: 1px solid var(--hd-red); width: 18px; height: 18px; font-size: 12px;
+            display: flex; justify-content: center; align-items: center; cursor: pointer; opacity: 0; transition: 0.2s;
+        }
+        .list-row:hover .btn-remove { opacity: 1; }
+        .btn-remove:hover { background: var(--hd-red); color: white; }
+
+        .row-arrows { flex-grow: 1; display: flex; justify-content: center; align-items: center; gap: 8px; padding: 0 20px; }
+        .arrow-img { width: 22px; height: 22px; filter: drop-shadow(0px 2px 0px #000); }
+
+        .row-bind-box { width: 180px; border-left: 2px solid var(--hd-gray); }
+        .bind-btn {
+            width: 100%; height: 100%; background: transparent; border: none; color: var(--hd-light-gray);
+            font-size: 14px; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; padding: 5px;
+        }
+        .bind-btn:hover { background: var(--hd-gray); color: var(--hd-white); }
+        .bind-btn.bound { background: rgba(255, 232, 10, 0.1); color: var(--hd-yellow); font-size: 18px; }
+        .bind-btn.listening { background: var(--hd-yellow); color: var(--hd-black); animation: flash 0.6s infinite alternate; }
+        .bind-subtext { font-size: 10px; color: #666; font-family: sans-serif; margin-top: 4px; }
+        .bind-btn.bound:hover .bind-subtext { color: var(--hd-red); }
+
+        @keyframes flash { from { opacity: 1; } to { opacity: 0.7; } }
+
+        .modal-overlay {
+            position: fixed; top: 36px; left: 0; width: 100%; height: calc(100% - 36px);
+            background: var(--hd-black); z-index: 50; display: flex; flex-direction: column;
+            opacity: 0; pointer-events: none; transition: opacity 0.2s ease;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        
+        .modal-header {
+            padding: 12px 20px; border-bottom: 2px solid var(--hd-yellow); display: flex;
+            justify-content: space-between; align-items: center; background: var(--hd-black);
+        }
+        .modal-title { font-size: 22px; color: var(--hd-yellow); }
+        .modal-header .btn-square { flex-grow: 0; padding: 6px 24px; font-size: 14px; min-width: 120px; } 
+
+        .lib-content { padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
+        .lib-cat-header { font-size: 16px; color: var(--hd-white); border-bottom: 2px solid var(--hd-gray); padding-bottom: 5px; }
+        .lib-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; }
+        .lib-card {
+            display: flex; align-items: center; border: 2px solid var(--hd-gray); background: var(--hd-panel);
+            padding: 8px; cursor: pointer; transition: 0.2s; gap: 10px; height: 60px;
+        }
+        .lib-card:hover { border-color: var(--hd-white); background: var(--hd-gray); }
+        .lib-card.selected { border-color: var(--hd-yellow); background: rgba(255,232,10,0.1); }
+        .lib-icon { width: 40px; height: 40px; background: #000; object-fit: contain; border: 1px solid var(--hd-gray); }
+        .lib-name { flex-grow: 1; font-size: 13px; font-family: 'Segoe UI', sans-serif; font-weight: bold; }
+        .lib-check { color: var(--hd-yellow); font-size: 14px; display: none; margin-right: 5px;}
+        .lib-card.selected .lib-check { display: block; }
+
+
+        .settings-content { padding: 20px; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; }
+        .set-group { border: 2px solid var(--hd-gray); background: var(--hd-panel); padding: 20px; }
+        .set-title { color: var(--hd-yellow); font-size: 16px; margin-bottom: 15px; border-bottom: 1px solid var(--hd-gray); padding-bottom: 5px; }
+        .set-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .set-label { font-size: 14px; color: var(--hd-white); font-family: sans-serif; }
+        
+        .set-btn {
+            background: var(--hd-black); border: 2px solid var(--hd-gray); color: var(--hd-yellow);
+            padding: 8px 15px; font-size: 14px; cursor: pointer; min-width: 120px; text-align: center; transition: 0.2s;
+        }
+        .set-btn:hover { border-color: var(--hd-yellow); background: rgba(255,232,10,0.1); }
+        .set-btn.listening { background: var(--hd-yellow); color: var(--hd-black); }
+
+        .toggle-box { display: flex; border: 2px solid var(--hd-gray); }
+        .toggle-option { padding: 8px 20px; cursor: pointer; color: var(--hd-light-gray); font-size: 13px; background: var(--hd-black); transition: 0.2s; }
+        .toggle-option.active { background: var(--hd-yellow); color: var(--hd-black); font-weight: bold; }
+
+        .presets-content { padding: 20px; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; }
+        .preset-save-bar { display: flex; gap: 10px; }
+        #preset-name-input {
+            flex-grow: 1; background: var(--hd-black); border: 2px solid var(--hd-gray);
+            color: var(--hd-white); padding: 10px; font-size: 16px; outline: none; font-family: 'Segoe UI', sans-serif;
+        }
+        #preset-name-input:focus { border-color: var(--hd-yellow); }
+        .preset-list { display: flex; flex-direction: column; gap: 15px; }
+        .preset-card {
+            border: 2px solid var(--hd-gray); background: var(--hd-panel); padding: 15px;
+            display: flex; flex-direction: column; gap: 12px; transition: 0.2s;
+        }
+        .preset-card:hover { border-color: var(--hd-white); }
+        .preset-card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--hd-gray); padding-bottom: 8px;}
+        .preset-name { font-size: 18px; color: var(--hd-yellow); font-family: 'Segoe UI', sans-serif; font-weight: bold;}
+        .preset-actions { display: flex; gap: 10px; }
+        .preset-actions .btn-square { padding: 6px 12px; font-size: 12px; flex-grow: 0; }
+        .preset-icons-preview { display: flex; gap: 8px; flex-wrap: wrap; }
+        .preset-icon-mini { width: 36px; height: 36px; background: #000; border: 1px solid var(--hd-gray); object-fit: contain; padding: 2px;}
+
+
+        #global-status {
+            position: fixed; bottom: 20px; right: 20px; background: var(--hd-yellow); color: #000;
+            padding: 10px 20px; font-size: 14px; font-weight: bold; z-index: 999;
+            opacity: 0; transform: translateY(20px); transition: all 0.3s ease; pointer-events: none;
+        }
+        #global-status.show { opacity: 1; transform: translateY(0); }
+        #global-status.error { background: var(--hd-red); color: white; }
+
+        #confirm-modal {
+            justify-content: center; 
+            align-items: center;
+            background: rgba(0, 0, 0, 0.85); 
+            z-index: 1000;
+        }
+        .confirm-box {
+            width: 400px;
+            background: var(--hd-panel);
+            border: 2px solid var(--hd-red);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 20px rgba(255, 42, 42, 0.2);
+        }
+        .confirm-header {
+            padding: 12px 20px;
+            background: var(--hd-black);
+            border-bottom: 2px solid var(--hd-red);
+            color: var(--hd-red);
+            font-size: 18px;
+        }
+        .confirm-body {
+            padding: 30px 20px;
+            text-align: center;
+            font-size: 16px;
+            color: var(--hd-white);
+            font-family: 'Segoe UI', sans-serif;
+            font-weight: bold;
+        }
+        .confirm-footer {
+            display: flex;
+            gap: 15px;
+            padding: 15px 20px;
+            background: var(--hd-black);
+            border-top: 1px solid var(--hd-gray);
+        }
+        .btn-danger {
+            background-color: var(--hd-red);
+            color: white;
+            border-color: var(--hd-red);
+        }
+        .btn-danger:hover {
+            background-color: white;
+            color: var(--hd-red);
+            border-color: white;
+        }
+    </style>
+</head>
+<body>
+    <div id="titlebar">
+        <div class="title-text" id="txt-app-title">HD2 MACRO TERMINAL</div>
+        <div class="titlebar-controls">
+            <button class="lang-btn" id="btn-lang" onclick="toggleLanguage()">EN / 中文</button>
+            <button class="window-btn" onclick="window.electronAPI.tray()">▼</button>
+            <button class="window-btn" onclick="window.electronAPI.minimize()">—</button>
+            <button class="window-btn close" onclick="window.electronAPI.close()">✕</button>
+        </div>
+    </div>
+
+    <div id="app-content">
+        <div class="top-controls">
+            <button class="btn-square" id="btn-top-settings" onclick="openSettings()">GAME SETTINGS</button>
+            <button class="btn-square" id="btn-top-presets" onclick="openPresets()">PRESETS</button>
+            <button class="btn-square" id="btn-top-overlay" onclick="window.electronAPI.toggleOverlay()">OVERLAY</button>
+            <button class="btn-square primary" id="btn-top-lib" onclick="openLibrary()">OPEN LIBRARY</button>
+        </div>
+        <div class="list-container" id="slots-container"></div>
+    </div>
+
+    <div id="library-modal" class="modal-overlay">
+        <div class="modal-header">
+            <div class="modal-title" id="txt-lib-title">STRATAGEM LIBRARY</div>
+            <button class="btn-square" id="btn-lib-done" onclick="closeModals()">DONE</button>
+        </div>
+        <div class="lib-content" id="lib-content"></div>
+    </div>
+
+    <div id="settings-modal" class="modal-overlay">
+        <div class="modal-header">
+            <div class="modal-title" id="txt-set-title">GAME SETTINGS</div>
+            <button class="btn-square" id="btn-set-done" onclick="saveSettings()">SAVE & CLOSE</button>
+        </div>
+        <div class="settings-content">
+<div class="set-group">
+    <div class="set-title" id="txt-set-overlayTitle">OVERLAY CONTROLS (悬浮窗控制)</div>
+    <div class="set-row">
+        <div class="set-label" id="txt-set-overlayLabel">If overlay is locked, click here to make it draggable again.</div>
+        <button class="set-btn" id="btn-set-unlock" style="color:white; border-color: white;" onclick="window.electronAPI.unlockOverlay()">UNLOCK / 解锁悬浮窗</button>
+    </div>
+</div>
+                <div class="set-title" id="txt-set-menu">STRATAGEM MENU CONTROL</div>
+                <div class="set-row">
+                    <div class="set-label" id="txt-set-menuKey">MENU KEY (DEFAULT CTRL)</div>
+                    <button class="set-btn" id="btn-set-menuKey" onclick="startSettingBind('menuKey', event)">ControlLeft</button>
+                </div>
+                <div class="set-row">
+                    <div class="set-label" id="txt-set-menuMode">TRIGGER MODE (HOLD / TOGGLE)</div>
+                    <div class="toggle-box">
+                        <div class="toggle-option active" id="mode-hold" onclick="setMenuMode('hold')">HOLD</div>
+                        <div class="toggle-option" id="mode-toggle" onclick="setMenuMode('toggle')">TOGGLE</div>
+                    </div>
+                </div>
+            </div>
+            <div class="set-group">
+                <div class="set-title" id="txt-set-arrows">STRATAGEM INPUT KEYS</div>
+                <div class="set-row"><div class="set-label" id="txt-set-up">UP</div><button class="set-btn" id="btn-set-upKey" onclick="startSettingBind('upKey', event)">W</button></div>
+                <div class="set-row"><div class="set-label" id="txt-set-down">DOWN</div><button class="set-btn" id="btn-set-downKey" onclick="startSettingBind('downKey', event)">S</button></div>
+                <div class="set-row"><div class="set-label" id="txt-set-left">LEFT</div><button class="set-btn" id="btn-set-leftKey" onclick="startSettingBind('leftKey', event)">A</button></div>
+                <div class="set-row"><div class="set-label" id="txt-set-right">RIGHT</div><button class="set-btn" id="btn-set-rightKey" onclick="startSettingBind('rightKey', event)">D</button></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="presets-modal" class="modal-overlay">
+        <div class="modal-header">
+            <div class="modal-title" id="txt-pre-title">LOADOUT PRESETS</div>
+            <button class="btn-square" id="btn-pre-done" onclick="closeModals()">CLOSE</button>
+        </div>
+        <div class="presets-content">
+            <div class="preset-save-bar">
+                <input type="text" id="preset-name-input" placeholder="Enter preset name..." maxlength="20" autocomplete="off">
+                <button class="btn-square primary" id="btn-pre-save" onclick="saveCurrentPreset()" style="flex-grow: 0;">SAVE CURRENT</button>
+            </div>
+            <div class="preset-list" id="preset-list-container">
+            </div>
+        </div>
+    </div>
+
+    <div id="confirm-modal" class="modal-overlay">
+        <div class="confirm-box">
+            <div class="confirm-header" id="txt-confirm-title">WARNING</div>
+            <div class="confirm-body" id="txt-confirm-msg">确定要删除此预设吗？</div>
+            <div class="confirm-footer">
+                <button class="btn-square" id="btn-confirm-cancel" onclick="closeConfirmModal()">CANCEL</button>
+                <button class="btn-square btn-danger" id="btn-confirm-ok" onclick="executeDeletePreset()">DELETE</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="global-status">状态提示</div>
+
+    <script>
+
+        let currentLang = 'zh';
+
+        const i18n = {
+            zh: {
+                btnOverlay: "悬浮窗",
+                setOverlayTitle: "悬浮窗控制",
+                setOverlayLabel: "如果悬浮窗已锁定，点击此处恢复可拖拽状态。",
+                btnUnlock: "解锁",
+                appTitle: "绝地潜兵2 战备触发器", btnSettings: "游戏设置", btnPresets: "预设管理", btnOpenLib: "打开战备库",
+                emptySlot: "空置槽位 (点击前往战备库添加)", clickToBind: "点击绑定", waiting: "等待输入...",
+                unboundSub: "未绑定触发键", bindSub: "请按下按键 (ESC取消)", boundSub: "右键点击清除绑定",
+                libTitle: "战备配置档案库", btnDone: "完成",
+                setMenu: "战备菜单控制", setMenuKey: "呼出战备栏按键", setMenuMode: "呼出模式 (长按 / 切换)",
+                modeHold: "长按", modeToggle: "切换",
+                setArrows: "战备指令输入键位", up: "上", down: "下", left: "左", right: "右",
+                saveClose: "保存并关闭",
+                preTitle: "战备预设管理", btnSaveCurrent: "保存当前装配", phPresetName: "输入预设名称...", btnLoad: "加载", btnDel: "删除",
+                cat_support: "支援武器", cat_orbital: "轨道系", cat_eagle: "飞鹰系",
+                cat_emplacement: "防御系", cat_sentry: "哨戒炮", cat_backpack: "背包",
+                cat_vehicle: "载具", cat_mission: "任务通用",
+                msgFull: "配置槽位已满 (9/9)", msgClear: "已清除快捷键", msgMacro: "绑定成功:", msgKey: "键位设定成功:",
+                msgConfirm: "该键位已被绑定，是否顶替？", msgExec: ">>> 执行战备", msgSetSaved: "游戏设置已保存至缓存",
+                msgEnterName: "请输入预设名称", msgEmptyLoadout: "当前装配为空，无法保存", msgPreSaved: "预设已成功保存",
+                msgPreLoaded: "预设已加载", msgConfirmDel: "警告：确定要删除此预设吗？"
+            },
+            en: {
+                btnOverlay: "OVERLAY",
+                setOverlayTitle: "OVERLAY CONTROLS",
+                setOverlayLabel: "If overlay is locked, click here to make it draggable again.",
+                btnUnlock: "UNLOCK OVERLAY",
+                appTitle: "HD2 Trigger", btnSettings: "GAME SETTINGS", btnPresets: "PRESETS", btnOpenLib: "OPEN LIBRARY",
+                emptySlot: "EMPTY SLOT (CLICK TO ADD)", clickToBind: "CLICK TO BIND", waiting: "WAITING...",
+                unboundSub: "NO HOTKEY BOUND", bindSub: "PRESS KEY (ESC CANCEL)", boundSub: "RIGHT CLICK TO CLEAR",
+                libTitle: "STRATAGEM LIBRARY", btnDone: "DONE",
+                setMenu: "STRATAGEM MENU CONTROL", setMenuKey: "MENU KEY", setMenuMode: "TRIGGER MODE (HOLD / TOGGLE)",
+                modeHold: "HOLD", modeToggle: "TOGGLE",
+                setArrows: "STRATAGEM INPUT KEYS", up: "UP", down: "DOWN", left: "LEFT", right: "RIGHT",
+                saveClose: "SAVE & CLOSE",
+                preTitle: "LOADOUT PRESETS", btnSaveCurrent: "SAVE CURRENT", phPresetName: "Enter preset name...", btnLoad: "LOAD", btnDel: "DELETE",
+                cat_support: "SUPPORT WEAPONS", cat_orbital: "ORBITAL STRIKES", cat_eagle: "EAGLE STRIKES",
+                cat_emplacement: "EMPLACEMENTS", cat_sentry: "SENTRIES", cat_backpack: "BACKPACKS",
+                cat_vehicle: "VEHICLES", cat_mission: "MISSION / GENERAL",
+                msgFull: "SLOTS FULL (9/9)", msgClear: "HOTKEY CLEARED", msgMacro: "MACRO BOUND:", msgKey: "KEY ASSIGNED:",
+                msgConfirm: "KEY IN USE. REPLACE IT?", msgExec: ">>> EXECUTE MACRO", msgSetSaved: "SETTINGS SAVED TO CACHE",
+                msgEnterName: "PLEASE ENTER A PRESET NAME", msgEmptyLoadout: "LOADOUT IS EMPTY", msgPreSaved: "PRESET SAVED SUCCESSFULLY",
+                msgPreLoaded: "PRESET LOADED", msgConfirmDel: "WARNING: DELETE THIS PRESET?"
+            }
+        };
+
+
+        const stratagemDB =[
+
+            { id:'wpn_mg', grp:'support', name:{zh:'MG-43 机枪',en:'MG-43 Machine Gun'}, seq:['S','A','S','W','D'] , icon: 'Machine_Gun_Stratagem_Icon.svg'},
+            { id:'wpn_eat', grp:'support', name:{zh:'EAT-17 消耗性反坦克武器',en:'EAT-17 Expendable Anti-Tank'}, seq:['S','S','A','W','D'], icon: 'Expendable_Anti-Tank_Stratagem_Icon.svg'},
+            { id:'wpn_stalwart', grp:'support', name:{zh:'M-105 盟友',en:'M-105 Stalwart'}, seq:['S','A','S','W','W','A'], icon: 'Stalwart_Stratagem_Icon.svg' },
+            { id:'wpn_laser', grp:'support', name:{zh:'LAS-98 激光大炮',en:'LAS-98 Laser Cannon'}, seq:['S','A','S','W','A'] , icon: 'Laser_Cannon_Stratagem_Icon.svg'},
+            { id:'wpn_amr', grp:'support', name:{zh:'APW-1 反器材步枪',en:'APW-1 Anti-Materiel Rifle'}, seq:['S','A','D','W','S'], icon: 'Anti-Materiel_Rifle_Stratagem_Icon.svg' },
+            { id:'wpn_rr', grp:'support', name:{zh:'GR-8 无后坐力炮',en:'GR-8 Recoilless Rifle'}, seq:['S','A','D','D','A'] , icon: 'Recoilless_Rifle_Stratagem_Icon.svg'},
+            { id:'wpn_gl', grp:'support', name:{zh:'GL-21 榴弹发射器',en:'GL-21 Grenade Launcher'}, seq:['S','A','W','A','S'] , icon: 'Grenade_Launcher_Stratagem_Icon.svg'},
+            { id:'wpn_flame', grp:'support', name:{zh:'FLAM-40 火焰喷射器',en:'FLAM-40 Flamethrower'}, seq:['S','A','W','S','W'] , icon: 'Flamethrower_Stratagem_Icon.svg'},
+            { id:'wpn_hmg', grp:'support', name:{zh:'MG-206 重机枪',en:'MG-206 Heavy Machine Gun'}, seq:['S','A','W','S','S'] , icon: 'Heavy_Machine_Gun_Stratagem_Icon.svg'},
+            { id:'wpn_ac', grp:'support', name:{zh:'AC-8 机炮',en:'AC-8 Autocannon'}, seq:['S','A','S','W','W','D'] , icon: 'Autocannon_Stratagem_Icon.svg'},
+            { id:'wpn_arc', grp:'support', name:{zh:'ARC-3 电弧发射器',en:'ARC-3 Arc Thrower'}, seq:['S','D','S','W','A','A'] , icon: 'Arc_Thrower_Stratagem_Icon.svg'},
+            { id:'wpn_quasar', grp:'support', name:{zh:'LAS-99类星体加农炮',en:'LAS-99 Quasar Cannon'}, seq:['S','S','W','A','D'] , icon: 'Quasar_Cannon_Stratagem_Icon.svg'},
+            { id:'wpn_airburst', grp:'support', name:{zh:'RL-77 空爆火箭弹发射器',en:'RL-77 Airburst Rocket Launcher'}, seq:['S','W','W','A','D'], icon: 'Airburst_Rocket_Launcher_Stratagem_Icon.svg'},
+            { id:'wpn_commando', grp:'support', name:{zh:'MLS-4X 突击兵',en:'MLS-4X Commando'}, seq:['S','A','W','S','D'], icon: 'Commando_Stratagem_Icon.svg' },
+            { id:'wpn_spear', grp:'support', name:{zh:'FAF-14 飞矛',en:'FAF-14 Spear'}, seq:['S','S','W','S','S'] , icon: 'Spear_Stratagem_Icon.svg'},
+            { id:'wpn_railgun', grp:'support', name:{zh:'RS-422 磁轨炮',en:'RS-422 Railgun'}, seq:['S','D','S','W','A','D'] , icon: 'Railgun_Stratagem_Icon.svg'},
+            { id:'wpn_wasp', grp:'support', name:{zh:'StA-X3 W.A.S.P. 发射器',en:'StA-X3 W.A.S.P. Launcher'}, seq:['S','S','W','S','D'] , icon: 'W.A.S.P._Launcher_Stratagem_Icon.svg'},
+            { id:'wpn_breach', grp:'support', name:{zh:'CQC-20 破门锤',en:'CQC-20 Breaching Hammer'}, seq:['S','A','D','A','W'] , icon: 'Breaching_Hammer_Stratagem_Icon.svg'},
+            { id:'wpn_epoch', grp:'support', name:{zh:'PLAS-45 纪元',en:'PLAS-45 Epoch'}, seq:['S','A','W','A','D'] , icon: 'Epoch_Stratagem_Icon.svg'},
+            { id:'wpn_speargun', grp:'support', name:{zh:'S-11 矛枪',en:'S-11 Speargun'}, seq:['S','D','S','A','W','D'] , icon: 'Speargun_Stratagem_Icon.svg'},
+            { id:'wpn_defoliator', grp:'support', name:{zh:'CQC-9 除叶工具',en:'CQC-9 Defoliation Tool'}, seq:['S','A','D','D','S'], icon: 'Defoliation_Tool_Stratagem_Icon.svg' },
+            { id:'wpn_leveller', grp:'support', name:{zh:'EAT-411 荡平者',en:'EAT-411 Leveller'}, seq:['S','S','A','W','S'] , icon: 'Leveller_Stratagem_Icon.svg'},
+            { id:'wpn_sterilizer', grp:'support', name:{zh:'TX-41 灭菌器',en:'TX-41 Sterilizer'}, seq:['S','A','W','S','A'] , icon: 'Sterilizer_Stratagem_Icon.svg'},
+            { id:'wpn_deescalator', grp:'support', name:{zh:'GL-52 缓和使者',en:'GL-52 De-Escalator'}, seq:['S','D','W','A','D'] , icon: 'De-Escalator_Stratagem_Icon.svg'},
+            { id:'wpn_napalm', grp:'support', name:{zh:'EAT-700 消耗性凝固汽油弹',en:'EAT-700 Expendable Napalm'}, seq:['S','S','A','W','A'], icon: 'Expendable_Napalm_Stratagem_Icon.svg' },
+            { id:'wpn_beltgl', grp:'support', name:{zh:'GL-28 弹链式榴弹发射器',en:'GL-28 Belt-Fed Grenade Launcher'}, seq:['S','A','W','A','W','W'] , icon: 'Belt-Fed_Grenade_Launcher_Stratagem_Icon.svg'},
+            { id:'wpn_maxigun', grp:'support', name:{zh:'M-1000 重装机枪',en:'M-1000 Maxigun'}, seq:['S','A','D','S','W','W'] , icon: 'Maxigun_Stratagem_Icon.svg'},
+            { id:'wpn_silo', grp:'support', name:{zh:'MS-11 单兵导弹发射井',en:'MS-11 Solo Silo'}, seq:['S','W','D','S','S'] , icon: 'Solo_Silo_Stratagem_Icon.svg'},
+            { id:'wpn_flag', grp:'support', name:{zh:'CQC-1 唯一真旗',en:'CQC-1 One True Flag'}, seq:['S','A','D','D','W'] , icon: 'One_True_Flag_Stratagem_Icon.svg'},
+            { id:'wpn_c4', grp:'support', name:{zh:'B/MD C4背包',en:'B/MD C4 Pack'}, seq:['S','D','W','W','D','W'] , icon: 'C4_Pack_Stratagem_Icon.svg'},
+
+
+            { id:'orb_precision', grp:'orbital', name:{zh:'轨道精准攻击',en:'Orbital Precision Strike'}, seq:['D','D','W'] , icon: 'Orbital_Precision_Strike_Stratagem_Icon.svg'},
+            { id:'orb_gatling', grp:'orbital', name:{zh:'轨道加特林火力网',en:'Orbital Gatling Barrage'}, seq:['D','S','A','W','W'] , icon: 'Orbital_Gatling_Barrage_Stratagem_Icon.svg'},
+            { id:'orb_gas', grp:'orbital', name:{zh:'轨道毒气攻击',en:'Orbital Gas Strike'}, seq:['D','D','S','D'] , icon: 'Orbital_Gas_Strike_Stratagem_Icon.svg'},
+            { id:'orb_120', grp:'orbital', name:{zh:'轨道120mm高爆弹火力网',en:'Orbital 120mm HE Barrage'}, seq:['D','D','S','A','D','S'] , icon: 'Orbital_120mm_HE_Barrage_Stratagem_Icon.svg'},
+            { id:'orb_airburst', grp:'orbital', name:{zh:'轨道空爆攻击',en:'Orbital Airburst Strike'}, seq:['D','D','D'], icon: 'Orbital_Airburst_Strike_Stratagem_Icon.svg' },
+            { id:'orb_smoke', grp:'orbital', name:{zh:'轨道烟雾攻击',en:'Orbital Smoke Strike'}, seq:['D','D','S','W'] , icon: 'Orbital_Smoke_Strike_Stratagem_Icon.svg'},
+            { id:'orb_ems', grp:'orbital', name:{zh:'轨道电磁冲击波攻击',en:'Orbital EMS Strike'}, seq:['D','D','A','S'] , icon: 'Orbital_EMS_Strike_Stratagem_Icon.svg'},
+            { id:'orb_380', grp:'orbital', name:{zh:'轨道380mm高爆弹火力网',en:'Orbital 380mm HE Barrage'}, seq:['D','S','W','W','A','S','S'] , icon: 'Orbital_380mm_HE_Barrage_Stratagem_Icon.svg'},
+            { id:'orb_walking', grp:'orbital', name:{zh:'轨道游走火力网',en:'Orbital Walking Barrage'}, seq:['D','S','D','S','D','S'] , icon: 'Orbital_Walking_Barrage_Stratagem_Icon.svg'},
+            { id:'orb_laser', grp:'orbital', name:{zh:'轨道激光炮   ',en:'Orbital Laser'}, seq:['D','S','W','D','S'] , icon: 'Orbital_Laser_Stratagem_Icon.svg'},
+            { id:'orb_napalm', grp:'orbital', name:{zh:'轨道凝固汽油弹火力网',en:'Orbital Napalm Barrage'}, seq:['D','D','S','A','D','W'] , icon: 'Orbital_Napalm_Barrage_Stratagem_Icon.svg'},
+            { id:'orb_railcannon', grp:'orbital', name:{zh:'轨道炮攻击',en:'Orbital Railcannon Strike'}, seq:['D','W','S','S','D'] , icon: 'Orbital_Railcannon_Strike_Stratagem_Icon.svg'},
+
+
+            { id:'eagle_strafing', grp:'eagle', name:{zh:'“飞鹰”机枪扫射',en:'Eagle Strafing Run'}, seq:['W','D','D'] , icon: 'Eagle_Strafing_Run_Stratagem_Icon.svg'},
+            { id:'eagle_airstrike', grp:'eagle', name:{zh:'“飞鹰”空袭',en:'Eagle Airstrike'}, seq:['W','D','S','D'] , icon: 'Eagle_Airstrike_Stratagem_Icon (1).svg'},
+            { id:'eagle_cluster', grp:'eagle', name:{zh:'“飞鹰”集束炸弹',en:'Eagle Cluster Bomb'}, seq:['W','D','S','S','D'] , icon: 'Eagle_Cluster_Bomb_Stratagem_Icon.svg'},
+            { id:'eagle_smoke', grp:'eagle', name:{zh:'“飞鹰”烟雾攻击',en:'Eagle Smoke Strike'}, seq:['W','D','W','S'] , icon: 'Eagle_Smoke_Strike_Stratagem_Icon.svg'},
+            { id:'eagle_napalm', grp:'eagle', name:{zh:'“飞鹰”凝固汽油弹空袭',en:'Eagle Napalm Airstrike'}, seq:['W','D','S','W'] , icon: 'Eagle_Napalm_Airstrike_Stratagem_Icon.svg'},
+            { id:'eagle_110', grp:'eagle', name:{zh:'“飞鹰”110MM火箭巢',en:'Eagle 110mm Rocket Pods'}, seq:['W','D','W','A'] , icon: 'Eagle_110mm_Rocket_Pods_Stratagem_Icon.svg'},
+            { id:'eagle_500kg', grp:'eagle', name:{zh:'“飞鹰”500KG炸弹',en:'Eagle 500kg Bomb'}, seq:['W','D','S','S','S'], icon: 'Eagle_500kg_Bomb_Stratagem_Icon.svg' },
+
+
+            { id:'emp_mine_ap', grp:'emplacement', name:{zh:'MD-6 反步兵雷区',en:'MD-6 Anti-Personnel Minefield'}, seq:['S','A','W','D'] , icon: 'Anti-Personnel_Minefield_Stratagem_Icon.svg'},
+            { id:'emp_mine_inc', grp:'emplacement', name:{zh:'MD-I4 燃烧地雷',en:'MD-I4 Incendiary Mines'}, seq:['S','A','A','S'] , icon: 'Incendiary_Mines_Stratagem_Icon.svg'},
+            { id:'emp_mine_at', grp:'emplacement', name:{zh:'MD-17 反坦克地雷',en:'MD-17 Anti-Tank Mines'}, seq:['S','A','W','W'] , icon: 'Anti-Tank_Mines_Stratagem_Icon.svg'},
+            { id:'emp_shield', grp:'emplacement', name:{zh:'FX-12 防护罩生成中继器',en:'FX-12 Shield Generator Relay'}, seq:['S','S','A','D','A','D'] , icon: 'Shield_Generator_Relay_Stratagem_Icon.svg'},
+            { id:'emp_hmg', grp:'emplacement', name:{zh:'E/MG-101 重机枪部署支架',en:'E/MG-101 HMG Emplacement'}, seq:['S','W','A','D','D','A'] , icon: 'HMG_Emplacement_Stratagem_Icon.svg'},
+            { id:'emp_grenadier', grp:'emplacement', name:{zh:'E/GL-21 掷弹兵防卫墙',en:'E/GL-21 Grenadier Battlement'}, seq:['S','D','S','A','D'] , icon: 'Grenadier_Battlement_Stratagem_Icon.svg'},
+            { id:'emp_mine_gas', grp:'emplacement', name:{zh:'MD-8 毒气地雷',en:'MD-8 Gas Mines'}, seq:['S','A','A','D'] , icon: 'Gas_Mines_Stratagem_Icon.svg'},
+            { id:'emp_at', grp:'emplacement', name:{zh:'E/AT-12 反坦克炮台',en:'E/AT-12 Anti-Tank Emplacement'}, seq:['S','W','A','D','D','D'] , icon: 'Anti-Tank_Emplacement_Stratagem_Icon.svg'},
+
+            { id:'sen_mg', grp:'sentry', name:{zh:'A/MG-43 哨戒机枪',en:'A/MG-43 Machine Gun Sentry'}, seq:['S','W','D','D','W'] , icon: 'Machine_Gun_Sentry_Stratagem_Icon.svg'},
+            { id:'sen_gatling', grp:'sentry', name:{zh:'A/G-16 加特林哨戒炮',en:'A/G-16 Gatling Sentry'}, seq:['S','W','D','A'], icon: 'Gatling_Sentry_Stratagem_Icon.svg' },
+            { id:'sen_ac', grp:'sentry', name:{zh:'A/AC-8 自动哨戒炮',en:'A/AC-8 Autocannon Sentry'}, seq:['S','W','D','W','A','W'] , icon: 'Autocannon_Sentry_Stratagem_Icon.svg'},
+            { id:'sen_mortar', grp:'sentry', name:{zh:'A/M-12 迫击哨戒炮',en:'A/M-12 Mortar Sentry'}, seq:['S','W','D','D','S'], icon: 'Mortar_Sentry_Stratagem_Icon.svg' },
+            { id:'sen_rocket', grp:'sentry', name:{zh:'A/MLS-4X 火箭哨戒炮',en:'A/MLS-4X Rocket Sentry'}, seq:['S','W','D','D','A'] , icon: 'Rocket_Sentry_Stratagem_Icon.svg'},
+            { id:'sen_tesla', grp:'sentry', name:{zh:'A/ARC-3 特斯拉塔',en:'A/ARC-3 Tesla Tower'}, seq:['S','W','D','W','A','D'], icon: 'Tesla_Tower_Stratagem_Icon.svg' },
+            { id:'sen_ems', grp:'sentry', name:{zh:'A/M-23 电磁冲击波迫击哨戒炮',en:'A/M-23 EMS Mortar Sentry'}, seq:['S','W','D','S','D'] , icon: 'EMS_Mortar_Sentry_Stratagem_Icon.svg'},
+            { id:'sen_flame', grp:'sentry', name:{zh:'A/FLAM-40 火焰喷射哨戒炮',en:'A/FLAM-40 Flame Sentry'}, seq:['S','W','D','S','W','W'] , icon: 'Flame_Sentry_Stratagem_Icon.svg'},
+            { id:'sen_laser', grp:'sentry', name:{zh:'A/LAS-98 激光哨戒炮',en:'A/LAS-98 Laser Sentry'}, seq:['S','W','D','S','W','D'] , icon: 'Laser_Sentry_Stratagem_Icon.svg'},
+
+
+            { id:'pack_supply', grp:'backpack', name:{zh:'B-1 补给背包',en:'B-1 Supply Pack'}, seq:['S','A','S','W','W','S'] , icon: 'Supply_Pack_Stratagem_Icon.svg'},
+            { id:'pack_jump', grp:'backpack', name:{zh:'LIFT-850 喷射背包',en:'LIFT-850 Jump Pack'}, seq:['S','W','W','S','W'] , icon: 'Jump_Pack_Stratagem_Icon.svg'},
+            { id:'pack_ballistic', grp:'backpack', name:{zh:'SH-20 防弹护盾背包',en:'SH-20 Ballistic Shield Backpack'}, seq:['S','A','S','S','W','A'] , icon: 'Ballistic_Shield_Backpack_Stratagem_Icon.svg'},
+            { id:'pack_guard', grp:'backpack', name:{zh:'AX/AR-23 “护卫犬”',en:'AX/AR-23 Guard Dog'}, seq:['S','W','A','W','D','S'], icon: 'Guard_Dog_Stratagem_Icon.svg' },
+            { id:'pack_rover', grp:'backpack', name:{zh:'AX/LAS-5 漫游车',en:'AX/LAS-5 Rover'}, seq:['S','W','A','W','D','D'] , icon: 'Rover_Stratagem_Icon.svg'},
+            { id:'pack_shield', grp:'backpack', name:{zh:'SH-32 防护罩生成包',en:'SH-32 Shield Generator Pack'}, seq:['S','W','A','D','A','D'] , icon: 'Shield_Generator_Pack_Stratagem_Icon.svg'},
+            { id:'pack_dir_shield', grp:'backpack', name:{zh:'SH-51 定向护盾',en:'SH-51 Directional Shield'}, seq:['S','W','A','D','W','W'] , icon: 'Directional_Shield_Stratagem_Icon.svg'},
+            { id:'pack_hotdog', grp:'backpack', name:{zh:'AX/FLAM-75 热狗',en:'AX/FLAM-75 Hot Dog'}, seq:['S','W','A','W','A','A'] , icon: 'Hot_Dog_Stratagem_Icon.svg'},
+            { id:'pack_portable_hb', grp:'backpack', name:{zh:'B-100 便携式地狱火炸弹',en:'B-100 Portable Hellbomb'}, seq:['S','D','W','W','W'] , icon: 'Portable_Hellbomb_Stratagem_Icon.svg'},
+            { id:'pack_k9', grp:'backpack', name:{zh:'AX/ARC-3 K-9',en:'AX/ARC-3 K-9'}, seq:['S','W','A','W','D','A'] , icon: 'K-9_Stratagem_Icon.svg'},
+            { id:'pack_hover', grp:'backpack', name:{zh:'LIFT-860 悬浮背包',en:'LIFT-860 Hover Pack'}, seq:['S','W','W','S','A','D'] , icon: 'Hover_Pack_Stratagem_Icon.svg'},
+            { id:'pack_dog_breath', grp:'backpack', name:{zh:'AX/TX-13 腐息',en:'AX/TX-13 Dog Breath'}, seq:['S','W','A','W','D','W'] , icon: 'Dog_Breath_Stratagem_Icon.svg'},
+            { id:'pack_warp', grp:'backpack', name:{zh:'LIFT-182 传送背包',en:'LIFT-182 Warp Pack'}, seq:['S','A','D','S','A','D'] , icon: 'Warp_Pack_Stratagem_Icon.svg'},
+
+            { id:'veh_patriot', grp:'vehicle', name:{zh:'EXO-45 “爱国者” 外骨骼装甲',en:'EXO-45 Patriot Exosuit'}, seq:['A','S','D','W','A','S','S'] , icon: 'Patriot_Exosuit_Stratagem_Icon.svg'},
+            { id:'veh_emancipator', grp:'vehicle', name:{zh:'EXO-49 “解放者” 外骨骼装甲',en:'Emancipator Exosuit'}, seq:['A','S','D','W','A','S','W'] , icon: 'Emancipator_Exosuit_Stratagem_Icon.svg'},
+            { id:'veh_recon', grp:'vehicle', name:{zh:'M-102 快速侦察载具',en:'M-102 Fast Recon Vehicle'}, seq:['A','S','D','S','D','S','W'] , icon: 'Fast_Recon_Vehicle_Stratagem_Icon.svg'},
+            { id:'veh_bastion', grp:'vehicle', name:{zh:'TD-220 堡垒 MK XVI',en:'TD-220 Bastion MK XVI'}, seq:['A','S','D','S','A','S','W','S','W'] , icon: 'Bastion_MK_XVI_Stratagem_Icon.svg'},
+
+
+            { id:'mis_sos', grp:'mission', name:{zh:'SOS救援信标',en:'SOS Beacon'}, seq:['W','S','D','W'] , icon: 'SOS_Beacon_Stratagem_Icon.svg'},
+            { id:'mis_resupply', grp:'mission', name:{zh:'呼叫补给',en:'Resupply'}, seq:['S','S','W','D'] , icon: 'Resupply_Stratagem_Icon.svg'},
+            { id:'mis_reinforce', grp:'mission', name:{zh:'呼叫增援',en:'Reinforce'}, seq:['W','S','D','A','W'] , icon: 'Reinforce_Stratagem_Icon.svg'},
+            { id:'mis_hellbomb', grp:'mission', name:{zh:'呼叫地狱火炸弹',en:'Hellbomb'}, seq:['S','W','A','S','W','D','S','W'] , icon: 'Hellbomb_Stratagem_Icon.svg'},
+            { id:'mis_flag', grp:'mission', name:{zh:'呼叫超级地球旗帜',en:'Super Earth Flag'}, seq:['S','W','S','W'], icon: 'Super_Earth_Flag_Stratagem_Icon.svg' },
+            { id:'mis_eagleresupply', grp:'mission', name:{zh:'重新武装 “飞鹰”',en:'Eagle Rearm'}, seq:['S','W','S','W'], icon: 'Eagle_Rearm_Stratagem_Icon.svg' },
+            { id:'mis_callinsys', grp:'mission', name:{zh:'呼叫超级驱逐舰',en:'Call In Super Destroyer'}, seq:['S','W','S','W'], icon: 'Call_In_Super_Destroyer_Stratagem_Icon.svg' }
+        ];
+
+
+
+    let activeLoadout = [];
+    let savedPresets = [];
+    const maxSlots = 9;
+    let bindingTarget = null;
+    let gameSettings = { menuKey: 'ControlLeft', menuMode: 'hold', upKey: 'W', downKey: 'S', leftKey: 'A', rightKey: 'D' };
+    const arrowSVGMap = { 'W': './Up.svg', 'S': './Down.svg', 'A': './Left.svg', 'D': './Right.svg' };
+    const arrowDisplayMap = { 'W': '↑', 'S': '↓', 'A': '←', 'D': '→' };
+
+    function initData() {
+        const cacheSet = localStorage.getItem('hd2_macro_settings');
+        if (cacheSet) gameSettings = JSON.parse(cacheSet);
+        const cacheLoadout = localStorage.getItem('hd2_macro_current_loadout');
+        if (cacheLoadout) activeLoadout = JSON.parse(cacheLoadout);
+        const cachePresets = localStorage.getItem('hd2_macro_presets');
+        if (cachePresets) savedPresets = JSON.parse(cachePresets);
+        updateI18n();
+        renderMainList();
+    }
+
+    function saveCurrentLoadoutToCache() {
+        localStorage.setItem('hd2_macro_current_loadout', JSON.stringify(activeLoadout));
+    }
+
+    window.toggleLanguage = () => {
+        currentLang = currentLang === 'zh' ? 'en' : 'zh';
+        updateI18n(); renderMainList();
+        if (document.getElementById('library-modal').classList.contains('active')) renderLibrary();
+        if (document.getElementById('presets-modal').classList.contains('active')) renderPresets();
+    }
+
+    function updateI18n() {
+        const lang = i18n[currentLang];
+        document.getElementById('txt-app-title').textContent = lang.appTitle;
+        document.getElementById('btn-top-settings').textContent = lang.btnSettings;
+        document.getElementById('btn-top-presets').textContent = lang.btnPresets;
+        document.getElementById('btn-top-lib').textContent = lang.btnOpenLib;
+        document.getElementById('txt-lib-title').textContent = lang.libTitle;
+        document.getElementById('btn-lib-done').textContent = lang.btnDone;
+        document.getElementById('txt-set-title').textContent = lang.btnSettings;
+        document.getElementById('btn-set-done').textContent = lang.saveClose;
+        document.getElementById('txt-set-menu').textContent = lang.setMenu;
+        document.getElementById('txt-set-menuKey').textContent = lang.setMenuKey;
+        document.getElementById('txt-set-menuMode').textContent = lang.setMenuMode;
+        document.getElementById('mode-hold').textContent = lang.modeHold;
+        document.getElementById('mode-toggle').textContent = lang.modeToggle;
+        document.getElementById('txt-set-arrows').textContent = lang.setArrows;
+        document.getElementById('txt-set-up').textContent = lang.up;
+        document.getElementById('txt-set-down').textContent = lang.down;
+        document.getElementById('txt-set-left').textContent = lang.left;
+        document.getElementById('txt-set-right').textContent = lang.right;
+        document.getElementById('btn-lang').textContent = currentLang === 'zh' ? 'EN / 中文' : 'ZH / EN';
+        document.getElementById('btn-confirm-cancel').textContent = currentLang === 'zh' ? '取消' : 'CANCEL';
+        document.getElementById('btn-confirm-ok').textContent = currentLang === 'zh' ? '删除' : 'DELETE';
+        document.getElementById('txt-confirm-title').textContent = currentLang === 'zh' ? '警告' : 'WARNING';
+        document.getElementById('txt-pre-title').textContent = lang.preTitle;
+        document.getElementById('btn-pre-done').textContent = lang.btnDone;
+        document.getElementById('preset-name-input').placeholder = lang.phPresetName;
+        document.getElementById('btn-pre-save').textContent = lang.btnSaveCurrent;
+        const btnOverlay = document.getElementById('btn-top-overlay');
+        if (btnOverlay) btnOverlay.textContent = lang.btnOverlay;
+        const setOverlayTitle = document.getElementById('txt-set-overlayTitle');
+        if (setOverlayTitle) setOverlayTitle.textContent = lang.setOverlayTitle;
+        const setOverlayLabel = document.getElementById('txt-set-overlayLabel');
+        if (setOverlayLabel) setOverlayLabel.textContent = lang.setOverlayLabel;
+        const btnUnlock = document.getElementById('btn-set-unlock');
+        if (btnUnlock) btnUnlock.textContent = lang.btnUnlock;
+        updateSettingsUI();
+    }
+
+    function showToast(msg, isError = false) {
+        const toast = document.getElementById('global-status');
+        toast.textContent = msg;
+        toast.className = isError ? 'error show' : 'show';
+        setTimeout(() => toast.classList.remove('show'), 2000);
+    }
+
+    function renderMainList() {
+        const container = document.getElementById('slots-container');
+        container.innerHTML = '';
+        const lang = i18n[currentLang];
+        for (let i = 0; i < maxSlots; i++) {
+            const item = activeLoadout[i];
+            const row = document.createElement('div');
+            if (item) {
+                row.className = 'list-row';
+                const arrowsHtml = item.seq.map(k => `<img class="arrow-img" src="${arrowSVGMap[k]}">`).join('');
+                let btnClass = 'bind-btn';
+                let btnText = lang.clickToBind;
+                let subText = lang.unboundSub;
+                if (bindingTarget && bindingTarget.type === 'macro' && bindingTarget.index === i) {
+                    btnClass += ' listening'; btnText = lang.waiting; subText = lang.bindSub;
+                } else if (item.hotkey) {
+                    btnClass += ' bound'; btnText = `[ ${item.hotkey} ]`; subText = lang.boundSub;
+                }
+                const iconSrc = item.icon || 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
+                row.innerHTML = `<div class="row-icon-box"><img src="${iconSrc}"><button class="btn-remove" onclick="removeStratagem(${i})">✕</button></div><div class="row-arrows">${arrowsHtml}</div><div class="row-bind-box"><button class="${btnClass}" onclick="startMacroBind(${i}, event)" oncontextmenu="clearMacroBind(${i}, event)">${btnText}<div class="bind-subtext">${subText}</div></button></div>`;
+            } else {
+                row.className = 'list-row empty'; row.textContent = lang.emptySlot; row.onclick = openLibrary;
+            }
+            container.appendChild(row);
+        }
+        saveCurrentLoadoutToCache();
+        if (window.electronAPI) {
+            window.electronAPI.updateOverlay(activeLoadout);
+            window.electronAPI.updateSelection(overlaySelectedIndex);
+        }
+    }
+
+    window.openLibrary = () => { document.getElementById('library-modal').classList.add('active'); renderLibrary(); }
+    window.closeModals = () => { document.querySelectorAll('.modal-overlay').forEach(el => el.classList.remove('active')); cancelBinding(); }
+
+    function renderLibrary() {
+        const container = document.getElementById('lib-content');
+        container.innerHTML = '';
+        const groups =['support', 'orbital', 'eagle', 'emplacement', 'sentry', 'backpack', 'vehicle', 'mission'];
+        const lang = i18n[currentLang];
+        groups.forEach(grp => {
+            const items = stratagemDB.filter(s => s.grp === grp);
+            if(items.length === 0) return;
+            const header = document.createElement('div'); header.className = 'lib-cat-header'; header.textContent = lang[`cat_${grp}`];
+            container.appendChild(header);
+            const grid = document.createElement('div'); grid.className = 'lib-grid';
+            items.forEach(strat => {
+                const isSelected = activeLoadout.some(s => s && s.id === strat.id);
+                const card = document.createElement('div');
+                card.className = `lib-card ${isSelected ? 'selected' : ''}`;
+                card.onclick = () => toggleStratagem(strat.id);
+                const iconSrc = strat.icon || 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
+                card.innerHTML = `<img class="lib-icon" src="${iconSrc}"><div class="lib-name">${strat.name[currentLang]}</div><div class="lib-check">[ ✓ ]</div>`;
+                grid.appendChild(card);
+            });
+            container.appendChild(grid);
+        });
+    }
+
+    window.toggleStratagem = (id) => {
+        const idx = activeLoadout.findIndex(s => s && s.id === id);
+        if (idx !== -1) { activeLoadout.splice(idx, 1); } 
+        else {
+            if (activeLoadout.length >= maxSlots) { showToast(i18n[currentLang].msgFull, true); return; }
+            const strat = stratagemDB.find(s => s.id === id);
+            activeLoadout.push({ ...strat, hotkey: null });
+        }
+        renderLibrary(); renderMainList();
+    }
+
+    window.removeStratagem = (index) => { activeLoadout.splice(index, 1); if (bindingTarget && bindingTarget.type === 'macro' && bindingTarget.index === index) cancelBinding(); renderMainList(); }
+
+    window.openSettings = () => { document.getElementById('settings-modal').classList.add('active'); updateSettingsUI(); }
+
+    function updateSettingsUI() {
+        document.getElementById('btn-set-menuKey').textContent = gameSettings.menuKey;
+        document.getElementById('btn-set-upKey').textContent = gameSettings.upKey;
+        document.getElementById('btn-set-downKey').textContent = gameSettings.downKey;
+        document.getElementById('btn-set-leftKey').textContent = gameSettings.leftKey;
+        document.getElementById('btn-set-rightKey').textContent = gameSettings.rightKey;
+        document.getElementById('mode-hold').className = `toggle-option ${gameSettings.menuMode === 'hold' ? 'active' : ''}`;
+        document.getElementById('mode-toggle').className = `toggle-option ${gameSettings.menuMode === 'toggle' ? 'active' : ''}`;
+    }
+
+    window.setMenuMode = (mode) => { gameSettings.menuMode = mode; updateSettingsUI(); }
+
+    window.saveSettings = () => {
+        localStorage.setItem('hd2_macro_settings', JSON.stringify(gameSettings));
+        showToast(i18n[currentLang].msgSetSaved);
+        closeModals();
+    }
+
+    window.startMacroBind = (index, e) => { e.stopPropagation(); cancelBinding(); bindingTarget = { type: 'macro', index: index }; renderMainList(); attachListeners(); }
+    window.startSettingBind = (settingKey, e) => {
+        e.stopPropagation(); cancelBinding(); bindingTarget = { type: 'setting', key: settingKey };
+        updateSettingsUI();
+        const btn = document.getElementById(`btn-set-${settingKey}`);
+        btn.textContent = i18n[currentLang].waiting; btn.classList.add('listening');
+        attachListeners();
+    }
+
+    window.clearMacroBind = (index, e) => {
+        e.preventDefault(); e.stopPropagation();
+        if (activeLoadout[index] && activeLoadout[index].hotkey) { activeLoadout[index].hotkey = null; showToast(i18n[currentLang].msgClear); renderMainList(); }
+    }
+
+    function attachListeners() { window.addEventListener('keydown', handleKeyInput); window.addEventListener('mousedown', handleMouseInput); }
+    function cancelBinding() {
+        if (bindingTarget && bindingTarget.type === 'setting') {
+            const btn = document.getElementById(`btn-set-${bindingTarget.key}`);
+            if(btn) btn.classList.remove('listening');
+        }
+        bindingTarget = null; window.removeEventListener('keydown', handleKeyInput); window.removeEventListener('mousedown', handleMouseInput);
+        renderMainList(); updateSettingsUI();
+    }
+
+    function saveInput(keyStr) {
+        if (!bindingTarget) return;
+        const lang = i18n[currentLang];
+        if (bindingTarget.type === 'macro') {
+            const conflictIdx = activeLoadout.findIndex((s, idx) => s && s.hotkey === keyStr && idx !== bindingTarget.index);
+            if (conflictIdx !== -1) {
+                if(!confirm(lang.msgConfirm)) { cancelBinding(); return; }
+                activeLoadout[conflictIdx].hotkey = null;
+            }
+            activeLoadout[bindingTarget.index].hotkey = keyStr;
+            showToast(`${lang.msgMacro} ${keyStr}`);
+        } else if (bindingTarget.type === 'setting') {
+            gameSettings[bindingTarget.key] = keyStr;
+        }
+        cancelBinding();
+    }
+
+    function handleKeyInput(e) { e.preventDefault(); if (e.key === 'Escape') { cancelBinding(); return; } saveInput(e.code.replace('Key', '')); }
+    function handleMouseInput(e) {
+
+        if (e.button === 0 || e.button === 2) return; 
+        e.preventDefault(); 
+        
+        let keyStr = '';
+        if (e.button === 1) keyStr = 'MouseMiddle';     
+        else if (e.button === 3) keyStr = 'MouseSide1'; 
+        else if (e.button === 4) keyStr = 'MouseSide2'; 
+        else if (e.button === 5) keyStr = 'MouseSide3'; 
+        else keyStr = `MouseBtn_${e.button}`;
+        
+        saveInput(keyStr);
+    }
+
+    let isMacroRunning = false; 
+    let overlaySelectedIndex = 0;
+
+
+    function executeMacroByItem(stratagem, itemIndex) {
+        if (isMacroRunning || !stratagem) return; 
+        isMacroRunning = true; 
+
+
+        overlaySelectedIndex = itemIndex;
+        if(window.electronAPI) window.electronAPI.updateSelection(overlaySelectedIndex);
+
+        const seqDisplay = stratagem.seq.map(k => arrowDisplayMap[k]).join(' ');
+        showToast(`${i18n[currentLang].msgExec}: [ ${seqDisplay} ]`);
+        
+        const keyMap = { 'W': gameSettings.upKey, 'S': gameSettings.downKey, 'A': gameSettings.leftKey, 'D': gameSettings.rightKey };
+        const payload = {
+            menuKey: gameSettings.menuKey,
+            menuMode: gameSettings.menuMode,
+            sequence: stratagem.seq.map(k => keyMap[k])
+        };
+        
+        const estimatedTimeMs = 300 + (stratagem.seq.length * 130) + 200;
+
+        if(window.electronAPI) {
+            window.electronAPI.sendMacro(payload);
+            window.electronAPI.highlightOverlay({ index: itemIndex, duration: estimatedTimeMs });
+        }
+
+        setTimeout(() => { isMacroRunning = false; }, estimatedTimeMs);
+    }
+
+
+    function triggerMacro(inputKey) {
+        const itemIndex = activeLoadout.findIndex(item => item && item.hotkey === inputKey);
+        if (itemIndex !== -1) {
+
+            const validItems = activeLoadout.filter(item => item !== null);
+            const realOverlayIndex = validItems.findIndex(item => item.id === activeLoadout[itemIndex].id);
+            executeMacroByItem(activeLoadout[itemIndex], realOverlayIndex);
+        }
+    }
+
+    if (window.electronAPI) {
+        window.minimizeApp = () => window.electronAPI.minimize();
+        window.trayApp = () => window.electronAPI.tray();
+        window.closeApp = () => window.electronAPI.close();
+
+        window.electronAPI.onGlobalKeyDown((keyName) => {
+            if (bindingTarget) return; 
+            triggerMacro(keyName);
+        });
+
+
+        window.electronAPI.onGlobalMouseDown((mouseKey) => {
+            if (bindingTarget) return; 
+            
+
+            if (mouseKey === 'MouseMiddle') {
+                const validItems = activeLoadout.filter(item => item !== null);
+                if (validItems.length > 0 && overlaySelectedIndex >= 0) {
+                    executeMacroByItem(validItems[overlaySelectedIndex], overlaySelectedIndex);
+                    return; 
+                }
+            }
+
+            triggerMacro(mouseKey);
+        });
+
+
+        window.electronAPI.onGlobalWheel((dir) => {
+            if (bindingTarget) return; 
+            
+            const validItems = activeLoadout.filter(item => item !== null);
+            if (validItems.length === 0) return; 
+
+
+            overlaySelectedIndex += dir;
+            if (overlaySelectedIndex < 0) overlaySelectedIndex = validItems.length - 1;
+            if (overlaySelectedIndex >= validItems.length) overlaySelectedIndex = 0;
+            
+
+            window.electronAPI.updateSelection(overlaySelectedIndex);
+        });
+    }
+
+
+    if (window.electronAPI) {
+
+        window.minimizeApp = () => window.electronAPI.minimize();
+        window.trayApp = () => window.electronAPI.tray();
+        window.closeApp = () => window.electronAPI.close();
+
+
+        window.electronAPI.onGlobalKeyDown((keyName) => {
+            if (bindingTarget) return; 
+            triggerMacro(keyName);
+        });
+
+        window.electronAPI.onGlobalMouseDown((mouseKey) => {
+            if (bindingTarget) return; 
+            triggerMacro(mouseKey);
+        });
+    }
+
+    let presetToDeleteIndex = null;
+
+    window.openPresets = () => {
+        document.getElementById('presets-modal').classList.add('active');
+        renderPresets();
+    }
+
+    window.renderPresets = () => {
+        const container = document.getElementById('preset-list-container');
+        container.innerHTML = '';
+        const lang = i18n[currentLang];
+        
+        if (savedPresets.length === 0) {
+            container.innerHTML = `<div style="text-align:center; color: var(--hd-light-gray); padding: 20px;">暂无保存的预设 / NO PRESETS</div>`;
+            return;
+        }
+
+        savedPresets.forEach((preset, index) => {
+            const card = document.createElement('div');
+            card.className = 'preset-card';
+            
+
+            const iconsHtml = preset.loadout.filter(item => item !== null).map(item => {
+                const iconSrc = item.icon || 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
+                return `<img class="preset-icon-mini" src="${iconSrc}">`;
+            }).join('');
+
+            card.innerHTML = `
+                <div class="preset-card-header">
+                    <div class="preset-name">${preset.name}</div>
+                    <div class="preset-actions">
+                        <button class="btn-square primary" onclick="loadPreset(${index})">${lang.btnLoad}</button>
+                        <button class="btn-square btn-danger" onclick="confirmDeletePreset(${index})">${lang.btnDel}</button>
+                    </div>
+                </div>
+                <div class="preset-icons-preview">${iconsHtml}</div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    window.saveCurrentPreset = () => {
+        const input = document.getElementById('preset-name-input');
+        const name = input.value.trim();
+        const lang = i18n[currentLang];
+        
+        if (!name) { showToast(lang.msgEnterName, true); return; }
+        const hasItem = activeLoadout.some(item => item !== null);
+        if (!hasItem) { showToast(lang.msgEmptyLoadout, true); return; }
+
+
+        const loadoutCopy = JSON.parse(JSON.stringify(activeLoadout));
+        savedPresets.push({ name: name, loadout: loadoutCopy });
+        
+        localStorage.setItem('hd2_macro_presets', JSON.stringify(savedPresets));
+        input.value = '';
+        showToast(lang.msgPreSaved);
+        renderPresets();
+    }
+
+    window.loadPreset = (index) => {
+        activeLoadout = JSON.parse(JSON.stringify(savedPresets[index].loadout));
+        saveCurrentLoadoutToCache();
+        renderMainList();
+        showToast(i18n[currentLang].msgPreLoaded);
+        closeModals();
+    }
+
+    window.confirmDeletePreset = (index) => {
+        presetToDeleteIndex = index;
+        document.getElementById('txt-confirm-msg').textContent = i18n[currentLang].msgConfirmDel;
+        document.getElementById('confirm-modal').classList.add('active');
+    }
+
+    window.closeConfirmModal = () => {
+        presetToDeleteIndex = null;
+        document.getElementById('confirm-modal').classList.remove('active');
+    }
+
+    window.executeDeletePreset = () => {
+        if (presetToDeleteIndex !== null) {
+            savedPresets.splice(presetToDeleteIndex, 1);
+            localStorage.setItem('hd2_macro_presets', JSON.stringify(savedPresets));
+            renderPresets();
+        }
+        closeConfirmModal();
+    }
+    initData();
+
+
+    </script>
+</body>
+</html>

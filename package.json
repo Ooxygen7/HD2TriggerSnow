@@ -1,0 +1,22 @@
+  {
+  "name": "hd2automaticscript",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win --x64"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "electron": "^40.8.0",
+    "electron-builder": "^26.8.1"
+  },
+  "dependencies": {
+    "@nut-tree/nut-js": "^3.1.2",
+    "uiohook-napi": "^1.5.4"
+  }
+}
