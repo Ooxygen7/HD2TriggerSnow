@@ -1,0 +1,22 @@
+End-User License Agreement (EULA)
+Please read this agreement carefully before installing or using "HD2 Trigger" (hereinafter referred to as the "Software"). By installing or using this Software, you agree to be bound by the terms of this agreement.
+1. Nature and Purpose
+This Software is developed by Bilibili UID: 86682017. The Software serves solely as an auxiliary input tool, assisting users by simulating keyboard input sequences in specific environments. The Software does NOT contain any functions for reading user privacy, modifying game memory, intercepting network packets, or tampering with original game code. Please use it with confidence.
+2. Warning
+The User hereby acknowledges that in the game Helldivers 2, manual input of stratagem codes is a core design mechanic, a component of difficulty, and a primary source of enjoyment. Using the macro-triggering features provided by this Software will skip this manual input process, which may:
+Reduce the challenge and sense of achievement in the game;
+Diminish the immersion of the gameplay experience;
+Alter the original intended rhythm of the game design.
+The Developer strongly advises users to carefully consider whether to use these automated functions based on their own definition of gaming enjoyment.
+3. Statement on Fair Play and Improper Use
+The Developer does not support or encourage any behavior that violates the spirit of fair play.
+The Developer explicitly opposes the use of this Software for any form of illegal cheating or malicious disruption.
+The User commits not to use the Software to gain an unfair competitive advantage.
+The User shall assume all risks of game account bans, data resets, or other penalties resulting from the use of auxiliary tools.
+4. Disclaimer
+The Software is provided "as is," without warranty of any kind, express or implied.
+While the Developer guarantees the safety of the Software’s source code itself, the Developer shall not be held responsible for account loss, hardware damage, system crashes, or data loss resulting from the use of the Software.
+The Developer makes no guarantees regarding the compatibility of the Software with future game updates.
+5. Intellectual Property
+This Software grants the User a personal, non-commercial right of use. Users are prohibited from reselling the Software or falsely claiming authorship. The source code has been fully open-sourced on GitHub at: [https://github.com/Ooxygen7/HD2TriggerSnow].
+By clicking "I Accept," you acknowledge that you have read, understood, and agreed to all terms of this agreement.
