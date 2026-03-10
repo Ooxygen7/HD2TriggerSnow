@@ -1,16 +1,12 @@
-  {
-  "name": "hd2automaticscript",
-  "version": "1.0.0",
-  "description": "",
+{
+  "name": "HD2-Trigger",
+  "version": "1.2.0",
+  "author": "Huizhixin",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
     "build": "electron-builder --win --x64"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
   "devDependencies": {
     "electron": "^40.8.0",
     "electron-builder": "^26.8.1"
@@ -18,5 +14,31 @@
   "dependencies": {
     "@nut-tree/nut-js": "^3.1.2",
     "uiohook-napi": "^1.5.4"
+  },
+  "build": {
+    "appId": "com.hd2.trigger",
+    "productName": "HD2 Macro Terminal",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build" 
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "allowElevation": true,
+      "multiLanguageInstaller": true,
+      "installerLanguages": [
+        "zh_CN",
+        "en_US"
+      ],
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "HD2战备触发器"
+    }
   }
 }

@@ -6,6 +6,7 @@ const { keyboard, Key } = require('@nut-tree/nut-js');
 let mainWindow;
 let overlayWindow; 
 let tray = null;
+let isQuitting = false; 
 
 keyboard.config.autoDelayMs = 40; 
 
@@ -42,6 +43,13 @@ function createWindow() {
         webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true }
     });
     mainWindow.loadFile('index.html');
+
+    mainWindow.on('close', (event) => {
+        if (!isQuitting) {
+            event.preventDefault();
+            mainWindow.hide();
+        }
+    });
 }
 
 function createOverlayWindow() {
@@ -52,11 +60,23 @@ function createOverlayWindow() {
     });
     overlayWindow.setAlwaysOnTop(true, 'screen-saver'); 
     overlayWindow.loadFile('overlay.html');
+    overlayWindow.on('close', (event) => {
+        if (!isQuitting) {
+            event.preventDefault();
+            overlayWindow.hide();
+        }
+    });
 }
 
 app.whenReady().then(() => {
     createWindow();
     createOverlayWindow();
+    const showMainWindow = () => {
+        if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.show();
+            if (mainWindow.isMinimized()) mainWindow.restore();
+        }
+    };
 
     try {
         const iconPath = path.join(__dirname, 'icon.png');
@@ -64,28 +84,42 @@ app.whenReady().then(() => {
         if (!appIcon.isEmpty()) {
             tray = new Tray(appIcon); 
             tray.setContextMenu(Menu.buildFromTemplate([
-                { label: '显示界面', click: () => mainWindow.show() },
-                { label: '完全退出', click: () => { uIOhook.stop(); app.quit(); } }
+                { label: '显示界面', click: showMainWindow },
+                { label: '完全退出', click: () => { 
+                    isQuitting = true; 
+                    uIOhook.stop(); 
+                    app.quit(); 
+                } }
             ]));
-            tray.on('click', () => mainWindow.show());
+            tray.on('click', showMainWindow);
         }
     } catch (e) {}
 
     ipcMain.on('window-min', () => mainWindow.minimize());
     ipcMain.on('window-tray', () => mainWindow.hide());
-    ipcMain.on('window-close', () => { uIOhook.stop(); app.quit(); });
-
-    ipcMain.on('toggle-overlay', () => overlayWindow.isVisible() ? overlayWindow.hide() : overlayWindow.showInactive());
-    ipcMain.on('lock-overlay', () => { if (overlayWindow) { overlayWindow.setIgnoreMouseEvents(true, { forward: true }); overlayWindow.webContents.send('overlay-locked'); } });
-    ipcMain.on('unlock-overlay', () => { if (overlayWindow) { overlayWindow.setIgnoreMouseEvents(false); overlayWindow.showInactive(); overlayWindow.webContents.send('overlay-unlocked'); } });
     
-    ipcMain.on('update-overlay', (event, data) => { if (overlayWindow) overlayWindow.webContents.send('render-overlay', data); });
-    ipcMain.on('highlight-overlay', (event, data) => { if (overlayWindow) overlayWindow.webContents.send('highlight-item', data); });
-    ipcMain.on('update-selection', (event, index) => { if (overlayWindow) overlayWindow.webContents.send('selection-changed', index); });
+    ipcMain.on('window-close', () => { 
+        isQuitting = true; 
+        uIOhook.stop(); 
+        app.quit(); 
+    });
+
+    ipcMain.on('toggle-overlay', () => {
+        if (overlayWindow && !overlayWindow.isDestroyed()) {
+            overlayWindow.isVisible() ? overlayWindow.hide() : overlayWindow.showInactive();
+        }
+    });
+
+    ipcMain.on('lock-overlay', () => { if (overlayWindow && !overlayWindow.isDestroyed()) { overlayWindow.setIgnoreMouseEvents(true, { forward: true }); overlayWindow.webContents.send('overlay-locked'); } });
+    ipcMain.on('unlock-overlay', () => { if (overlayWindow && !overlayWindow.isDestroyed()) { overlayWindow.setIgnoreMouseEvents(false); overlayWindow.showInactive(); overlayWindow.webContents.send('overlay-unlocked'); } });
+    
+    ipcMain.on('update-overlay', (event, data) => { if (overlayWindow && !overlayWindow.isDestroyed()) overlayWindow.webContents.send('render-overlay', data); });
+    ipcMain.on('highlight-overlay', (event, data) => { if (overlayWindow && !overlayWindow.isDestroyed()) overlayWindow.webContents.send('highlight-item', data); });
+    ipcMain.on('update-selection', (event, index) => { if (overlayWindow && !overlayWindow.isDestroyed()) overlayWindow.webContents.send('selection-changed', index); });
 
     uIOhook.on('keydown', (e) => {
         const char = uioToChar[e.keycode]; 
-        if (char && mainWindow) mainWindow.webContents.send('global-keydown', char);
+        if (char && mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('global-keydown', char);
     });
 
     uIOhook.on('mousedown', (e) => {
@@ -94,12 +128,12 @@ app.whenReady().then(() => {
         else if (e.button === 4) mBtn = "MouseSide1"; 
         else if (e.button === 5) mBtn = "MouseSide2"; 
         else if (e.button === 6) mBtn = "MouseSide3"; 
-        if (mBtn && mainWindow) mainWindow.webContents.send('global-mousedown', mBtn);
+        if (mBtn && mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('global-mousedown', mBtn);
     });
 
     uIOhook.on('wheel', (e) => {
         const dir = e.rotation > 0 ? 1 : -1;
-        if (mainWindow) mainWindow.webContents.send('global-wheel', dir);
+        if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('global-wheel', dir);
     });
 
     uIOhook.start();
@@ -108,9 +142,13 @@ app.whenReady().then(() => {
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 ipcMain.on('execute-macro', async (event, payload) => {
-    const { menuKey, menuMode, sequence } = payload;
+    const { menuKey, menuMode, sequence, delayMs } = payload;
     const mKey = nutKeyMap[menuKey] || Key[menuKey] || Key.LeftControl;
-    const PRESS_DELAY = 5; const INTERVAL_DELAY = 5; const MENU_OPEN_DELAY = 50; 
+    const baseDelay = Math.max(10, parseInt(delayMs) || 10);
+    const PRESS_DELAY = Math.max(5, Math.floor(baseDelay / 2)); 
+    const INTERVAL_DELAY = Math.max(5, Math.floor(baseDelay / 2));
+    const MENU_OPEN_DELAY = Math.max(50, baseDelay * 5); 
+
     try {
         if (menuMode === 'hold') {
             await keyboard.pressKey(mKey); await delay(MENU_OPEN_DELAY); 
