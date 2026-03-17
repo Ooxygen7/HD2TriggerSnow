@@ -7,258 +7,297 @@
     <style>
         :root {
             --hd-yellow: #FFE80A;
+            --hd-yellow-hover: #e5d109;
+            --hd-yellow-alpha: rgba(255, 232, 10, 0.15);
             --hd-black: #000000;
-            --hd-panel: #141414;
-            --hd-gray: #2a2a2a;
-            --hd-light-gray: #888888;
-            --hd-white: #e0e0e0;
-            --hd-red: #ff2a2a;
+            --hd-dark: #0a0a0c;
+            --glass-panel: rgba(28, 28, 30, 0.65);
+            --glass-panel-hover: rgba(44, 44, 46, 0.8);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --hd-text-primary: #ffffff;
+            --hd-text-secondary: #86868b;
+            --hd-red: #ff453a;
+            
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            --radius-xl: 28px;
+            
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
 
         * {
             box-sizing: border-box; margin: 0; padding: 0; user-select: none;
-            border-radius: 0 !important; 
-            font-family: 'Impact', 'Segoe UI Black', 'Arial Black', sans-serif;
-            letter-spacing: 1px;
+            font-family: system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
         }
 
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: var(--hd-black); }
-        ::-webkit-scrollbar-thumb { background: var(--hd-gray); }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--hd-yellow); }
 
         body {
-            background-color: var(--hd-black); color: var(--hd-white);
+            background-color: var(--hd-dark); 
+            background-image: radial-gradient(circle at 50% 0%, rgba(255,232,10,0.03) 0%, transparent 70%),
+                              linear-gradient(to bottom, transparent, #000000);
+            color: var(--hd-text-primary);
             height: 100vh; display: flex; flex-direction: column; overflow: hidden;
-            border: 1px solid var(--hd-gray);
+            border: 1px solid var(--glass-border);
         }
 
         #titlebar {
-            height: 36px; background-color: var(--hd-black); display: flex;
-            justify-content: space-between; align-items: center; padding-left: 15px;
-            -webkit-app-region: drag; border-bottom: 2px solid var(--hd-yellow); z-index: 100;
+            height: 40px; background: rgba(0,0,0,0.4); 
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            display: flex; justify-content: space-between; align-items: center; 
+            padding-left: 20px; -webkit-app-region: drag; 
+            border-bottom: 1px solid var(--glass-border); z-index: 100;
         }
-        .title-text { color: var(--hd-yellow); font-size: 16px; font-weight: normal; }
-        .titlebar-controls { display: flex; height: 100%; -webkit-app-region: no-drag; }
+        .title-text { 
+            color: var(--hd-text-primary); font-size: 13px; font-weight: 600; letter-spacing: 1px;
+            text-shadow: 0 0 10px rgba(255,255,255,0.2);
+        }
+        .titlebar-controls { display: flex; height: 100%; -webkit-app-region: no-drag; align-items: center; padding-right: 5px; gap: 4px; }
+        
         .lang-btn {
-            background: var(--hd-black); border: 1px solid var(--hd-gray); color: var(--hd-white);
-            cursor: pointer; margin: 4px 10px; padding: 0 10px; font-size: 12px; transition: 0.2s;
+            background: var(--glass-panel); border: 1px solid var(--glass-border); color: var(--hd-text-primary);
+            cursor: pointer; padding: 4px 12px; font-size: 11px; font-weight: bold; border-radius: 12px;
+            transition: var(--transition); margin-right: 10px;
         }
-        .lang-btn:hover { border-color: var(--hd-yellow); color: var(--hd-yellow); }
+        .lang-btn:hover { background: var(--hd-yellow-alpha); border-color: var(--hd-yellow); color: var(--hd-yellow); }
         
         .window-btn {
-            width: 46px; height: 100%; background: transparent; border: none;
-            color: var(--hd-light-gray); cursor: pointer; transition: 0.2s; font-size: 14px;
+            width: 32px; height: 32px; background: transparent; border: none; border-radius: 8px;
+            color: var(--hd-text-secondary); cursor: pointer; transition: var(--transition); font-size: 12px;
+            display: flex; justify-content: center; align-items: center;
         }
-        .window-btn:hover { background-color: var(--hd-gray); color: var(--hd-white); }
-        .window-btn.close:hover { background-color: var(--hd-red); color: var(--hd-white); }
-        #app-content {
-            flex-grow: 1; display: flex; flex-direction: column; padding: 20px; gap: 20px; overflow-y: auto;
-            background: repeating-linear-gradient(45deg, #050505, #050505 2px, transparent 2px, transparent 4px);
-        }
+        .window-btn:hover { background-color: rgba(255,255,255,0.1); color: var(--hd-text-primary); }
+        .window-btn.close:hover { background-color: var(--hd-red); color: white; }
 
-        .top-controls { display: flex; justify-content: space-between; gap: 10px; }
+        #app-content { flex-grow: 1; display: flex; flex-direction: column; padding: 24px; gap: 24px; overflow-y: auto; }
+
+        .top-controls { display: flex; justify-content: space-between; gap: 12px; }
         .btn-square {
-            background-color: var(--hd-gray); color: var(--hd-white); border: 2px solid var(--hd-gray);
-            padding: 10px 15px; font-size: 15px; cursor: pointer; text-transform: uppercase;
-            transition: all 0.2s ease; display: flex; align-items: center; gap: 8px; justify-content: center;
+            background-color: var(--glass-panel); color: var(--hd-text-primary); 
+            border: 1px solid var(--glass-border); border-radius: var(--radius-md);
+            padding: 12px 20px; font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 0.5px;
+            transition: var(--transition); display: flex; align-items: center; justify-content: center; gap: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2); backdrop-filter: blur(10px);
         }
         .top-controls .btn-square { flex-grow: 1; }
+        .btn-square:hover { background-color: var(--glass-panel-hover); border-color: rgba(255,255,255,0.3); transform: translateY(-1px); }
+        .btn-square:active { transform: translateY(1px); }
         
-        .btn-square:hover { background-color: var(--hd-yellow); color: var(--hd-black); border-color: var(--hd-yellow); }
-        .btn-square.primary { background-color: var(--hd-yellow); color: var(--hd-black); border-color: var(--hd-yellow); }
-        .btn-square.primary:hover { background-color: var(--hd-white); border-color: var(--hd-white); }
+        .btn-square.primary { 
+            background-color: var(--hd-yellow); color: var(--hd-black); border-color: var(--hd-yellow); 
+            box-shadow: 0 0 15px rgba(255, 232, 10, 0.2); 
+        }
+        .btn-square.primary:hover { background-color: var(--hd-yellow-hover); box-shadow: 0 0 20px rgba(255, 232, 10, 0.4); }
 
-        .list-container { display: flex; flex-direction: column; gap: 10px; flex-grow: 1; }
+        .list-container { display: flex; flex-direction: column; gap: 12px; flex-grow: 1; }
         
         .list-row {
-            display: flex; align-items: stretch; background-color: var(--hd-panel);
-            border: 2px solid var(--hd-gray); height: 68px; transition: 0.2s; position: relative;
+            display: flex; align-items: stretch; background-color: var(--glass-panel);
+            border: 1px solid var(--glass-border); border-radius: var(--radius-lg);
+            height: 76px; transition: var(--transition); position: relative; overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2); cursor: grab;
         }
-        .list-row:hover { border-color: var(--hd-yellow); }
+        .list-row:hover { border-color: rgba(255,255,255,0.2); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
+        .list-row:active { cursor: grabbing; }
+        .list-row.dragging { opacity: 0.5; transform: scale(0.98); }
+        .list-row.drag-over { border-color: var(--hd-yellow); box-shadow: 0 0 15px var(--hd-yellow-alpha); }
+        body.is-dragging .list-row * { pointer-events: none; }
+        
         .list-row.empty {
-            justify-content: center; align-items: center; border-style: dashed;
-            color: var(--hd-light-gray); font-size: 16px; cursor: pointer;
+            justify-content: space-between; align-items: stretch; border: 1px dashed var(--glass-border);
+            background: transparent; box-shadow: none; cursor: grab;
         }
-        .list-row.empty:hover { background-color: rgba(255, 232, 10, 0.05); color: var(--hd-yellow); }
+        .list-row.empty:hover { background-color: transparent; border-color: var(--glass-border); transform: none; box-shadow: none; }
+
+        /* 拖拽手柄 */
+        .drag-handle {
+            width: 24px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+            border-right: 1px solid var(--glass-border); background: rgba(0,0,0,0.2); transition: var(--transition);
+        }
+        .drag-handle::after {
+            content: '⋮⋮'; color: var(--hd-text-secondary); font-size: 14px; letter-spacing: -1px; margin-left: -1px;
+        }
+        .list-row:hover .drag-handle { background: var(--hd-yellow-alpha); }
+        .list-row:hover .drag-handle::after { color: var(--hd-yellow); }
+        
+        .empty-click-area {
+            flex-grow: 1; display: flex; justify-content: center; align-items: center;
+            color: var(--hd-text-secondary); font-size: 14px; font-weight: 600; cursor: pointer; transition: var(--transition);
+            /* 去除左侧圆角以贴合手柄 */
+            border-radius: 0;
+        }
+        .empty-click-area:hover { background-color: var(--hd-yellow-alpha); color: var(--hd-yellow); }
 
         .row-icon-box {
-            width: 68px; height: 100%; background-color: #000; border-right: 2px solid var(--hd-gray);
-            display: flex; justify-content: center; align-items: center; padding: 5px; position: relative;
+            width: 76px; height: 100%; background: linear-gradient(135deg, rgba(255,255,255,0.05), transparent); 
+            border-right: 1px solid var(--glass-border); display: flex; justify-content: center; align-items: center; padding: 12px; position: relative;
         }
-        .row-icon-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .row-icon-box img { max-width: 100%; max-height: 100%; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
         
         .btn-remove {
-            position: absolute; top: 2px; left: 2px; background: rgba(0,0,0,0.8); color: var(--hd-red);
-            border: 1px solid var(--hd-red); width: 18px; height: 18px; font-size: 12px;
-            display: flex; justify-content: center; align-items: center; cursor: pointer; opacity: 0; transition: 0.2s;
+            position: absolute; top: 6px; left: 6px; background: var(--glass-panel); color: var(--hd-text-secondary);
+            border: 1px solid var(--glass-border); border-radius: 50%; width: 22px; height: 22px; font-size: 10px;
+            display: flex; justify-content: center; align-items: center; cursor: pointer; opacity: 0; transition: var(--transition);
         }
         .list-row:hover .btn-remove { opacity: 1; }
-        .btn-remove:hover { background: var(--hd-red); color: white; }
+        .btn-remove:hover { background: var(--hd-red); color: white; border-color: var(--hd-red); transform: scale(1.1); }
 
-        .row-arrows { flex-grow: 1; display: flex; justify-content: center; align-items: center; gap: 8px; padding: 0 20px; }
-        .arrow-img { width: 22px; height: 22px; filter: drop-shadow(0px 2px 0px #000); }
+        .row-arrows { flex-grow: 1; display: flex; justify-content: flex-start; align-items: center; gap: 10px; padding: 0 24px; }
+        .arrow-img { width: 24px; height: 24px; filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.8)); transition: transform 0.2s;}
+        .list-row:hover .arrow-img { transform: scale(1.05); }
 
-        .row-bind-box { width: 180px; border-left: 2px solid var(--hd-gray); }
+        .row-bind-box { width: 200px; border-left: 1px solid var(--glass-border); padding: 10px; display: flex; }
         .bind-btn {
-            width: 100%; height: 100%; background: transparent; border: none; color: var(--hd-light-gray);
-            font-size: 14px; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column;
-            justify-content: center; align-items: center; padding: 5px;
+            width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); border-radius: var(--radius-sm);
+            color: var(--hd-text-secondary); font-size: 13px; font-weight: bold; cursor: pointer; transition: var(--transition); 
+            display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 4px; z-index: 10;
         }
-        .bind-btn:hover { background: var(--hd-gray); color: var(--hd-white); }
-        .bind-btn.bound { background: rgba(255, 232, 10, 0.1); color: var(--hd-yellow); font-size: 18px; }
-        .bind-btn.listening { background: var(--hd-yellow); color: var(--hd-black); animation: flash 0.6s infinite alternate; }
-        .bind-subtext { font-size: 10px; color: #666; font-family: sans-serif; margin-top: 4px; }
+        .bind-btn:hover { background: rgba(255,255,255,0.05); color: var(--hd-text-primary); border-color: rgba(255,255,255,0.2); }
+        .bind-btn.bound { background: var(--hd-yellow-alpha); border-color: var(--hd-yellow); color: var(--hd-yellow); font-size: 16px; }
+        .bind-btn.listening { background: var(--hd-yellow); color: var(--hd-black); border-color: var(--hd-yellow); animation: pulse 1.5s infinite; }
+        .bind-subtext { font-size: 10px; color: var(--hd-text-secondary); font-weight: 500; letter-spacing: 0; }
         .bind-btn.bound:hover .bind-subtext { color: var(--hd-red); }
 
-        @keyframes flash { from { opacity: 1; } to { opacity: 0.7; } }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 232, 10, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(255, 232, 10, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 232, 10, 0); } }
 
         .modal-overlay {
-            position: fixed; top: 36px; left: 0; width: 100%; height: calc(100% - 36px);
-            background: var(--hd-black); z-index: 50; display: flex; flex-direction: column;
-            opacity: 0; pointer-events: none; transition: opacity 0.2s ease;
+            position: fixed; top: 40px; left: 0; width: 100%; height: calc(100% - 40px);
+            background: rgba(0,0,0,0.4); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            z-index: 50; display: flex; flex-direction: column;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
         }
         .modal-overlay.active { opacity: 1; pointer-events: auto; }
         
         .modal-header {
-            padding: 12px 20px; border-bottom: 2px solid var(--hd-yellow); display: flex;
-            justify-content: space-between; align-items: center; background: var(--hd-black);
+            padding: 20px 24px; border-bottom: 1px solid var(--glass-border); display: flex;
+            justify-content: space-between; align-items: center; background: rgba(10,10,12,0.8);
         }
-        .modal-title { font-size: 22px; color: var(--hd-yellow); }
-        .modal-header .btn-square { flex-grow: 0; padding: 6px 24px; font-size: 14px; min-width: 120px; } 
+        .modal-title { font-size: 20px; font-weight: 800; color: var(--hd-text-primary); letter-spacing: 1px; display: flex; align-items: center; gap: 10px;}
+        .modal-title::before { content: ''; display: block; width: 4px; height: 18px; background: var(--hd-yellow); border-radius: 2px; }
+        .modal-header .btn-square { flex-grow: 0; padding: 8px 24px; font-size: 13px; border-radius: 20px; } 
 
-        .lib-content { padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
-        .lib-cat-header { font-size: 16px; color: var(--hd-white); border-bottom: 2px solid var(--hd-gray); padding-bottom: 5px; }
-        .lib-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; }
+        .lib-search-container { padding: 20px 24px 0 24px; }
+        #lib-search-input {
+            width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); border-radius: var(--radius-md);
+            color: var(--hd-text-primary); padding: 12px 16px; font-size: 14px; outline: none; transition: var(--transition);
+        }
+        #lib-search-input:focus { border-color: var(--hd-yellow); box-shadow: 0 0 0 3px var(--hd-yellow-alpha); }
+        #lib-search-hint { font-size: 13px; font-weight: bold; color: var(--hd-yellow); margin-top: 10px; display: none; }
+
+        .lib-content { padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 24px; }
+        .lib-cat-header { font-size: 15px; font-weight: bold; color: var(--hd-text-secondary); border-bottom: 1px solid var(--glass-border); padding-bottom: 8px; letter-spacing: 0.5px;}
+        .lib-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
         .lib-card {
-            display: flex; align-items: center; border: 2px solid var(--hd-gray); background: var(--hd-panel);
-            padding: 8px; cursor: pointer; transition: 0.2s; gap: 10px; height: 60px;
+            display: flex; align-items: center; border: 1px solid var(--glass-border); background: var(--glass-panel);
+            border-radius: var(--radius-md); padding: 8px 12px; cursor: pointer; transition: var(--transition); gap: 12px; height: 64px;
         }
-        .lib-card:hover { border-color: var(--hd-white); background: var(--hd-gray); }
-        .lib-card.selected { border-color: var(--hd-yellow); background: rgba(255,232,10,0.1); }
-        .lib-icon { width: 40px; height: 40px; background: #000; object-fit: contain; border: 1px solid var(--hd-gray); }
-        .lib-name { flex-grow: 1; font-size: 13px; font-family: 'Segoe UI', sans-serif; font-weight: bold; }
-        .lib-check { color: var(--hd-yellow); font-size: 14px; display: none; margin-right: 5px;}
-        .lib-card.selected .lib-check { display: block; }
+        .lib-card:hover { border-color: rgba(255,255,255,0.3); background: var(--glass-panel-hover); transform: scale(1.02); }
+        .lib-card.selected { border-color: var(--hd-yellow); background: var(--hd-yellow-alpha); box-shadow: 0 0 15px rgba(255,232,10,0.1); }
+        .lib-icon { width: 44px; height: 44px; background: rgba(0,0,0,0.5); border-radius: var(--radius-sm); border: 1px solid var(--glass-border); object-fit: contain; padding: 2px;}
+        .lib-name { flex-grow: 1; font-size: 13px; font-weight: 600; line-height: 1.2; }
+        .lib-check { color: var(--hd-yellow); font-size: 16px; font-weight: bold; display: none; margin-right: 5px; }
+        .lib-card.selected .lib-check { display: block; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 
+        @keyframes popIn { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
-        .settings-content { padding: 20px; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; }
-        .set-group { border: 2px solid var(--hd-gray); background: var(--hd-panel); padding: 20px; }
-        .set-title { color: var(--hd-yellow); font-size: 16px; margin-bottom: 15px; border-bottom: 1px solid var(--hd-gray); padding-bottom: 5px; }
-        .set-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .set-row:last-child { margin-bottom: 0; }
-        .set-label { font-size: 14px; color: var(--hd-white); font-family: sans-serif; }
+        .settings-content { padding: 24px; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; max-width: 800px; margin: 0 auto; width: 100%;}
+        .set-group { background: var(--glass-panel); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); padding: 20px 24px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
+        .set-title { color: var(--hd-yellow); font-size: 14px; font-weight: bold; margin-bottom: 20px; letter-spacing: 1px; display: flex; align-items: center; gap: 8px;}
+        .set-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .set-row:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+        .set-label { font-size: 14px; color: var(--hd-text-primary); font-weight: 500; display:flex; flex-direction: column; gap: 6px; }
+        .set-desc { font-size: 11px; color: var(--hd-text-secondary); line-height: 1.4; font-weight: 400; max-width: 85%; }
         
         .set-btn {
-            background: var(--hd-black); border: 2px solid var(--hd-gray); color: var(--hd-yellow);
-            padding: 8px 15px; font-size: 14px; cursor: pointer; min-width: 120px; text-align: center; transition: 0.2s;
+            background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); border-radius: var(--radius-sm);
+            color: var(--hd-yellow); padding: 8px 16px; font-size: 13px; font-weight: bold; cursor: pointer; min-width: 120px; text-align: center; transition: var(--transition);
         }
-        .set-btn:hover { border-color: var(--hd-yellow); background: rgba(255,232,10,0.1); }
-        .set-btn.listening { background: var(--hd-yellow); color: var(--hd-black); }
+        .set-btn:hover { border-color: var(--hd-yellow); background: var(--hd-yellow-alpha); box-shadow: 0 0 10px rgba(255,232,10,0.1); }
+        .set-btn.listening { background: var(--hd-yellow); color: var(--hd-black); border-color: var(--hd-yellow); animation: pulse 1.5s infinite; }
 
-        .toggle-box { display: flex; border: 2px solid var(--hd-gray); }
-        .toggle-option { padding: 8px 20px; cursor: pointer; color: var(--hd-light-gray); font-size: 13px; background: var(--hd-black); transition: 0.2s; }
-        .toggle-option.active { background: var(--hd-yellow); color: var(--hd-black); font-weight: bold; }
+        .toggle-box { display: flex; background: rgba(0,0,0,0.5); border-radius: var(--radius-sm); padding: 4px; border: 1px solid var(--glass-border); }
+        .toggle-option { padding: 6px 20px; cursor: pointer; color: var(--hd-text-secondary); font-size: 12px; font-weight: 600; border-radius: 6px; transition: var(--transition); text-align: center;}
+        .toggle-option.active { background: var(--glass-panel-hover); color: var(--hd-text-primary); box-shadow: 0 2px 8px rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); }
 
-        .presets-content { padding: 20px; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; }
-        .preset-save-bar { display: flex; gap: 10px; }
+        .set-input {
+            background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); border-radius: var(--radius-sm);
+            color: var(--hd-text-primary); padding: 10px 16px; font-size: 14px; outline: none; transition: var(--transition);
+            width: 120px; text-align: center; font-weight: 500;
+        }
+        .set-input:focus { border-color: var(--hd-yellow); box-shadow: 0 0 0 3px var(--hd-yellow-alpha); background: rgba(0,0,0,0.6); }
+        .set-input-wide { width: 100%; text-align: left; max-width: 300px;}
+        select.set-input { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 12px center; background-size: 16px; padding-right: 40px;}
+
+        input[type="range"] { -webkit-appearance: none; width: 140px; background: transparent; }
+        input[type="range"]::-webkit-slider-runnable-track { height: 6px; background: rgba(255,255,255,0.2); border-radius: 3px; }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%;
+            background: var(--hd-yellow); margin-top: -5px; box-shadow: 0 0 10px rgba(0,0,0,0.5); cursor: pointer; transition: transform 0.1s;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+        .presets-content { padding: 24px; display: flex; flex-direction: column; gap: 24px; overflow-y: auto; max-width: 900px; margin: 0 auto; width: 100%;}
+        .preset-save-bar { display: flex; gap: 12px; background: var(--glass-panel); padding: 16px; border-radius: var(--radius-lg); border: 1px solid var(--glass-border); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         #preset-name-input {
-            flex-grow: 1; background: var(--hd-black); border: 2px solid var(--hd-gray);
-            color: var(--hd-white); padding: 10px; font-size: 16px; outline: none; font-family: 'Segoe UI', sans-serif;
+            flex-grow: 1; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); border-radius: var(--radius-sm);
+            color: var(--hd-text-primary); padding: 0 16px; font-size: 14px; outline: none; transition: var(--transition);
         }
-        #preset-name-input:focus { border-color: var(--hd-yellow); }
-        .preset-list { display: flex; flex-direction: column; gap: 15px; }
+        #preset-name-input:focus { border-color: var(--hd-yellow); box-shadow: 0 0 0 3px var(--hd-yellow-alpha); }
+        
+        .preset-list { display: flex; flex-direction: column; gap: 16px; }
         .preset-card {
-            border: 2px solid var(--hd-gray); background: var(--hd-panel); padding: 15px;
-            display: flex; flex-direction: column; gap: 12px; transition: 0.2s;
+            border: 1px solid var(--glass-border); background: var(--glass-panel); border-radius: var(--radius-lg); padding: 20px;
+            display: flex; flex-direction: column; gap: 16px; transition: var(--transition); box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
-        .preset-card:hover { border-color: var(--hd-white); }
-        .preset-card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--hd-gray); padding-bottom: 8px;}
-        .preset-name { font-size: 18px; color: var(--hd-yellow); font-family: 'Segoe UI', sans-serif; font-weight: bold;}
-        .preset-actions { display: flex; gap: 10px; }
-        .preset-actions .btn-square { padding: 6px 12px; font-size: 12px; flex-grow: 0; }
-        .preset-icons-preview { display: flex; gap: 8px; flex-wrap: wrap; }
-        .preset-icon-mini { width: 36px; height: 36px; background: #000; border: 1px solid var(--hd-gray); object-fit: contain; padding: 2px;}
-
+        .preset-card:hover { border-color: rgba(255,255,255,0.2); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
+        .preset-card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px;}
+        .preset-name { font-size: 18px; color: var(--hd-text-primary); font-weight: bold; display: flex; align-items: center; gap: 10px;}
+        .preset-name::before { content:''; display:inline-block; width:8px; height:8px; background: var(--hd-yellow); border-radius: 50%; }
+        
+        .preset-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end;}
+        .preset-actions .btn-square { padding: 6px 16px; font-size: 12px; border-radius: 20px; }
+        .preset-icons-preview { display: flex; gap: 8px; flex-wrap: wrap; background: rgba(0,0,0,0.2); padding: 12px; border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.03); }
+        .preset-icon-mini { width: 40px; height: 40px; background: rgba(0,0,0,0.6); border: 1px solid var(--glass-border); border-radius: 6px; object-fit: contain; padding: 4px; transition: transform 0.2s;}
+        .preset-icon-mini:hover { transform: scale(1.1); }
 
         #global-status {
-            position: fixed; bottom: 20px; right: 20px; background: var(--hd-yellow); color: #000;
-            padding: 10px 20px; font-size: 14px; font-weight: bold; z-index: 999;
-            opacity: 0; transform: translateY(20px); transition: all 0.3s ease; pointer-events: none;
+            position: fixed; bottom: 30px; left: 50%; transform: translate(-50%, 30px);
+            background: rgba(255, 232, 10, 0.9); backdrop-filter: blur(10px); color: var(--hd-black);
+            padding: 12px 24px; font-size: 14px; font-weight: bold; border-radius: 30px; z-index: 999;
+            opacity: 0; transition: var(--transition); pointer-events: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2);
+            text-align: center; white-space: nowrap;
         }
-        #global-status.show { opacity: 1; transform: translateY(0); }
-        #global-status.error { background: var(--hd-red); color: white; }
+        #global-status.show { opacity: 1; transform: translate(-50%, 0); }
+        #global-status.error { background: rgba(255, 69, 58, 0.9); color: white; }
 
-        #confirm-modal {
-            justify-content: center; 
-            align-items: center;
-            background: rgba(0, 0, 0, 0.85); 
-            z-index: 1000;
-        }
         .confirm-box {
-            width: 400px;
-            background: var(--hd-panel);
-            border: 2px solid var(--hd-red);
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 0 20px rgba(255, 42, 42, 0.2);
+            width: 380px; background: var(--glass-panel-hover); border: 1px solid var(--glass-border);
+            border-radius: var(--radius-xl); display: flex; flex-direction: column; overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05) inset;
+            backdrop-filter: blur(20px); margin: auto;
         }
-        .confirm-header {
-            padding: 12px 20px;
-            background: var(--hd-black);
-            border-bottom: 2px solid var(--hd-red);
-            color: var(--hd-red);
-            font-size: 18px;
-        }
-        .confirm-body {
-            padding: 30px 20px;
-            text-align: center;
-            font-size: 16px;
-            color: var(--hd-white);
-            font-family: 'Segoe UI', sans-serif;
-            font-weight: bold;
-        }
-        .confirm-footer {
-            display: flex;
-            gap: 15px;
-            padding: 15px 20px;
-            background: var(--hd-black);
-            border-top: 1px solid var(--hd-gray);
-        }
-        .btn-danger {
-            background-color: var(--hd-red);
-            color: white;
-            border-color: var(--hd-red);
-        }
-        .btn-danger:hover {
-            background-color: white;
-            color: var(--hd-red);
-            border-color: white;
-        }
-        .set-input {
-            background: var(--hd-black); border: 2px solid var(--hd-gray);
-            color: var(--hd-white); padding: 8px 15px; font-size: 14px; outline: none;
-            width: 100px; font-family: 'Segoe UI', sans-serif; text-align: center;
-        }
-        .set-input:focus { border-color: var(--hd-yellow); }
-        .set-input-wide { width: 100%; text-align: left; }
+        .confirm-header { padding: 16px 24px; background: rgba(255,69,58,0.1); color: var(--hd-red); font-size: 16px; font-weight: bold; text-align: center; border-bottom: 1px solid rgba(255,69,58,0.2); }
+        .confirm-body { padding: 30px 24px; text-align: center; font-size: 15px; color: var(--hd-text-primary); font-weight: 500; line-height: 1.5;}
+        .confirm-footer { display: flex; gap: 12px; padding: 16px 24px; background: rgba(0,0,0,0.2); border-top: 1px solid var(--glass-border); }
+        .confirm-footer .btn-square { flex: 1; border-radius: var(--radius-md); padding: 10px; }
         
-        select.set-input { cursor: pointer; appearance: none; }
-        
-        .file-upload-box {
-            display: flex; gap: 10px; align-items: center; width: 100%;
-        }
-        .file-upload-btn {
-            background: var(--hd-gray); color: var(--hd-white); border: 2px solid var(--hd-gray);
-            padding: 8px 15px; cursor: pointer; transition: 0.2s; font-size: 14px; flex-shrink: 0;
-        }
-        .file-upload-btn:hover { background: var(--hd-yellow); color: var(--hd-black); border-color: var(--hd-yellow); }
-        #add-strat-preview { width: 40px; height: 40px; object-fit: contain; border: 1px solid var(--hd-gray); background: #000; display: none; }
+        .btn-danger { background-color: var(--hd-red); color: white; border-color: var(--hd-red); box-shadow: 0 4px 10px rgba(255,69,58,0.3); }
+        .btn-danger:hover { background-color: #ff5b52; border-color: #ff5b52; transform: translateY(-1px); }
 
-        .hint-text {
-            font-size: 12px; color: var(--hd-light-gray); text-align: center; 
-            margin-top: 10px; font-family: 'Segoe UI', sans-serif;
+        .file-upload-box { display: flex; gap: 12px; align-items: center; max-width: 300px; justify-content: flex-end;}
+        .file-upload-btn {
+            background: rgba(0,0,0,0.4); color: var(--hd-text-primary); border: 1px dashed var(--glass-border); border-radius: var(--radius-sm);
+            padding: 10px 20px; cursor: pointer; transition: var(--transition); font-size: 13px; flex-shrink: 0; font-weight: 600;
         }
+        .file-upload-btn:hover { background: var(--hd-yellow-alpha); color: var(--hd-yellow); border-color: var(--hd-yellow); }
+        #add-strat-preview { width: 44px; height: 44px; object-fit: contain; border: 1px solid var(--glass-border); border-radius: var(--radius-sm); background: rgba(0,0,0,0.5); display: none; padding: 4px; }
+        .hint-text { font-size: 12px; color: var(--hd-text-secondary); text-align: center; margin-top: 12px; line-height: 1.6; }
     </style>
 </head>
 <body>
@@ -266,9 +305,9 @@
         <div class="title-text" id="txt-app-title">HD2 MACRO TERMINAL</div>
         <div class="titlebar-controls">
             <button class="lang-btn" id="btn-lang" onclick="toggleLanguage()">EN / 中文</button>
-            <button class="window-btn" onclick="window.electronAPI.tray()">▼</button>
-            <button class="window-btn" onclick="window.electronAPI.minimize()">—</button>
-            <button class="window-btn close" onclick="window.electronAPI.close()">✕</button>
+            <button class="window-btn" onclick="window.electronAPI.tray()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
+            <button class="window-btn" onclick="window.electronAPI.minimize()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+            <button class="window-btn close" onclick="window.electronAPI.close()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
         </div>
     </div>
 
@@ -276,19 +315,24 @@
         <div class="top-controls">
             <button class="btn-square" id="btn-top-settings" onclick="openSettings()">GAME SETTINGS</button>
             <button class="btn-square" id="btn-top-presets" onclick="openPresets()">PRESETS</button>
-            <button class="btn-square" id="btn-top-overlay" onclick="window.electronAPI.toggleOverlay()">OVERLAY</button>
+            <button class="btn-square" id="btn-top-overlay" onclick="handleToggleOverlay()">OVERLAY</button>
             <button class="btn-square primary" id="btn-top-lib" onclick="openLibrary()">OPEN LIBRARY</button>
         </div>
         <div class="list-container" id="slots-container"></div>
     </div>
 
+    <!-- Modals -->
     <div id="library-modal" class="modal-overlay">
         <div class="modal-header">
             <div class="modal-title" id="txt-lib-title">STRATAGEM LIBRARY</div>
-            <div style="display: flex; gap: 10px;">
+            <div style="display: flex; gap: 12px;">
                 <button class="btn-square primary" id="btn-lib-add" onclick="openAddStratModal()">+ ADD CUSTOM</button>
                 <button class="btn-square" id="btn-lib-done" onclick="closeModals()">DONE</button>
             </div>
+        </div>
+        <div class="lib-search-container">
+            <input type="text" id="lib-search-input" placeholder="搜索战备名称或外号..." oninput="handleSearch()">
+            <div id="lib-search-hint">你要找的是不是：</div>
         </div>
         <div class="lib-content" id="lib-content"></div>
     </div>
@@ -300,36 +344,144 @@
         </div>
         <div class="settings-content">
             <div class="set-group">
-                <div class="set-title" id="txt-set-overlayTitle">OVERLAY CONTROLS (悬浮窗控制)</div>
+                <div class="set-title" id="txt-set-overlayTitle">OVERLAY APPEARANCE / 悬浮窗外观</div>
                 <div class="set-row">
-                    <div class="set-label" id="txt-set-overlayLabel">If overlay is locked, click here to make it draggable again.</div>
-                    <button class="set-btn" id="btn-set-unlock" style="color:white; border-color: white;" onclick="window.electronAPI.unlockOverlay()">UNLOCK / 解锁悬浮窗</button>
+                    <div class="set-label">
+                        <span id="txt-set-overlayLabel">If overlay is locked, click here to make it draggable.</span>
+                        <span class="set-desc" id="txt-desc-unlock">若悬浮窗处于锁定状态无法拖拽，请点击此处解锁。</span>
+                    </div>
+                    <button class="set-btn" id="btn-set-unlock" style="color:var(--hd-text-primary); border-color: rgba(255,255,255,0.2);" onclick="window.electronAPI.unlockOverlay()">UNLOCK / 解锁</button>
+                </div>
+                <div class="set-row">
+                    <div class="set-label">
+                        <span id="txt-set-opacity">OPACITY / 透明度</span>
+                        <span class="set-desc" id="txt-desc-opacity">调整游戏内悬浮窗的背景透明度。</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <input type="range" id="input-set-opacity" min="10" max="100" value="100" oninput="document.getElementById('opacity-val').innerText = this.value + '%'">
+                        <span id="opacity-val" style="width: 40px; text-align: right; font-size: 13px;">100%</span>
+                    </div>
+                </div>
+                <div class="set-row">
+                    <div class="set-label">
+                        <span id="txt-set-size">SIZE (W x H) / 宽高尺寸</span>
+                        <span class="set-desc" id="txt-desc-size">自定义悬浮窗在屏幕上的宽和高像素大小。</span>
+                    </div>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <input type="number" id="input-set-w" class="set-input" placeholder="300" style="width: 80px;" min="100" max="1000">
+                        <span>x</span>
+                        <input type="number" id="input-set-h" class="set-input" placeholder="550" style="width: 80px;" min="100" max="800">
+                    </div>
+                </div>
+                <div class="set-row">
+                    <div class="set-label">
+                        <span id="txt-set-style">HOTKEY STYLE / 按键样式</span>
+                        <span class="set-desc" id="txt-desc-style">悬浮窗内显示的按键是纯文本还是键帽图标风格。</span>
+                    </div>
+                    <div class="toggle-box">
+                        <div class="toggle-option active" id="style-text" onclick="setOverlayStyle('text')">TEXT (文本)</div>
+                        <div class="toggle-option" id="style-svg" onclick="setOverlayStyle('svg')">ICON (键帽)</div>
+                    </div>
                 </div>
             </div>
+
+            <div class="set-group">
+                <div class="set-title" id="txt-set-overlayCtrlTitle">OVERLAY CONTROLS / 悬浮窗控制</div>
+                <div class="set-row">
+                    <div class="set-label">
+                        <span id="txt-set-ctrlUp">SCROLL UP / 向上选择</span>
+                        <span class="set-desc" id="txt-desc-ovUp">在悬浮窗的战备列表中向上滚动。(留空为默认配置)</span>
+                    </div>
+                    <button class="set-btn" id="btn-set-ovUp" onclick="startSettingBind('ovUp', event)" oncontextmenu="clearSettingBind('ovUp', event)">WheelUp</button>
+                </div>
+                <div class="set-row">
+                    <div class="set-label">
+                        <span id="txt-set-ctrlDown">SCROLL DOWN / 向下选择</span>
+                        <span class="set-desc" id="txt-desc-ovDown">在悬浮窗的战备列表中向下滚动。(留空为默认配置)</span>
+                    </div>
+                    <button class="set-btn" id="btn-set-ovDown" onclick="startSettingBind('ovDown', event)" oncontextmenu="clearSettingBind('ovDown', event)">WheelDown</button>
+                </div>
+                <div class="set-row">
+                    <div class="set-label">
+                        <span id="txt-set-ctrlExec">EXECUTE / 执行选定战备</span>
+                        <span class="set-desc" id="txt-desc-ovExec">一键执行悬浮窗当前选中的战备指令。(留空为默认配置)</span>
+                    </div>
+                    <button class="set-btn" id="btn-set-ovExec" onclick="startSettingBind('ovExec', event)" oncontextmenu="clearSettingBind('ovExec', event)">MouseMiddle</button>
+                </div>
+            </div>
+
             <div class="set-group">
                 <div class="set-title" id="txt-set-menu">STRATAGEM MENU CONTROL</div>
                 <div class="set-row">
-                    <div class="set-label" id="txt-set-menuKey">MENU KEY (DEFAULT CTRL)</div>
+                    <div class="set-label">
+                        <span id="txt-set-menuKey">MENU KEY (DEFAULT CTRL)</span>
+                        <span class="set-desc" id="txt-desc-menuKey">你在游戏内用于呼出战备菜单的按键。</span>
+                    </div>
                     <button class="set-btn" id="btn-set-menuKey" onclick="startSettingBind('menuKey', event)">ControlLeft</button>
                 </div>
                 <div class="set-row">
-                    <div class="set-label" id="txt-set-menuMode">TRIGGER MODE (HOLD / TOGGLE)</div>
+                    <div class="set-label">
+                        <span id="txt-set-menuMode">TRIGGER MODE (HOLD / TOGGLE)</span>
+                        <span class="set-desc" id="txt-desc-menuMode">游戏内的设定：长按呼出，还是按一次切换状态。</span>
+                    </div>
                     <div class="toggle-box">
                         <div class="toggle-option active" id="mode-hold" onclick="setMenuMode('hold')">HOLD</div>
                         <div class="toggle-option" id="mode-toggle" onclick="setMenuMode('toggle')">TOGGLE</div>
                     </div>
                 </div>
                 <div class="set-row">
-                    <div class="set-label" id="txt-set-speed">MACRO SPEED (ms) / 按键速度 (留空为默认 10)</div>
-                    <input type="number" id="input-set-speed" class="set-input" placeholder="10" min="10">
+                    <div class="set-label">
+                        <span id="txt-set-menuDelay">MENU OPEN DELAY / 菜单展开等待 (ms)</span>
+                        <span class="set-desc" id="txt-desc-menuDelay">按下呼出键后，等待多少毫秒再开始输入指令。</span>
+                    </div>
+                    <input type="number" id="input-set-menuDelay" class="set-input" placeholder="100" min="1">
+                </div>
+                <div class="set-row">
+                    <div class="set-label">
+                        <span id="txt-set-pressDelay">PRESS DURATION / 按压时长 (ms)</span>
+                        <span class="set-desc" id="txt-desc-pressDelay">模拟每次按下方向键的持续时间。</span>
+                    </div>
+                    <input type="number" id="input-set-pressDelay" class="set-input" placeholder="10" min="1">
+                </div>
+                <div class="set-row">
+                    <div class="set-label">
+                        <span id="txt-set-intervalDelay">INTERVAL DELAY / 指令间隔 (ms)</span>
+                        <span class="set-desc" id="txt-desc-intervalDelay">松开上一个按键与按下下一个按键之间的间隔时间。</span>
+                    </div>
+                    <input type="number" id="input-set-intervalDelay" class="set-input" placeholder="10" min="1">
                 </div>
             </div>
+
             <div class="set-group">
                 <div class="set-title" id="txt-set-arrows">STRATAGEM INPUT KEYS</div>
-                <div class="set-row"><div class="set-label" id="txt-set-up">UP</div><button class="set-btn" id="btn-set-upKey" onclick="startSettingBind('upKey', event)">W</button></div>
-                <div class="set-row"><div class="set-label" id="txt-set-down">DOWN</div><button class="set-btn" id="btn-set-downKey" onclick="startSettingBind('downKey', event)">S</button></div>
-                <div class="set-row"><div class="set-label" id="txt-set-left">LEFT</div><button class="set-btn" id="btn-set-leftKey" onclick="startSettingBind('leftKey', event)">A</button></div>
-                <div class="set-row"><div class="set-label" id="txt-set-right">RIGHT</div><button class="set-btn" id="btn-set-rightKey" onclick="startSettingBind('rightKey', event)">D</button></div>
+                <div class="set-row">
+                    <div class="set-label">
+                        <span id="txt-set-up">UP</span>
+                        <span class="set-desc" id="txt-desc-upKey">游戏内设定的“上”指令键。</span>
+                    </div>
+                    <button class="set-btn" id="btn-set-upKey" onclick="startSettingBind('upKey', event)">W</button>
+                </div>
+                <div class="set-row">
+                    <div class="set-label">
+                        <span id="txt-set-down">DOWN</span>
+                        <span class="set-desc" id="txt-desc-downKey">游戏内设定的“下”指令键。</span>
+                    </div>
+                    <button class="set-btn" id="btn-set-downKey" onclick="startSettingBind('downKey', event)">S</button>
+                </div>
+                <div class="set-row">
+                    <div class="set-label">
+                        <span id="txt-set-left">LEFT</span>
+                        <span class="set-desc" id="txt-desc-leftKey">游戏内设定的“左”指令键。</span>
+                    </div>
+                    <button class="set-btn" id="btn-set-leftKey" onclick="startSettingBind('leftKey', event)">A</button>
+                </div>
+                <div class="set-row">
+                    <div class="set-label">
+                        <span id="txt-set-right">RIGHT</span>
+                        <span class="set-desc" id="txt-desc-rightKey">游戏内设定的“右”指令键。</span>
+                    </div>
+                    <button class="set-btn" id="btn-set-rightKey" onclick="startSettingBind('rightKey', event)">D</button>
+                </div>
             </div>
         </div>
     </div>
@@ -343,9 +495,9 @@
             <div class="preset-save-bar">
                 <input type="text" id="preset-name-input" placeholder="Enter preset name..." maxlength="20" autocomplete="off">
                 <button class="btn-square primary" id="btn-pre-save" onclick="saveCurrentPreset()" style="flex-grow: 0;">SAVE CURRENT</button>
+                <button class="btn-square" id="btn-pre-import" onclick="openImportModal()" style="flex-grow: 0;">IMPORT CODE</button>
             </div>
-            <div class="preset-list" id="preset-list-container">
-            </div>
+            <div class="preset-list" id="preset-list-container"></div>
         </div>
     </div>
 
@@ -360,7 +512,34 @@
         </div>
     </div>
 
+    <div id="import-modal" class="modal-overlay" style="z-index: 70;">
+        <div class="confirm-box" style="width: 440px; padding: 0;">
+            <div class="confirm-header" id="txt-import-title" style="background: rgba(255, 232, 10, 0.1); color: var(--hd-yellow); border-bottom: 1px solid rgba(255, 232, 10, 0.2);">IMPORT PRESET CODE</div>
+            <div class="confirm-body" style="padding: 24px;">
+                <textarea id="import-code-input" class="set-input set-input-wide" style="width: 100%; height: 100px; resize: none; border-radius: 8px;" placeholder="Paste preset code here..."></textarea>
+            </div>
+            <div class="confirm-footer">
+                <button class="btn-square" id="btn-import-cancel" onclick="closeImportModal()">CANCEL</button>
+                <button class="btn-square primary" id="btn-import-ok" onclick="executeImport()">IMPORT</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="rename-modal" class="modal-overlay" style="z-index: 70;">
+        <div class="confirm-box" style="width: 440px; padding: 0;">
+            <div class="confirm-header" id="txt-rename-title" style="background: rgba(255, 232, 10, 0.1); color: var(--hd-yellow); border-bottom: 1px solid rgba(255, 232, 10, 0.2);">RENAME PRESET</div>
+            <div class="confirm-body" style="padding: 24px;">
+                <input type="text" id="rename-input" class="set-input set-input-wide" style="width: 100%; border-radius: 8px;" placeholder="Enter new name..." autocomplete="off">
+            </div>
+            <div class="confirm-footer">
+                <button class="btn-square" id="btn-rename-cancel" onclick="closeRenameModal()">CANCEL</button>
+                <button class="btn-square primary" id="btn-rename-ok" onclick="executeRename()">CONFIRM</button>
+            </div>
+        </div>
+    </div>
+
     <div id="global-status">状态提示</div>
+    
     <div id="add-strat-modal" class="modal-overlay" style="z-index: 60;">
         <div class="modal-header">
             <div class="modal-title" id="txt-add-title">ADD CUSTOM STRATAGEM</div>
@@ -369,257 +548,441 @@
         <div class="settings-content">
             <div class="set-group">
                 <div class="set-row">
-                    <div class="set-label" id="txt-add-cat">CATEGORY / 分类</div>
+                    <div class="set-label">
+                        <span id="txt-add-cat">CATEGORY / 分类</span>
+                        <span class="set-desc" id="txt-desc-addCat">选择该战备所属的分类库。</span>
+                    </div>
                     <select id="add-strat-cat" class="set-input set-input-wide">
-                        <option value="support">支援武器 / SUPPORT WEAPONS</option>
-                        <option value="orbital">轨道系 / ORBITAL STRIKES</option>
-                        <option value="eagle">飞鹰系 / EAGLE STRIKES</option>
-                        <option value="emplacement">防御系 / EMPLACEMENTS</option>
-                        <option value="sentry">哨戒炮 / SENTRIES</option>
-                        <option value="backpack">背包 / BACKPACKS</option>
-                        <option value="vehicle">载具 / VEHICLES</option>
-                        <option value="mission">任务通用 / MISSION</option>
+                        <option value="support" id="opt-cat-support">支援武器</option>
+                        <option value="orbital" id="opt-cat-orbital">轨道系</option>
+                        <option value="eagle" id="opt-cat-eagle">飞鹰系</option>
+                        <option value="emplacement" id="opt-cat-emplacement">防御系</option>
+                        <option value="sentry" id="opt-cat-sentry">哨戒炮</option>
+                        <option value="backpack" id="opt-cat-backpack">背包</option>
+                        <option value="vehicle" id="opt-cat-vehicle">载具</option>
+                        <option value="mission" id="opt-cat-mission">任务通用</option>
                     </select>
                 </div>
                 <div class="set-row">
-                    <div class="set-label" id="txt-add-icon">ICON (SVG) / 图标</div>
+                    <div class="set-label">
+                        <span id="txt-add-icon">ICON (SVG) / 图标</span>
+                        <span class="set-desc" id="txt-desc-addIcon">上传战备图标，推荐使用透明背景的 SVG 或 PNG。</span>
+                    </div>
                     <div class="file-upload-box">
+                        <img id="add-strat-preview">
                         <label class="file-upload-btn">
                             <span id="txt-add-upload">CHOOSE FILE</span>
                             <input type="file" id="add-strat-icon" accept=".svg, .png, .jpg" style="display: none;" onchange="handleSvgUpload(event)">
                         </label>
-                        <img id="add-strat-preview">
                     </div>
                 </div>
                 <div class="set-row">
-                    <div class="set-label" id="txt-add-name-zh">NAME (ZH) / 中文名</div>
+                    <div class="set-label">
+                        <span id="txt-add-name-zh">NAME (ZH) / 中文名</span>
+                        <span class="set-desc" id="txt-desc-addZh">战备在中文界面下的显示名称。</span>
+                    </div>
                     <input type="text" id="add-strat-name-zh" class="set-input set-input-wide" placeholder="输入中文名称">
                 </div>
                 <div class="set-row">
-                    <div class="set-label" id="txt-add-name-en">NAME (EN) / 英文名</div>
+                    <div class="set-label">
+                        <span id="txt-add-name-en">NAME (EN) / 英文名</span>
+                        <span class="set-desc" id="txt-desc-addEn">战备在英文界面下的显示名称。</span>
+                    </div>
                     <input type="text" id="add-strat-name-en" class="set-input set-input-wide" placeholder="Enter English name">
                 </div>
-                <div class="set-row">
-                    <div class="set-label" id="txt-add-seq">SEQUENCE / 指令键位 (W A S D)</div>
-                    <input type="text" id="add-strat-seq" class="set-input set-input-wide" placeholder="例如: W A S D W (不区分大小写)">
+                <div class="set-row" style="border-bottom: none;">
+                    <div class="set-label">
+                        <span id="txt-add-seq">SEQUENCE / 指令序列</span>
+                        <span class="set-desc" id="txt-desc-addSeq">请使用 W A S D 字母输入指令，忽略大小写。</span>
+                    </div>
+                    <input type="text" id="add-strat-seq" class="set-input set-input-wide" placeholder="例如: W A S D">
                 </div>
-                <button class="btn-square primary" id="btn-add-save" style="margin-top: 15px;" onclick="saveCustomStratagem()">SAVE / 保存并添加</button>
-                <div class="hint-text" id="txt-add-hint">提示：在战备库中，对自定义战备点击右键即可将其删除。建议前往绝地潜兵WIKI获取SVG图标：https://helldivers.wiki.gg/wiki/Stratagems</div>
             </div>
+            
+            <button class="btn-square primary" id="btn-add-save" style="margin-top: 10px; width: 100%; height: 50px; font-size: 15px;" onclick="saveCustomStratagem()">SAVE / 保存并添加</button>
+            <div class="hint-text" id="txt-add-hint">提示：在战备库中，对自定义战备点击右键即可将其删除。</div>
         </div>
     </div>
 
     <script>
-
         let currentLang = 'zh';
 
         const i18n = {
             zh: {
-                btnOverlay: "悬浮窗",
-                setOverlayTitle: "悬浮窗控制",
-                setOverlayLabel: "如果悬浮窗已锁定，点击此处恢复可拖拽状态。",
-                btnUnlock: "解锁",
-                appTitle: "绝地潜兵2 战备触发器", btnSettings: "游戏设置", btnPresets: "预设管理", btnOpenLib: "打开战备库",
+                // UI
+                btnOverlay: "悬浮窗", setOverlayTitle: "悬浮窗外观", setOverlayLabel: "如果悬浮窗已锁定，点击此处恢复可拖拽状态。",
+                btnUnlock: "解锁", appTitle: "绝地潜兵2 战备触发器", btnSettings: "游戏设置", btnPresets: "预设管理", btnOpenLib: "打开战备库",
                 emptySlot: "空置槽位 (点击前往战备库添加)", clickToBind: "点击绑定", waiting: "等待输入...",
                 unboundSub: "未绑定触发键", bindSub: "请按下按键 (ESC取消)", boundSub: "右键点击清除绑定",
-                libTitle: "战备配置档案库", btnDone: "完成",
-                setMenu: "战备菜单控制", setMenuKey: "呼出战备栏按键", setMenuMode: "呼出模式 (长按 / 切换)",
-                modeHold: "长按", modeToggle: "切换",
-                setArrows: "战备指令输入键位", up: "上", down: "下", left: "左", right: "右",
-                saveClose: "保存并关闭",
+                libTitle: "战备配置档案库", btnDone: "完成", dragHint: "按住拖动排序 (不改变键位)",
+                searchPh: "搜索战备名称或外号...", searchHint: "你要找的是不是：",
+                setMenu: "战备菜单控制", setMenuKey: "呼出战备栏按键", setMenuMode: "呼出模式", modeHold: "按住", modeToggle: "切换",
+                setArrows: "战备指令输入键位", up: "上", down: "下", left: "左", right: "右", saveClose: "保存并关闭",
                 preTitle: "战备预设管理", btnSaveCurrent: "保存当前装配", phPresetName: "输入预设名称...", btnLoad: "加载", btnDel: "删除",
-                cat_support: "支援武器", cat_orbital: "轨道系", cat_eagle: "飞鹰系",
-                cat_emplacement: "防御系", cat_sentry: "哨戒炮", cat_backpack: "背包",
-                cat_vehicle: "载具", cat_mission: "任务通用",
-                msgFull: "配置槽位已满 (9/9)", msgClear: "已清除快捷键", msgMacro: "绑定成功:", msgKey: "键位设定成功:",
-                msgConfirm: "该键位已被绑定，是否顶替？", msgExec: ">>> 执行战备", msgSetSaved: "游戏设置已保存至缓存",
-                msgEnterName: "请输入预设名称", msgEmptyLoadout: "当前装配为空，无法保存", msgPreSaved: "预设已成功保存",
-                msgPreLoaded: "预设已加载", msgConfirmDel: "警告：确定要删除此预设吗？",
-                btnAddCustom: "+ 自定义战备", setSpeed: "按键间隔速度 (ms, 留空为默认 10)", 
-                addTitle: "添加自定义战备", addCat: "战备分类", addIcon: "战备图标 (.svg)",
-                uploadBtn: "选择文件", nameZh: "中文名称", nameEn: "英文名称",
-                addSeq: "指令序列 (输入W A S D)", addSave: "保存并添加", msgInvalidSeq: "序列只能包含W A S D",
-                msgFillAll: "请填写名称、分类和指令序列", msgCustomSaved: "自定义战备已添加！",
-                addHint: "提示：在战备库中，对自定义战备点击右键即可将其删除。建议前往绝地潜兵WIKI获取SVG图标：https://helldivers.wiki.gg/wiki/Stratagems",
-                msgConfirmDelCustom: "警告：确定要删除该自定义战备吗？"
+                cat_support: "支援武器", cat_orbital: "轨道系", cat_eagle: "飞鹰系", cat_emplacement: "防御系", cat_sentry: "哨戒炮", cat_backpack: "背包", cat_vehicle: "载具", cat_mission: "任务通用",
+                
+                // 口令
+                btnImport: "导入口令", btnExport: "口令导出", msgExported: "预设口令已复制到剪贴板！",
+                msgImportSuccess: "预设导入成功！", msgImportFailed: "导入失败：口令格式错误或无效",
+                importTitle: "导入预设口令", importPh: "在此粘贴预设口令...",
+                sharePrefix: "我向你分享了一段战备预设口令，使用战备触发器导入后查看！（{code}）",
+                btnUpdate: "覆盖", btnRename: "重命名",
+                msgConfirmUpdate: "警告：确定要使用当前装配覆盖此预设吗？",
+                msgPreUpdated: "预设已成功覆盖", msgPreRenamed: "预设已重命名",
+                renameTitle: "重命名预设",
+
+                // 提示
+                msgFull: "配置槽位已满 (9/9)", msgClear: "已清除快捷键", msgMacro: "绑定成功:", msgKey: "键位设定成功:", msgConfirm: "该键位已被绑定，是否顶替？", msgExec: ">>> 执行战备", msgSetSaved: "游戏设置已保存",
+                msgEnterName: "请输入预设名称", msgEmptyLoadout: "当前装配为空，无法保存", msgPreSaved: "预设已成功保存", msgPreLoaded: "预设已加载并同步悬浮窗", msgConfirmDel: "警告：确定要删除此预设吗？", msgPresetExists: "保存失败：该预设名称已存在！",
+                btnAddCustom: "+ 自定义战备",
+                setMenuDelay: "菜单展开等待 (ms)", setPressDelay: "按压时长 (ms)", setIntervalDelay: "指令间隔 (ms)",
+                
+                // 自定义
+                addTitle: "添加自定义战备", addCat: "战备分类", addIcon: "战备图标", uploadBtn: "选择文件", nameZh: "中文名称", nameEn: "英文名称",
+                addSeq: "指令序列 (输入W A S D)", addSave: "保存并添加", msgInvalidSeq: "序列只能包含W A S D", msgFillAll: "请填写名称、分类和指令序列", msgCustomSaved: "自定义战备已添加！",
+                addHint: "提示：在战备库中，对自定义战备点击右键即可将其删除。", msgConfirmDelCustom: "警告：确定要删除该自定义战备吗？",
+                addNameZhPh: "输入中文名称", addNameEnPh: "输入英文名称", addSeqPh: "例如:WDSSS",
+                
+                // 悬浮窗
+                ovOpacity: "透明度", ovSize: "宽高尺寸", ovStyle: "按键样式", ovText: "文本", ovIcon: "图标",
+                ovCtrlTitle: "悬浮窗控制", ovCtrlUp: "向上选择", ovCtrlDown: "向下选择", ovCtrlExec: "执行选定战备",
+                
+                // 设置说明
+                descUnlock: "悬浮窗处于锁定状态时,请点击此处解锁", descOpacity: "调整悬浮窗背景的透明度", descSize: "自定义悬浮窗的宽高数值", descStyle: "自定义悬浮窗内显示的按键风格",
+                descOvUp: "设置悬浮窗选中框向上移动的按键(留空为默认配置)", descOvDown: "设置悬浮窗选中框向下移动的按键(留空为默认配置)", descOvExec: "一键执行悬浮窗当前选中的战备指令。(留空为默认配置)",
+                descMenuKey: "在此设定你在游戏内用于呼出战备菜单的按键", descMenuMode: "在此选择你游戏内的设定", descMenuDelay: "按下呼出键后，等待多少毫秒再开始输入指令", descPressDelay: "模拟每次按下方向键的持续时间",
+                descIntervalDelay: "松开上一个按键与按下下一个按键之间的间隔时间", descUpKey: "游戏设定的“上”指令键", descDownKey: "游戏设定的“下”指令键", descLeftKey: "游戏设定的“左”指令键", descRightKey: "游戏设定的“右”指令键",
+                descAddCat: "该战备所属的分类", descAddIcon: "上传战备图标，推荐使用SVG或PNG", descAddZh: "战备在中文界面下的显示名称", descAddEn: "战备在英文界面下的显示名称", descAddSeq: "请使用 WASD 字母输入指令，忽略大小写"
             },
             en: {
-                btnOverlay: "OVERLAY",
-                setOverlayTitle: "OVERLAY CONTROLS",
-                setOverlayLabel: "If overlay is locked, click here to make it draggable again.",
-                btnUnlock: "UNLOCK OVERLAY",
-                appTitle: "HD2 Trigger", btnSettings: "GAME SETTINGS", btnPresets: "PRESETS", btnOpenLib: "OPEN LIBRARY",
+                // UI
+                btnOverlay: "OVERLAY", setOverlayTitle: "OVERLAY APPEARANCE", setOverlayLabel: "If overlay is locked, click here to make it draggable again.",
+                btnUnlock: "UNLOCK OVERLAY", appTitle: "HD2 Trigger", btnSettings: "GAME SETTINGS", btnPresets: "PRESETS", btnOpenLib: "OPEN LIBRARY",
                 emptySlot: "EMPTY SLOT (CLICK TO ADD)", clickToBind: "CLICK TO BIND", waiting: "WAITING...",
                 unboundSub: "NO HOTKEY BOUND", bindSub: "PRESS KEY (ESC CANCEL)", boundSub: "RIGHT CLICK TO CLEAR",
-                libTitle: "STRATAGEM LIBRARY", btnDone: "DONE",
-                setMenu: "STRATAGEM MENU CONTROL", setMenuKey: "MENU KEY", setMenuMode: "TRIGGER MODE (HOLD / TOGGLE)",
-                modeHold: "HOLD", modeToggle: "TOGGLE",
-                setArrows: "STRATAGEM INPUT KEYS", up: "UP", down: "DOWN", left: "LEFT", right: "RIGHT",
-                saveClose: "SAVE & CLOSE",
+                libTitle: "STRATAGEM LIBRARY", btnDone: "DONE", dragHint: "Hold and drag to reorder",
+                searchPh: "Search by name...", searchHint: "Did you mean:",
+                setMenu: "STRATAGEM MENU CONTROL", setMenuKey: "MENU KEY", setMenuMode: "TRIGGER MODE (HOLD / TOGGLE)", modeHold: "HOLD", modeToggle: "TOGGLE",
+                setArrows: "STRATAGEM INPUT KEYS", up: "UP", down: "DOWN", left: "LEFT", right: "RIGHT", saveClose: "SAVE & CLOSE",
                 preTitle: "LOADOUT PRESETS", btnSaveCurrent: "SAVE CURRENT", phPresetName: "Enter preset name...", btnLoad: "LOAD", btnDel: "DELETE",
-                cat_support: "SUPPORT WEAPONS", cat_orbital: "ORBITAL STRIKES", cat_eagle: "EAGLE STRIKES",
-                cat_emplacement: "EMPLACEMENTS", cat_sentry: "SENTRIES", cat_backpack: "BACKPACKS",
-                cat_vehicle: "VEHICLES", cat_mission: "MISSION / GENERAL",
-                msgFull: "SLOTS FULL (9/9)", msgClear: "HOTKEY CLEARED", msgMacro: "MACRO BOUND:", msgKey: "KEY ASSIGNED:",
-                msgConfirm: "KEY IN USE. REPLACE IT?", msgExec: ">>> EXECUTE MACRO", msgSetSaved: "SETTINGS SAVED TO CACHE",
-                msgEnterName: "PLEASE ENTER A PRESET NAME", msgEmptyLoadout: "LOADOUT IS EMPTY", msgPreSaved: "PRESET SAVED SUCCESSFULLY",
-                msgPreLoaded: "PRESET LOADED", msgConfirmDel: "WARNING: DELETE THIS PRESET?",
-                btnAddCustom: "+ ADD CUSTOM", setSpeed: "MACRO SPEED (ms, empty for default 10)",
-                addTitle: "ADD CUSTOM STRATAGEM", addCat: "CATEGORY", addIcon: "ICON (.svg)",
-                uploadBtn: "CHOOSE FILE", nameZh: "NAME (ZH)", nameEn: "NAME (EN)",
-                addSeq: "SEQUENCE (USE W A S D)", addSave: "SAVE & ADD", msgInvalidSeq: "Sequence must only contain W, A, S, D",
-                msgFillAll: "Please fill names, category and sequence", msgCustomSaved: "Custom stratagem added!",
-                addHint: "Hint: Right-click a custom stratagem in the Library to delete it.It is recommended to visit the Helldivers Wiki for SVG icons: https://helldivers.wiki.gg/wiki/Stratagems",
-                msgConfirmDelCustom: "WARNING: Delete this custom stratagem?"
+                cat_support: "SUPPORT WEAPONS", cat_orbital: "ORBITAL STRIKES", cat_eagle: "EAGLE STRIKES", cat_emplacement: "EMPLACEMENTS", cat_sentry: "SENTRIES", cat_backpack: "BACKPACKS", cat_vehicle: "VEHICLES", cat_mission: "MISSION / GENERAL",
+                
+                // 预设口令
+                btnImport: "IMPORT CODE", btnExport: "EXPORT CODE", msgExported: "Preset code copied to clipboard!",
+                msgImportSuccess: "Preset imported successfully!", msgImportFailed: "Import failed: Invalid code format",
+                importTitle: "IMPORT PRESET CODE", importPh: "Paste preset code here...",
+                sharePrefix: "I shared a loadout preset code with you, import it in HD2 Trigger to view! ({code})",
+                btnUpdate: "OVERWRITE", btnRename: "RENAME",
+                msgConfirmUpdate: "WARNING: Overwrite this preset with current loadout?",
+                msgPreUpdated: "PRESET OVERWRITTEN SUCCESSFULLY", msgPreRenamed: "PRESET RENAMED SUCCESSFULLY",
+                renameTitle: "RENAME PRESET",
+
+                // 提示
+                msgFull: "SLOTS FULL (9/9)", msgClear: "HOTKEY CLEARED", msgMacro: "MACRO BOUND:", msgKey: "KEY ASSIGNED:", msgConfirm: "KEY IN USE. REPLACE IT?", msgExec: ">>> EXECUTE MACRO", msgSetSaved: "SETTINGS SAVED",
+                msgEnterName: "PLEASE ENTER A PRESET NAME", msgEmptyLoadout: "LOADOUT IS EMPTY", msgPreSaved: "PRESET SAVED SUCCESSFULLY", msgPreLoaded: "PRESET LOADED AND SYNCED", msgConfirmDel: "WARNING: DELETE THIS PRESET?", msgPresetExists: "FAILED: PRESET NAME ALREADY EXISTS!",
+                btnAddCustom: "+ ADD CUSTOM",
+                setMenuDelay: "MENU OPEN DELAY (ms)", setPressDelay: "PRESS DURATION (ms)", setIntervalDelay: "INTERVAL DELAY (ms)",
+                
+                // 自定义战备
+                addTitle: "ADD CUSTOM STRATAGEM", addCat: "CATEGORY", addIcon: "ICON (.svg)", uploadBtn: "CHOOSE FILE", nameZh: "NAME (ZH)", nameEn: "NAME (EN)",
+                addSeq: "SEQUENCE (USE W A S D)", addSave: "SAVE & ADD", msgInvalidSeq: "Sequence must only contain W, A, S, D", msgFillAll: "Please fill names, category and sequence", msgCustomSaved: "Custom stratagem added!",
+                addHint: "Hint: Right-click a custom stratagem in the Library to delete it.", msgConfirmDelCustom: "WARNING: Delete this custom stratagem?",
+                addNameZhPh: "Enter Chinese name", addNameEnPh: "Enter English name", addSeqPh: "e.g. W A S D",
+                
+                // 悬浮窗
+                ovOpacity: "OPACITY", ovSize: "SIZE (W x H)", ovStyle: "HOTKEY STYLE", ovText: "TEXT", ovIcon: "ICON",
+                ovCtrlTitle: "OVERLAY CONTROLS", ovCtrlUp: "SCROLL UP", ovCtrlDown: "SCROLL DOWN", ovCtrlExec: "EXECUTE SELECTION",
+                
+                // 设置说明
+                descUnlock: "Click if the overlay window cannot be dragged.", descOpacity: "Adjust the background transparency of the overlay.", descSize: "Set the width and height of the overlay on screen.", descStyle: "Display hotkeys as plain text or keycap style icons.",
+                descOvUp: "Scroll up the stratagem list in the overlay. (Leave empty for default)", descOvDown: "Scroll down the stratagem list in the overlay. (Leave empty for default)", descOvExec: "Execute the currently selected stratagem in the overlay. (Leave empty for default)",
+                descMenuKey: "The key used to open the stratagem menu in-game.", descMenuMode: "Hold the key to keep menu open, or press once to toggle.", descMenuDelay: "Time to wait after opening the menu before typing commands.", descPressDelay: "How long each directional key is held down.",
+                descIntervalDelay: "Time between releasing one key and pressing the next.", descUpKey: "In-game directional key mapped to UP.", descDownKey: "In-game directional key mapped to DOWN.", descLeftKey: "In-game directional key mapped to LEFT.", descRightKey: "In-game directional key mapped to RIGHT.",
+                descAddCat: "Select the library category for this stratagem.", descAddIcon: "Upload an icon, SVG or PNG with transparent background recommended.", descAddZh: "Display name in the Chinese interface.", descAddEn: "Display name in the English interface.", descAddSeq: "Use letters W A S D to input sequence, case-insensitive."
             }
         };
 
         const defaultStratagemDB = [
+            { id:'wpn_mg', grp:'support', name:{zh:'MG-43 机枪',en:'MG-43 Machine Gun'}, aliases:['机枪'], seq:['S','A','S','W','D'] , icon: 'Machine_Gun_Stratagem_Icon.svg'},
+            { id:'wpn_eat', grp:'support', name:{zh:'EAT-17 消耗性反坦克武器',en:'EAT-17 Expendable Anti-Tank'}, aliases:['筒子', '次抛', 'eat'], seq:['S','S','A','W','D'], icon: 'Expendable_Anti-Tank_Stratagem_Icon.svg'},
+            { id:'wpn_stalwart', grp:'support', name:{zh:'M-105 盟友',en:'M-105 Stalwart'}, aliases:['盟友', '小机枪'], seq:['S','A','S','W','W','A'], icon: 'Stalwart_Stratagem_Icon.svg' },
+            { id:'wpn_laser', grp:'support', name:{zh:'LAS-98 激光大炮',en:'LAS-98 Laser Cannon'}, aliases:['激光炮'], seq:['S','A','S','W','A'] , icon: 'Laser_Cannon_Stratagem_Icon.svg'},
+            { id:'wpn_amr', grp:'support', name:{zh:'APW-1 反器材步枪',en:'APW-1 Anti-Materiel Rifle'}, aliases:['大狙', '反器材'], seq:['S','A','D','W','S'], icon: 'Anti-Materiel_Rifle_Stratagem_Icon.svg' },
+            { id:'wpn_rr', grp:'support', name:{zh:'GR-8 无后坐力炮',en:'GR-8 Recoilless Rifle'}, aliases:['无后座'], seq:['S','A','D','D','A'] , icon: 'Recoilless_Rifle_Stratagem_Icon.svg'},
+            { id:'wpn_gl', grp:'support', name:{zh:'GL-21 榴弹发射器',en:'GL-21 Grenade Launcher'}, aliases:['榴弹'], seq:['S','A','W','A','S'] , icon: 'Grenade_Launcher_Stratagem_Icon.svg'},
+            { id:'wpn_flame', grp:'support', name:{zh:'FLAM-40 火焰喷射器',en:'FLAM-40 Flamethrower'}, aliases:['喷火器'], seq:['S','A','W','S','W'] , icon: 'Flamethrower_Stratagem_Icon.svg'},
+            { id:'wpn_hmg', grp:'support', name:{zh:'MG-206 重机枪',en:'MG-206 Heavy Machine Gun'}, aliases:['重机枪'], seq:['S','A','W','S','S'] , icon: 'Heavy_Machine_Gun_Stratagem_Icon.svg'},
+            { id:'wpn_ac', grp:'support', name:{zh:'AC-8 机炮',en:'AC-8 Autocannon'}, aliases:['机炮'], seq:['S','A','S','W','W','D'] , icon: 'Autocannon_Stratagem_Icon.svg'},
+            { id:'wpn_arc', grp:'support', name:{zh:'ARC-3 电弧发射器',en:'ARC-3 Arc Thrower'}, aliases:['电弧', '杨永信'], seq:['S','D','S','W','A','A'] , icon: 'Arc_Thrower_Stratagem_Icon.svg'},
+            { id:'wpn_quasar', grp:'support', name:{zh:'LAS-99类星体加农炮',en:'LAS-99 Quasar Cannon'}, aliases:['类星体'], seq:['S','S','W','A','D'] , icon: 'Quasar_Cannon_Stratagem_Icon.svg'},
+            { id:'wpn_airburst', grp:'support', name:{zh:'RL-77 空爆火箭弹发射器',en:'RL-77 Airburst Rocket Launcher'}, aliases:['空爆'], seq:['S','W','W','A','D'], icon: 'Airburst_Rocket_Launcher_Stratagem_Icon.svg'},
+            { id:'wpn_commando', grp:'support', name:{zh:'MLS-4X 突击兵',en:'MLS-4X Commando'}, aliases:['突击兵'], seq:['S','A','W','S','D'], icon: 'Commando_Stratagem_Icon.svg' },
+            { id:'wpn_spear', grp:'support', name:{zh:'FAF-14 飞矛',en:'FAF-14 Spear'}, aliases:['飞矛', '长矛'], seq:['S','S','W','S','S'] , icon: 'Spear_Stratagem_Icon.svg'},
+            { id:'wpn_railgun', grp:'support', name:{zh:'RS-422 磁轨炮',en:'RS-422 Railgun'}, aliases:['磁轨炮', '电磁炮'], seq:['S','D','S','W','A','D'] , icon: 'Railgun_Stratagem_Icon.svg'},
+            { id:'wpn_wasp', grp:'support', name:{zh:'StA-X3 W.A.S.P. 发射器',en:'StA-X3 W.A.S.P. Launcher'}, aliases:['wasp', '蜂'], seq:['S','S','W','S','D'] , icon: 'W.A.S.P._Launcher_Stratagem_Icon.svg'},
+            { id:'wpn_breach', grp:'support', name:{zh:'CQC-20 破门锤',en:'CQC-20 Breaching Hammer'}, aliases:['破门锤', '大锤', '锤子'], seq:['S','A','D','A','W'] , icon: 'Breaching_Hammer_Stratagem_Icon.svg'},
+            { id:'wpn_epoch', grp:'support', name:{zh:'PLAS-45 纪元',en:'PLAS-45 Epoch'}, aliases:['纪元'], seq:['S','A','W','A','D'] , icon: 'Epoch_Stratagem_Icon.svg'},
+            { id:'wpn_speargun', grp:'support', name:{zh:'S-11 矛枪',en:'S-11 Speargun'}, aliases:['矛枪'], seq:['S','D','S','A','W','D'] , icon: 'Speargun_Stratagem_Icon.svg'},
+            { id:'wpn_defoliator', grp:'support', name:{zh:'CQC-9 除叶工具',en:'CQC-9 Defoliation Tool'}, aliases:['电锯'], seq:['S','A','D','D','S'], icon: 'Defoliation_Tool_Stratagem_Icon.svg' },
+            { id:'wpn_leveller', grp:'support', name:{zh:'EAT-411 荡平者',en:'EAT-411 Leveller'}, aliases:['荡平者','大通牒'], seq:['S','S','A','W','S'] , icon: 'Leveller_Stratagem_Icon.svg'},
+            { id:'wpn_sterilizer', grp:'support', name:{zh:'TX-41 灭菌器',en:'TX-41 Sterilizer'}, aliases:['灭菌器', '毒喷'], seq:['S','A','W','S','A'] , icon: 'Sterilizer_Stratagem_Icon.svg'},
+            { id:'wpn_deescalator', grp:'support', name:{zh:'GL-52 缓和使者',en:'GL-52 De-Escalator'}, aliases:['电榴'], seq:['S','D','W','A','D'] , icon: 'De-Escalator_Stratagem_Icon.svg'},
+            { id:'wpn_napalm', grp:'support', name:{zh:'EAT-700 消耗性凝固汽油弹',en:'EAT-700 Expendable Napalm'}, aliases:['凝固汽油弹', '火筒'], seq:['S','S','A','W','A'], icon: 'Expendable_Napalm_Stratagem_Icon.svg' },
+            { id:'wpn_beltgl', grp:'support', name:{zh:'GL-28 弹链式榴弹发射器',en:'GL-28 Belt-Fed Grenade Launcher'}, aliases:['弹链榴'], seq:['S','A','W','A','W','W'] , icon: 'Belt-Fed_Grenade_Launcher_Stratagem_Icon.svg'},
+            { id:'wpn_maxigun', grp:'support', name:{zh:'M-1000 重装机枪',en:'M-1000 Maxigun'}, aliases:['加特林'], seq:['S','A','D','S','W','W'] , icon: 'Maxigun_Stratagem_Icon.svg'},
+            { id:'wpn_silo', grp:'support', name:{zh:'MS-11 单兵导弹发射井',en:'MS-11 Solo Silo'}, aliases:['发射井'], seq:['S','W','D','S','S'] , icon: 'Solo_Silo_Stratagem_Icon.svg'},
+            { id:'wpn_flag', grp:'support', name:{zh:'CQC-1 唯一真旗',en:'CQC-1 One True Flag'}, aliases:['真旗', '旗子'], seq:['S','A','D','D','W'] , icon: 'One_True_Flag_Stratagem_Icon.svg'},
+            { id:'wpn_c4', grp:'support', name:{zh:'B/MD C4背包',en:'B/MD C4 Pack'}, aliases:['c4'], seq:['S','D','W','W','D','W'] , icon: 'C4_Pack_Stratagem_Icon.svg'},
 
-            { id:'wpn_mg', grp:'support', name:{zh:'MG-43 机枪',en:'MG-43 Machine Gun'}, seq:['S','A','S','W','D'] , icon: 'Machine_Gun_Stratagem_Icon.svg'},
-            { id:'wpn_eat', grp:'support', name:{zh:'EAT-17 消耗性反坦克武器',en:'EAT-17 Expendable Anti-Tank'}, seq:['S','S','A','W','D'], icon: 'Expendable_Anti-Tank_Stratagem_Icon.svg'},
-            { id:'wpn_stalwart', grp:'support', name:{zh:'M-105 盟友',en:'M-105 Stalwart'}, seq:['S','A','S','W','W','A'], icon: 'Stalwart_Stratagem_Icon.svg' },
-            { id:'wpn_laser', grp:'support', name:{zh:'LAS-98 激光大炮',en:'LAS-98 Laser Cannon'}, seq:['S','A','S','W','A'] , icon: 'Laser_Cannon_Stratagem_Icon.svg'},
-            { id:'wpn_amr', grp:'support', name:{zh:'APW-1 反器材步枪',en:'APW-1 Anti-Materiel Rifle'}, seq:['S','A','D','W','S'], icon: 'Anti-Materiel_Rifle_Stratagem_Icon.svg' },
-            { id:'wpn_rr', grp:'support', name:{zh:'GR-8 无后坐力炮',en:'GR-8 Recoilless Rifle'}, seq:['S','A','D','D','A'] , icon: 'Recoilless_Rifle_Stratagem_Icon.svg'},
-            { id:'wpn_gl', grp:'support', name:{zh:'GL-21 榴弹发射器',en:'GL-21 Grenade Launcher'}, seq:['S','A','W','A','S'] , icon: 'Grenade_Launcher_Stratagem_Icon.svg'},
-            { id:'wpn_flame', grp:'support', name:{zh:'FLAM-40 火焰喷射器',en:'FLAM-40 Flamethrower'}, seq:['S','A','W','S','W'] , icon: 'Flamethrower_Stratagem_Icon.svg'},
-            { id:'wpn_hmg', grp:'support', name:{zh:'MG-206 重机枪',en:'MG-206 Heavy Machine Gun'}, seq:['S','A','W','S','S'] , icon: 'Heavy_Machine_Gun_Stratagem_Icon.svg'},
-            { id:'wpn_ac', grp:'support', name:{zh:'AC-8 机炮',en:'AC-8 Autocannon'}, seq:['S','A','S','W','W','D'] , icon: 'Autocannon_Stratagem_Icon.svg'},
-            { id:'wpn_arc', grp:'support', name:{zh:'ARC-3 电弧发射器',en:'ARC-3 Arc Thrower'}, seq:['S','D','S','W','A','A'] , icon: 'Arc_Thrower_Stratagem_Icon.svg'},
-            { id:'wpn_quasar', grp:'support', name:{zh:'LAS-99类星体加农炮',en:'LAS-99 Quasar Cannon'}, seq:['S','S','W','A','D'] , icon: 'Quasar_Cannon_Stratagem_Icon.svg'},
-            { id:'wpn_airburst', grp:'support', name:{zh:'RL-77 空爆火箭弹发射器',en:'RL-77 Airburst Rocket Launcher'}, seq:['S','W','W','A','D'], icon: 'Airburst_Rocket_Launcher_Stratagem_Icon.svg'},
-            { id:'wpn_commando', grp:'support', name:{zh:'MLS-4X 突击兵',en:'MLS-4X Commando'}, seq:['S','A','W','S','D'], icon: 'Commando_Stratagem_Icon.svg' },
-            { id:'wpn_spear', grp:'support', name:{zh:'FAF-14 飞矛',en:'FAF-14 Spear'}, seq:['S','S','W','S','S'] , icon: 'Spear_Stratagem_Icon.svg'},
-            { id:'wpn_railgun', grp:'support', name:{zh:'RS-422 磁轨炮',en:'RS-422 Railgun'}, seq:['S','D','S','W','A','D'] , icon: 'Railgun_Stratagem_Icon.svg'},
-            { id:'wpn_wasp', grp:'support', name:{zh:'StA-X3 W.A.S.P. 发射器',en:'StA-X3 W.A.S.P. Launcher'}, seq:['S','S','W','S','D'] , icon: 'W.A.S.P._Launcher_Stratagem_Icon.svg'},
-            { id:'wpn_breach', grp:'support', name:{zh:'CQC-20 破门锤',en:'CQC-20 Breaching Hammer'}, seq:['S','A','D','A','W'] , icon: 'Breaching_Hammer_Stratagem_Icon.svg'},
-            { id:'wpn_epoch', grp:'support', name:{zh:'PLAS-45 纪元',en:'PLAS-45 Epoch'}, seq:['S','A','W','A','D'] , icon: 'Epoch_Stratagem_Icon.svg'},
-            { id:'wpn_speargun', grp:'support', name:{zh:'S-11 矛枪',en:'S-11 Speargun'}, seq:['S','D','S','A','W','D'] , icon: 'Speargun_Stratagem_Icon.svg'},
-            { id:'wpn_defoliator', grp:'support', name:{zh:'CQC-9 除叶工具',en:'CQC-9 Defoliation Tool'}, seq:['S','A','D','D','S'], icon: 'Defoliation_Tool_Stratagem_Icon.svg' },
-            { id:'wpn_leveller', grp:'support', name:{zh:'EAT-411 荡平者',en:'EAT-411 Leveller'}, seq:['S','S','A','W','S'] , icon: 'Leveller_Stratagem_Icon.svg'},
-            { id:'wpn_sterilizer', grp:'support', name:{zh:'TX-41 灭菌器',en:'TX-41 Sterilizer'}, seq:['S','A','W','S','A'] , icon: 'Sterilizer_Stratagem_Icon.svg'},
-            { id:'wpn_deescalator', grp:'support', name:{zh:'GL-52 缓和使者',en:'GL-52 De-Escalator'}, seq:['S','D','W','A','D'] , icon: 'De-Escalator_Stratagem_Icon.svg'},
-            { id:'wpn_napalm', grp:'support', name:{zh:'EAT-700 消耗性凝固汽油弹',en:'EAT-700 Expendable Napalm'}, seq:['S','S','A','W','A'], icon: 'Expendable_Napalm_Stratagem_Icon.svg' },
-            { id:'wpn_beltgl', grp:'support', name:{zh:'GL-28 弹链式榴弹发射器',en:'GL-28 Belt-Fed Grenade Launcher'}, seq:['S','A','W','A','W','W'] , icon: 'Belt-Fed_Grenade_Launcher_Stratagem_Icon.svg'},
-            { id:'wpn_maxigun', grp:'support', name:{zh:'M-1000 重装机枪',en:'M-1000 Maxigun'}, seq:['S','A','D','S','W','W'] , icon: 'Maxigun_Stratagem_Icon.svg'},
-            { id:'wpn_silo', grp:'support', name:{zh:'MS-11 单兵导弹发射井',en:'MS-11 Solo Silo'}, seq:['S','W','D','S','S'] , icon: 'Solo_Silo_Stratagem_Icon.svg'},
-            { id:'wpn_flag', grp:'support', name:{zh:'CQC-1 唯一真旗',en:'CQC-1 One True Flag'}, seq:['S','A','D','D','W'] , icon: 'One_True_Flag_Stratagem_Icon.svg'},
-            { id:'wpn_c4', grp:'support', name:{zh:'B/MD C4背包',en:'B/MD C4 Pack'}, seq:['S','D','W','W','D','W'] , icon: 'C4_Pack_Stratagem_Icon.svg'},
+            { id:'orb_precision', grp:'orbital', name:{zh:'轨道精准攻击',en:'Orbital Precision Strike'}, aliases:['精准'], seq:['D','D','W'] , icon: 'Orbital_Precision_Strike_Stratagem_Icon.svg'},
+            { id:'orb_gatling', grp:'orbital', name:{zh:'轨道加特林火力网',en:'Orbital Gatling Barrage'}, aliases:['轨道加特林'], seq:['D','S','A','W','W'] , icon: 'Orbital_Gatling_Barrage_Stratagem_Icon.svg'},
+            { id:'orb_gas', grp:'orbital', name:{zh:'轨道毒气攻击',en:'Orbital Gas Strike'}, aliases:['轨道毒气'], seq:['D','D','S','D'] , icon: 'Orbital_Gas_Strike_Stratagem_Icon.svg'},
+            { id:'orb_120', grp:'orbital', name:{zh:'轨道120mm高爆弹火力网',en:'Orbital 120mm HE Barrage'}, aliases:['120'], seq:['D','D','S','A','D','S'] , icon: 'Orbital_120mm_HE_Barrage_Stratagem_Icon.svg'},
+            { id:'orb_airburst', grp:'orbital', name:{zh:'轨道空爆攻击',en:'Orbital Airburst Strike'}, aliases:['轨道空爆'], seq:['D','D','D'], icon: 'Orbital_Airburst_Strike_Stratagem_Icon.svg' },
+            { id:'orb_smoke', grp:'orbital', name:{zh:'轨道烟雾攻击',en:'Orbital Smoke Strike'}, aliases:['轨道烟雾'], seq:['D','D','S','W'] , icon: 'Orbital_Smoke_Strike_Stratagem_Icon.svg'},
+            { id:'orb_ems', grp:'orbital', name:{zh:'轨道电磁冲击波攻击',en:'Orbital EMS Strike'}, aliases:['轨道电磁'], seq:['D','D','A','S'] , icon: 'Orbital_EMS_Strike_Stratagem_Icon.svg'},
+            { id:'orb_380', grp:'orbital', name:{zh:'轨道380mm高爆弹火力网',en:'Orbital 380mm HE Barrage'}, aliases:['380'], seq:['D','S','W','W','A','S','S'] , icon: 'Orbital_380mm_HE_Barrage_Stratagem_Icon.svg'},
+            { id:'orb_walking', grp:'orbital', name:{zh:'轨道游走火力网',en:'Orbital Walking Barrage'}, aliases:['游走'], seq:['D','S','D','S','D','S'] , icon: 'Orbital_Walking_Barrage_Stratagem_Icon.svg'},
+            { id:'orb_laser', grp:'orbital', name:{zh:'轨道激光炮',en:'Orbital Laser'}, aliases:['轨道激光', '滋水枪'], seq:['D','S','W','D','S'] , icon: 'Orbital_Laser_Stratagem_Icon.svg'},
+            { id:'orb_napalm', grp:'orbital', name:{zh:'轨道凝固汽油弹火力网',en:'Orbital Napalm Barrage'}, aliases:['轨道凝固'], seq:['D','D','S','A','D','W'] , icon: 'Orbital_Napalm_Barrage_Stratagem_Icon.svg'},
+            { id:'orb_railcannon', grp:'orbital', name:{zh:'轨道炮攻击',en:'Orbital Railcannon Strike'}, aliases:['轨道炮'], seq:['D','W','S','S','D'] , icon: 'Orbital_Railcannon_Strike_Stratagem_Icon.svg'},
 
+            { id:'eagle_strafing', grp:'eagle', name:{zh:'“飞鹰”机枪扫射',en:'Eagle Strafing Run'}, aliases:['飞鹰机枪', '扫射'], seq:['W','D','D'] , icon: 'Eagle_Strafing_Run_Stratagem_Icon.svg'},
+            { id:'eagle_airstrike', grp:'eagle', name:{zh:'“飞鹰”空袭',en:'Eagle Airstrike'}, aliases:['空袭', '飞鹰空袭'], seq:['W','D','S','D'] , icon: 'Eagle_Airstrike_Stratagem_Icon.svg'},
+            { id:'eagle_cluster', grp:'eagle', name:{zh:'“飞鹰”集束炸弹',en:'Eagle Cluster Bomb'}, aliases:['集束', '集束炸弹'], seq:['W','D','S','S','D'] , icon: 'Eagle_Cluster_Bomb_Stratagem_Icon.svg'},
+            { id:'eagle_smoke', grp:'eagle', name:{zh:'“飞鹰”烟雾攻击',en:'Eagle Smoke Strike'}, aliases:['飞鹰烟雾'], seq:['W','D','W','S'] , icon: 'Eagle_Smoke_Strike_Stratagem_Icon.svg'},
+            { id:'eagle_napalm', grp:'eagle', name:{zh:'“飞鹰”凝固汽油弹空袭',en:'Eagle Napalm Airstrike'}, aliases:['飞鹰凝固', '火海'], seq:['W','D','S','W'] , icon: 'Eagle_Napalm_Airstrike_Stratagem_Icon.svg'},
+            { id:'eagle_110', grp:'eagle', name:{zh:'“飞鹰”110MM火箭巢',en:'Eagle 110mm Rocket Pods'}, aliases:['110', '火箭巢'], seq:['W','D','W','A'] , icon: 'Eagle_110mm_Rocket_Pods_Stratagem_Icon.svg'},
+            { id:'eagle_500kg', grp:'eagle', name:{zh:'“飞鹰”500KG炸弹',en:'Eagle 500kg Bomb'}, aliases:['500', '500k'], seq:['W','D','S','S','S'], icon: 'Eagle_500kg_Bomb_Stratagem_Icon.svg' },
 
-            { id:'orb_precision', grp:'orbital', name:{zh:'轨道精准攻击',en:'Orbital Precision Strike'}, seq:['D','D','W'] , icon: 'Orbital_Precision_Strike_Stratagem_Icon.svg'},
-            { id:'orb_gatling', grp:'orbital', name:{zh:'轨道加特林火力网',en:'Orbital Gatling Barrage'}, seq:['D','S','A','W','W'] , icon: 'Orbital_Gatling_Barrage_Stratagem_Icon.svg'},
-            { id:'orb_gas', grp:'orbital', name:{zh:'轨道毒气攻击',en:'Orbital Gas Strike'}, seq:['D','D','S','D'] , icon: 'Orbital_Gas_Strike_Stratagem_Icon.svg'},
-            { id:'orb_120', grp:'orbital', name:{zh:'轨道120mm高爆弹火力网',en:'Orbital 120mm HE Barrage'}, seq:['D','D','S','A','D','S'] , icon: 'Orbital_120mm_HE_Barrage_Stratagem_Icon.svg'},
-            { id:'orb_airburst', grp:'orbital', name:{zh:'轨道空爆攻击',en:'Orbital Airburst Strike'}, seq:['D','D','D'], icon: 'Orbital_Airburst_Strike_Stratagem_Icon.svg' },
-            { id:'orb_smoke', grp:'orbital', name:{zh:'轨道烟雾攻击',en:'Orbital Smoke Strike'}, seq:['D','D','S','W'] , icon: 'Orbital_Smoke_Strike_Stratagem_Icon.svg'},
-            { id:'orb_ems', grp:'orbital', name:{zh:'轨道电磁冲击波攻击',en:'Orbital EMS Strike'}, seq:['D','D','A','S'] , icon: 'Orbital_EMS_Strike_Stratagem_Icon.svg'},
-            { id:'orb_380', grp:'orbital', name:{zh:'轨道380mm高爆弹火力网',en:'Orbital 380mm HE Barrage'}, seq:['D','S','W','W','A','S','S'] , icon: 'Orbital_380mm_HE_Barrage_Stratagem_Icon.svg'},
-            { id:'orb_walking', grp:'orbital', name:{zh:'轨道游走火力网',en:'Orbital Walking Barrage'}, seq:['D','S','D','S','D','S'] , icon: 'Orbital_Walking_Barrage_Stratagem_Icon.svg'},
-            { id:'orb_laser', grp:'orbital', name:{zh:'轨道激光炮   ',en:'Orbital Laser'}, seq:['D','S','W','D','S'] , icon: 'Orbital_Laser_Stratagem_Icon.svg'},
-            { id:'orb_napalm', grp:'orbital', name:{zh:'轨道凝固汽油弹火力网',en:'Orbital Napalm Barrage'}, seq:['D','D','S','A','D','W'] , icon: 'Orbital_Napalm_Barrage_Stratagem_Icon.svg'},
-            { id:'orb_railcannon', grp:'orbital', name:{zh:'轨道炮攻击',en:'Orbital Railcannon Strike'}, seq:['D','W','S','S','D'] , icon: 'Orbital_Railcannon_Strike_Stratagem_Icon.svg'},
+            { id:'emp_mine_ap', grp:'emplacement', name:{zh:'MD-6 反步兵雷区',en:'MD-6 Anti-Personnel Minefield'}, aliases:['反步兵地雷'], seq:['S','A','W','D'] , icon: 'Anti-Personnel_Minefield_Stratagem_Icon.svg'},
+            { id:'emp_mine_inc', grp:'emplacement', name:{zh:'MD-I4 燃烧地雷',en:'MD-I4 Incendiary Mines'}, aliases:['燃烧地雷', '火雷'], seq:['S','A','A','S'] , icon: 'Incendiary_Mines_Stratagem_Icon.svg'},
+            { id:'emp_mine_at', grp:'emplacement', name:{zh:'MD-17 反坦克地雷',en:'MD-17 Anti-Tank Mines'}, aliases:['反坦克地雷'], seq:['S','A','W','W'] , icon: 'Anti-Tank_Mines_Stratagem_Icon.svg'},
+            { id:'emp_shield', grp:'emplacement', name:{zh:'FX-12 防护罩生成中继器',en:'FX-12 Shield Generator Relay'}, aliases:['大护盾', '泡泡罩'], seq:['S','S','A','D','A','D'] , icon: 'Shield_Generator_Relay_Stratagem_Icon.svg'},
+            { id:'emp_hmg', grp:'emplacement', name:{zh:'E/MG-101 重机枪部署支架',en:'E/MG-101 HMG Emplacement'}, aliases:['固定机枪'], seq:['S','W','A','D','D','A'] , icon: 'HMG_Emplacement_Stratagem_Icon.svg'},
+            { id:'emp_grenadier', grp:'emplacement', name:{zh:'E/GL-21 掷弹兵防卫墙',en:'E/GL-21 Grenadier Battlement'}, aliases:['防卫墙'], seq:['S','D','S','A','D'] , icon: 'Grenadier_Battlement_Stratagem_Icon.svg'},
+            { id:'emp_mine_gas', grp:'emplacement', name:{zh:'MD-8 毒气地雷',en:'MD-8 Gas Mines'}, aliases:['毒气雷'], seq:['S','A','A','D'] , icon: 'Gas_Mines_Stratagem_Icon.svg'},
+            { id:'emp_at', grp:'emplacement', name:{zh:'E/AT-12 反坦克炮台',en:'E/AT-12 Anti-Tank Emplacement'}, aliases:['固定反坦克'], seq:['S','W','A','D','D','D'] , icon: 'Anti-Tank_Emplacement_Stratagem_Icon.svg'},
 
+            { id:'sen_mg', grp:'sentry', name:{zh:'A/MG-43 哨戒机枪',en:'A/MG-43 Machine Gun Sentry'}, aliases:['机枪塔'], seq:['S','W','D','D','W'] , icon: 'Machine_Gun_Sentry_Stratagem_Icon.svg'},
+            { id:'sen_gatling', grp:'sentry', name:{zh:'A/G-16 加特林哨戒炮',en:'A/G-16 Gatling Sentry'}, aliases:['加特林塔'], seq:['S','W','D','A'], icon: 'Gatling_Sentry_Stratagem_Icon.svg' },
+            { id:'sen_ac', grp:'sentry', name:{zh:'A/AC-8 自动哨戒炮',en:'A/AC-8 Autocannon Sentry'}, aliases:['机炮塔'], seq:['S','W','D','W','A','W'] , icon: 'Autocannon_Sentry_Stratagem_Icon.svg'},
+            { id:'sen_mortar', grp:'sentry', name:{zh:'A/M-12 迫击哨戒炮',en:'A/M-12 Mortar Sentry'}, aliases:['迫击炮'], seq:['S','W','D','D','S'], icon: 'Mortar_Sentry_Stratagem_Icon.svg' },
+            { id:'sen_rocket', grp:'sentry', name:{zh:'A/MLS-4X 火箭哨戒炮',en:'A/MLS-4X Rocket Sentry'}, aliases:['火箭'], seq:['S','W','D','D','A'] , icon: 'Rocket_Sentry_Stratagem_Icon.svg'},
+            { id:'sen_tesla', grp:'sentry', name:{zh:'A/ARC-3 特斯拉塔',en:'A/ARC-3 Tesla Tower'}, aliases:['电塔', '特斯拉'], seq:['S','W','D','W','A','D'], icon: 'Tesla_Tower_Stratagem_Icon.svg' },
+            { id:'sen_ems', grp:'sentry', name:{zh:'A/M-23 电磁冲击波迫击哨戒炮',en:'A/M-23 EMS Mortar Sentry'}, aliases:['电磁迫击炮'], seq:['S','W','D','S','D'] , icon: 'EMS_Mortar_Sentry_Stratagem_Icon.svg'},
+            { id:'sen_flame', grp:'sentry', name:{zh:'A/FLAM-40 火焰喷射哨戒炮',en:'A/FLAM-40 Flame Sentry'}, aliases:['喷火塔'], seq:['S','W','D','S','W','W'] , icon: 'Flame_Sentry_Stratagem_Icon.svg'},
+            { id:'sen_laser', grp:'sentry', name:{zh:'A/LAS-98 激光哨戒炮',en:'A/LAS-98 Laser Sentry'}, aliases:['激光塔'], seq:['S','W','D','S','W','D'] , icon: 'Laser_Sentry_Stratagem_Icon.svg'},
 
-            { id:'eagle_strafing', grp:'eagle', name:{zh:'“飞鹰”机枪扫射',en:'Eagle Strafing Run'}, seq:['W','D','D'] , icon: 'Eagle_Strafing_Run_Stratagem_Icon.svg'},
-            { id:'eagle_airstrike', grp:'eagle', name:{zh:'“飞鹰”空袭',en:'Eagle Airstrike'}, seq:['W','D','S','D'] , icon: 'Eagle_Airstrike_Stratagem_Icon.svg'},
-            { id:'eagle_cluster', grp:'eagle', name:{zh:'“飞鹰”集束炸弹',en:'Eagle Cluster Bomb'}, seq:['W','D','S','S','D'] , icon: 'Eagle_Cluster_Bomb_Stratagem_Icon.svg'},
-            { id:'eagle_smoke', grp:'eagle', name:{zh:'“飞鹰”烟雾攻击',en:'Eagle Smoke Strike'}, seq:['W','D','W','S'] , icon: 'Eagle_Smoke_Strike_Stratagem_Icon.svg'},
-            { id:'eagle_napalm', grp:'eagle', name:{zh:'“飞鹰”凝固汽油弹空袭',en:'Eagle Napalm Airstrike'}, seq:['W','D','S','W'] , icon: 'Eagle_Napalm_Airstrike_Stratagem_Icon.svg'},
-            { id:'eagle_110', grp:'eagle', name:{zh:'“飞鹰”110MM火箭巢',en:'Eagle 110mm Rocket Pods'}, seq:['W','D','W','A'] , icon: 'Eagle_110mm_Rocket_Pods_Stratagem_Icon.svg'},
-            { id:'eagle_500kg', grp:'eagle', name:{zh:'“飞鹰”500KG炸弹',en:'Eagle 500kg Bomb'}, seq:['W','D','S','S','S'], icon: 'Eagle_500kg_Bomb_Stratagem_Icon.svg' },
+            { id:'pack_supply', grp:'backpack', name:{zh:'B-1 补给背包',en:'B-1 Supply Pack'}, aliases:['补包', '弹药包'], seq:['S','A','S','W','W','S'] , icon: 'Supply_Pack_Stratagem_Icon.svg'},
+            { id:'pack_jump', grp:'backpack', name:{zh:'LIFT-850 喷射背包',en:'LIFT-850 Jump Pack'}, aliases:['跳包', '喷射包'], seq:['S','W','W','S','W'] , icon: 'Jump_Pack_Stratagem_Icon.svg'},
+            { id:'pack_ballistic', grp:'backpack', name:{zh:'SH-20 防弹护盾背包',en:'SH-20 Ballistic Shield Backpack'}, aliases:['防弹盾'], seq:['S','A','S','S','W','A'] , icon: 'Ballistic_Shield_Backpack_Stratagem_Icon.svg'},
+            { id:'pack_guard', grp:'backpack', name:{zh:'AX/AR-23 “护卫犬”',en:'AX/AR-23 Guard Dog'}, aliases:['实弹狗'], seq:['S','W','A','W','D','S'], icon: 'Guard_Dog_Stratagem_Icon.svg' },
+            { id:'pack_rover', grp:'backpack', name:{zh:'AX/LAS-5 漫游车',en:'AX/LAS-5 Rover'}, aliases:['激光狗'], seq:['S','W','A','W','D','D'] , icon: 'Rover_Stratagem_Icon.svg'},
+            { id:'pack_shield', grp:'backpack', name:{zh:'SH-32 防护罩生成包',en:'SH-32 Shield Generator Pack'}, aliases:['护盾背包', '蛋壳'], seq:['S','W','A','D','A','D'] , icon: 'Shield_Generator_Pack_Stratagem_Icon.svg'},
+            { id:'pack_dir_shield', grp:'backpack', name:{zh:'SH-51 定向护盾',en:'SH-51 Directional Shield'}, aliases:['定向盾'], seq:['S','W','A','D','W','W'] , icon: 'Directional_Shield_Stratagem_Icon.svg'},
+            { id:'pack_hotdog', grp:'backpack', name:{zh:'AX/FLAM-75 热狗',en:'AX/FLAM-75 Hot Dog'}, aliases:['火狗', '热狗'], seq:['S','W','A','W','A','A'] , icon: 'Hot_Dog_Stratagem_Icon.svg'},
+            { id:'pack_portable_hb', grp:'backpack', name:{zh:'B-100 便携式地狱火炸弹',en:'B-100 Portable Hellbomb'}, aliases:['地狱火'], seq:['S','D','W','W','W'] , icon: 'Portable_Hellbomb_Stratagem_Icon.svg'},
+            { id:'pack_k9', grp:'backpack', name:{zh:'AX/ARC-3 K-9',en:'AX/ARC-3 K-9'}, aliases:['电狗'], seq:['S','W','A','W','D','A'] , icon: 'K-9_Stratagem_Icon.svg'},
+            { id:'pack_hover', grp:'backpack', name:{zh:'LIFT-860 悬浮背包',en:'LIFT-860 Hover Pack'}, aliases:['悬浮包'], seq:['S','W','W','S','A','D'] , icon: 'Hover_Pack_Stratagem_Icon.svg'},
+            { id:'pack_dog_breath', grp:'backpack', name:{zh:'AX/TX-13 腐息',en:'AX/TX-13 Dog Breath'}, aliases:['毒狗'], seq:['S','W','A','W','D','W'] , icon: 'Dog_Breath_Stratagem_Icon.svg'},
+            { id:'pack_warp', grp:'backpack', name:{zh:'LIFT-182 传送背包',en:'LIFT-182 Warp Pack'}, aliases:['传包'], seq:['S','A','D','S','A','D'] , icon: 'Warp_Pack_Stratagem_Icon.svg'},
 
+            { id:'veh_patriot', grp:'vehicle', name:{zh:'EXO-45 “爱国者” 外骨骼装甲',en:'EXO-45 Patriot Exosuit'}, aliases:['机甲', '爱国者'], seq:['A','S','D','W','A','S','S'] , icon: 'Patriot_Exosuit_Stratagem_Icon.svg'},
+            { id:'veh_emancipator', grp:'vehicle', name:{zh:'EXO-49 “解放者” 外骨骼装甲',en:'Emancipator Exosuit'}, aliases:['解放者', '机甲'], seq:['A','S','D','W','A','S','W'] , icon: 'Emancipator_Exosuit_Stratagem_Icon.svg'},
+            { id:'veh_recon', grp:'vehicle', name:{zh:'M-102 快速侦察载具',en:'M-102 Fast Recon Vehicle'}, aliases:['四轮车', '越野车'], seq:['A','S','D','S','D','S','W'] , icon: 'Fast_Recon_Vehicle_Stratagem_Icon.svg'},
+            { id:'veh_bastion', grp:'vehicle', name:{zh:'TD-220 堡垒 MK XVI',en:'TD-220 Bastion MK XVI'}, aliases:['坦克', '堡垒'], seq:['A','S','D','S','A','S','W','S','W'] , icon: 'Bastion_MK_XVI_Stratagem_Icon.svg'},
 
-            { id:'emp_mine_ap', grp:'emplacement', name:{zh:'MD-6 反步兵雷区',en:'MD-6 Anti-Personnel Minefield'}, seq:['S','A','W','D'] , icon: 'Anti-Personnel_Minefield_Stratagem_Icon.svg'},
-            { id:'emp_mine_inc', grp:'emplacement', name:{zh:'MD-I4 燃烧地雷',en:'MD-I4 Incendiary Mines'}, seq:['S','A','A','S'] , icon: 'Incendiary_Mines_Stratagem_Icon.svg'},
-            { id:'emp_mine_at', grp:'emplacement', name:{zh:'MD-17 反坦克地雷',en:'MD-17 Anti-Tank Mines'}, seq:['S','A','W','W'] , icon: 'Anti-Tank_Mines_Stratagem_Icon.svg'},
-            { id:'emp_shield', grp:'emplacement', name:{zh:'FX-12 防护罩生成中继器',en:'FX-12 Shield Generator Relay'}, seq:['S','S','A','D','A','D'] , icon: 'Shield_Generator_Relay_Stratagem_Icon.svg'},
-            { id:'emp_hmg', grp:'emplacement', name:{zh:'E/MG-101 重机枪部署支架',en:'E/MG-101 HMG Emplacement'}, seq:['S','W','A','D','D','A'] , icon: 'HMG_Emplacement_Stratagem_Icon.svg'},
-            { id:'emp_grenadier', grp:'emplacement', name:{zh:'E/GL-21 掷弹兵防卫墙',en:'E/GL-21 Grenadier Battlement'}, seq:['S','D','S','A','D'] , icon: 'Grenadier_Battlement_Stratagem_Icon.svg'},
-            { id:'emp_mine_gas', grp:'emplacement', name:{zh:'MD-8 毒气地雷',en:'MD-8 Gas Mines'}, seq:['S','A','A','D'] , icon: 'Gas_Mines_Stratagem_Icon.svg'},
-            { id:'emp_at', grp:'emplacement', name:{zh:'E/AT-12 反坦克炮台',en:'E/AT-12 Anti-Tank Emplacement'}, seq:['S','W','A','D','D','D'] , icon: 'Anti-Tank_Emplacement_Stratagem_Icon.svg'},
-
-            { id:'sen_mg', grp:'sentry', name:{zh:'A/MG-43 哨戒机枪',en:'A/MG-43 Machine Gun Sentry'}, seq:['S','W','D','D','W'] , icon: 'Machine_Gun_Sentry_Stratagem_Icon.svg'},
-            { id:'sen_gatling', grp:'sentry', name:{zh:'A/G-16 加特林哨戒炮',en:'A/G-16 Gatling Sentry'}, seq:['S','W','D','A'], icon: 'Gatling_Sentry_Stratagem_Icon.svg' },
-            { id:'sen_ac', grp:'sentry', name:{zh:'A/AC-8 自动哨戒炮',en:'A/AC-8 Autocannon Sentry'}, seq:['S','W','D','W','A','W'] , icon: 'Autocannon_Sentry_Stratagem_Icon.svg'},
-            { id:'sen_mortar', grp:'sentry', name:{zh:'A/M-12 迫击哨戒炮',en:'A/M-12 Mortar Sentry'}, seq:['S','W','D','D','S'], icon: 'Mortar_Sentry_Stratagem_Icon.svg' },
-            { id:'sen_rocket', grp:'sentry', name:{zh:'A/MLS-4X 火箭哨戒炮',en:'A/MLS-4X Rocket Sentry'}, seq:['S','W','D','D','A'] , icon: 'Rocket_Sentry_Stratagem_Icon.svg'},
-            { id:'sen_tesla', grp:'sentry', name:{zh:'A/ARC-3 特斯拉塔',en:'A/ARC-3 Tesla Tower'}, seq:['S','W','D','W','A','D'], icon: 'Tesla_Tower_Stratagem_Icon.svg' },
-            { id:'sen_ems', grp:'sentry', name:{zh:'A/M-23 电磁冲击波迫击哨戒炮',en:'A/M-23 EMS Mortar Sentry'}, seq:['S','W','D','S','D'] , icon: 'EMS_Mortar_Sentry_Stratagem_Icon.svg'},
-            { id:'sen_flame', grp:'sentry', name:{zh:'A/FLAM-40 火焰喷射哨戒炮',en:'A/FLAM-40 Flame Sentry'}, seq:['S','W','D','S','W','W'] , icon: 'Flame_Sentry_Stratagem_Icon.svg'},
-            { id:'sen_laser', grp:'sentry', name:{zh:'A/LAS-98 激光哨戒炮',en:'A/LAS-98 Laser Sentry'}, seq:['S','W','D','S','W','D'] , icon: 'Laser_Sentry_Stratagem_Icon.svg'},
-
-
-            { id:'pack_supply', grp:'backpack', name:{zh:'B-1 补给背包',en:'B-1 Supply Pack'}, seq:['S','A','S','W','W','S'] , icon: 'Supply_Pack_Stratagem_Icon.svg'},
-            { id:'pack_jump', grp:'backpack', name:{zh:'LIFT-850 喷射背包',en:'LIFT-850 Jump Pack'}, seq:['S','W','W','S','W'] , icon: 'Jump_Pack_Stratagem_Icon.svg'},
-            { id:'pack_ballistic', grp:'backpack', name:{zh:'SH-20 防弹护盾背包',en:'SH-20 Ballistic Shield Backpack'}, seq:['S','A','S','S','W','A'] , icon: 'Ballistic_Shield_Backpack_Stratagem_Icon.svg'},
-            { id:'pack_guard', grp:'backpack', name:{zh:'AX/AR-23 “护卫犬”',en:'AX/AR-23 Guard Dog'}, seq:['S','W','A','W','D','S'], icon: 'Guard_Dog_Stratagem_Icon.svg' },
-            { id:'pack_rover', grp:'backpack', name:{zh:'AX/LAS-5 漫游车',en:'AX/LAS-5 Rover'}, seq:['S','W','A','W','D','D'] , icon: 'Rover_Stratagem_Icon.svg'},
-            { id:'pack_shield', grp:'backpack', name:{zh:'SH-32 防护罩生成包',en:'SH-32 Shield Generator Pack'}, seq:['S','W','A','D','A','D'] , icon: 'Shield_Generator_Pack_Stratagem_Icon.svg'},
-            { id:'pack_dir_shield', grp:'backpack', name:{zh:'SH-51 定向护盾',en:'SH-51 Directional Shield'}, seq:['S','W','A','D','W','W'] , icon: 'Directional_Shield_Stratagem_Icon.svg'},
-            { id:'pack_hotdog', grp:'backpack', name:{zh:'AX/FLAM-75 热狗',en:'AX/FLAM-75 Hot Dog'}, seq:['S','W','A','W','A','A'] , icon: 'Hot_Dog_Stratagem_Icon.svg'},
-            { id:'pack_portable_hb', grp:'backpack', name:{zh:'B-100 便携式地狱火炸弹',en:'B-100 Portable Hellbomb'}, seq:['S','D','W','W','W'] , icon: 'Portable_Hellbomb_Stratagem_Icon.svg'},
-            { id:'pack_k9', grp:'backpack', name:{zh:'AX/ARC-3 K-9',en:'AX/ARC-3 K-9'}, seq:['S','W','A','W','D','A'] , icon: 'K-9_Stratagem_Icon.svg'},
-            { id:'pack_hover', grp:'backpack', name:{zh:'LIFT-860 悬浮背包',en:'LIFT-860 Hover Pack'}, seq:['S','W','W','S','A','D'] , icon: 'Hover_Pack_Stratagem_Icon.svg'},
-            { id:'pack_dog_breath', grp:'backpack', name:{zh:'AX/TX-13 腐息',en:'AX/TX-13 Dog Breath'}, seq:['S','W','A','W','D','W'] , icon: 'Dog_Breath_Stratagem_Icon.svg'},
-            { id:'pack_warp', grp:'backpack', name:{zh:'LIFT-182 传送背包',en:'LIFT-182 Warp Pack'}, seq:['S','A','D','S','A','D'] , icon: 'Warp_Pack_Stratagem_Icon.svg'},
-
-            { id:'veh_patriot', grp:'vehicle', name:{zh:'EXO-45 “爱国者” 外骨骼装甲',en:'EXO-45 Patriot Exosuit'}, seq:['A','S','D','W','A','S','S'] , icon: 'Patriot_Exosuit_Stratagem_Icon.svg'},
-            { id:'veh_emancipator', grp:'vehicle', name:{zh:'EXO-49 “解放者” 外骨骼装甲',en:'Emancipator Exosuit'}, seq:['A','S','D','W','A','S','W'] , icon: 'Emancipator_Exosuit_Stratagem_Icon.svg'},
-            { id:'veh_recon', grp:'vehicle', name:{zh:'M-102 快速侦察载具',en:'M-102 Fast Recon Vehicle'}, seq:['A','S','D','S','D','S','W'] , icon: 'Fast_Recon_Vehicle_Stratagem_Icon.svg'},
-            { id:'veh_bastion', grp:'vehicle', name:{zh:'TD-220 堡垒 MK XVI',en:'TD-220 Bastion MK XVI'}, seq:['A','S','D','S','A','S','W','S','W'] , icon: 'Bastion_MK_XVI_Stratagem_Icon.svg'},
-
-
-            { id:'mis_sos', grp:'mission', name:{zh:'SOS救援信标',en:'SOS Beacon'}, seq:['W','S','D','W'] , icon: 'SOS_Beacon_Stratagem_Icon.svg'},
-            { id:'mis_resupply', grp:'mission', name:{zh:'呼叫补给',en:'Resupply'}, seq:['S','S','W','D'] , icon: 'Resupply_Stratagem_Icon.svg'},
-            { id:'mis_reinforce', grp:'mission', name:{zh:'呼叫增援',en:'Reinforce'}, seq:['W','S','D','A','W'] , icon: 'Reinforce_Stratagem_Icon.svg'},
-            { id:'mis_hellbomb', grp:'mission', name:{zh:'呼叫地狱火炸弹',en:'Hellbomb'}, seq:['S','W','A','S','W','D','S','W'] , icon: 'Hellbomb_Stratagem_Icon.svg'},
-            { id:'mis_flag', grp:'mission', name:{zh:'呼叫超级地球旗帜',en:'Super Earth Flag'}, seq:['S','W','S','W'], icon: 'Super_Earth_Flag_Stratagem_Icon.svg' },
-            { id:'mis_eagleresupply', grp:'mission', name:{zh:'重新武装 “飞鹰”',en:'Eagle Rearm'}, seq:['W','W','A','W','D'], icon: 'Eagle_Rearm_Stratagem_Icon.svg' },
-            { id:'mis_callinsys', grp:'mission', name:{zh:'呼叫超级驱逐舰',en:'Call In Super Destroyer'}, seq:['W','W','S','S','A','D','A','D'], icon: 'Call_In_Super_Destroyer_Stratagem_Icon.svg' }
+            { id:'mis_sos', grp:'mission', name:{zh:'SOS救援信标',en:'SOS Beacon'}, aliases:['sos', '求救'], seq:['W','S','D','W'] , icon: 'SOS_Beacon_Stratagem_Icon.svg'},
+            { id:'mis_resupply', grp:'mission', name:{zh:'呼叫补给',en:'Resupply'}, aliases:['补给'], seq:['S','S','W','D'] , icon: 'Resupply_Stratagem_Icon.svg'},
+            { id:'mis_reinforce', grp:'mission', name:{zh:'呼叫增援',en:'Reinforce'}, aliases:['复活', '增援'], seq:['W','S','D','A','W'] , icon: 'Reinforce_Stratagem_Icon.svg'},
+            { id:'mis_hellbomb', grp:'mission', name:{zh:'呼叫地狱火炸弹',en:'Hellbomb'}, aliases:['地狱火', '炸弹'], seq:['S','W','A','S','W','D','S','W'] , icon: 'Hellbomb_Stratagem_Icon.svg'},
+            { id:'mis_flag', grp:'mission', name:{zh:'呼叫超级地球旗帜',en:'Super Earth Flag'}, aliases:['升旗'], seq:['S','W','S','W'], icon: 'Super_Earth_Flag_Stratagem_Icon.svg' },
+            { id:'mis_eagleresupply', grp:'mission', name:{zh:'重新武装 “飞鹰”',en:'Eagle Rearm'}, aliases:['重装飞鹰', '洗飞鹰'], seq:['W','W','A','W','D'], icon: 'Eagle_Rearm_Stratagem_Icon.svg' },
+            { id:'mis_seafartillery', grp:'mission', name:{zh:'超级地球武装部队大炮',en:'SEAF Artillery'}, aliases:['大炮'], seq:['D','W','W','S'], icon: 'SEAF_Artillery_Stratagem_Icon.svg' },
+            { id:'mis_callinsys', grp:'mission', name:{zh:'呼叫超级驱逐舰',en:'Call In Super Destroyer'}, aliases:['驱逐舰'], seq:['W','W','S','S','A','D','A','D'], icon: 'Call_In_Super_Destroyer_Stratagem_Icon.svg' },
+            { id:'mis_cargo', grp:'mission', name:{zh:'呼叫货柜',en:'Cargo Container'}, aliases:['货柜'], seq:['W','W','S','S','D','S'], icon: 'Cargo_Container_Stratagem_Icon.svg' },
+            { id:'mis_updd', grp:'mission', name:{zh:'上传逃生舱数据',en:'Upload Data'}, aliases:['数据', '上传'], seq:['A','D','W','W','W'], icon: 'Start_Upload_Stratagem_Icon.svg' }
         ];
                 
         let stratagemDB = [...defaultStratagemDB];
         let customStratagems = [];
-
         let activeLoadout = [];
         let savedPresets = [];
         const maxSlots = 9;
         let bindingTarget = null;
-        let gameSettings = { menuKey: 'ControlLeft', menuMode: 'hold', upKey: 'W', downKey: 'S', leftKey: 'A', rightKey: 'D', macroDelay: 10 };
+        let isOverlayVisible = false; 
+        
+        let gameSettings = { 
+            menuKey: 'ControlLeft', menuMode: 'hold', upKey: 'W', downKey: 'S', leftKey: 'A', rightKey: 'D',
+            menuOpenDelay: 100, pressDelay: 10, intervalDelay: 10, 
+            ovOpacity: 100, ovWidth: 300, ovHeight: 550, ovStyle: 'text',
+            ovUp: 'WheelUp', ovDown: 'WheelDown', ovExec: 'MouseMiddle'
+        };
+        
         const arrowSVGMap = { 'W': './Up.svg', 'S': './Down.svg', 'A': './Left.svg', 'D': './Right.svg' };
         const arrowDisplayMap = { 'W': '↑', 'S': '↓', 'A': '←', 'D': '→' };
 
-        function initData() {
-            const cacheSet = localStorage.getItem('hd2_macro_settings');
-            if (cacheSet) gameSettings = JSON.parse(cacheSet);
-            const cacheLoadout = localStorage.getItem('hd2_macro_current_loadout');
-            if (cacheLoadout) activeLoadout = JSON.parse(cacheLoadout);
-            const cachePresets = localStorage.getItem('hd2_macro_presets');
-            if (cachePresets) savedPresets = JSON.parse(cachePresets);
-            const cacheCustom = localStorage.getItem('hd2_custom_stratagems');
-            if (cacheCustom) {
-                customStratagems = JSON.parse(cacheCustom);
-                stratagemDB = [...defaultStratagemDB, ...customStratagems];
+        let dragSrcIndex = null;
+
+        window.handleDragStart = function(e) {
+            if (e.target.closest('button') && !e.target.closest('.drag-handle')) {
+                e.preventDefault();
+                return;
             }
+            dragSrcIndex = parseInt(e.currentTarget.dataset.index);
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', dragSrcIndex);
+            e.currentTarget.classList.add('dragging');
+            document.body.classList.add('is-dragging');
+        }
+
+        window.handleDragOver = function(e) {
+            if (e.preventDefault) e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            return false;
+        }
+
+        window.handleDragEnter = function(e) {
+            if (parseInt(e.currentTarget.dataset.index) !== dragSrcIndex) {
+                e.currentTarget.classList.add('drag-over');
+            }
+        }
+
+        window.handleDragLeave = function(e) {
+            e.currentTarget.classList.remove('drag-over');
+        }
+
+        window.handleDrop = function(e) {
+            if (e.stopPropagation) e.stopPropagation();
+            const dropIndex = parseInt(e.currentTarget.dataset.index);
+            if (dragSrcIndex !== null && dragSrcIndex !== dropIndex) {
+                let strats = activeLoadout.map(slot => slot.strat);
+                const [movedStrat] = strats.splice(dragSrcIndex, 1);
+                strats.splice(dropIndex, 0, movedStrat);
+                
+                for(let i = 0; i < maxSlots; i++) {
+                    activeLoadout[i].strat = strats[i];
+                }
+                renderMainList();
+            }
+            return false;
+        }
+
+        window.handleDragEnd = function(e) {
+            document.body.classList.remove('is-dragging');
+            document.querySelectorAll('.list-row').forEach(row => {
+                row.classList.remove('drag-over');
+                row.classList.remove('dragging');
+            });
+            dragSrcIndex = null;
+        }
+
+        function saveDataToLocal(filename, data, lsKey) {
+            if (window.electronAPI && window.electronAPI.saveData) {
+                window.electronAPI.saveData(filename, data);
+            } else {
+                localStorage.setItem(lsKey, JSON.stringify(data)); 
+            }
+        }
+
+        async function loadWithMigration(filename, lsKey) {
+            let data = null;
+            if (window.electronAPI && window.electronAPI.loadData) {
+                data = await window.electronAPI.loadData(filename);
+            }
+            if (!data) {
+                const lsData = localStorage.getItem(lsKey);
+                if (lsData) {
+                    try { data = JSON.parse(lsData); } catch(e) {}
+                    if (data && window.electronAPI && window.electronAPI.saveData) {
+                        window.electronAPI.saveData(filename, data);
+                    }
+                }
+            }
+            return data;
+        }
+
+        async function initData() {
+            const cacheSet = await loadWithMigration('settings.json', 'hd2_macro_settings');
+            if (cacheSet) {
+                if (cacheSet.macroDelay && !cacheSet.pressDelay) {
+                    cacheSet.pressDelay = cacheSet.macroDelay;
+                    cacheSet.intervalDelay = cacheSet.macroDelay;
+                    cacheSet.menuOpenDelay = 100;
+                }
+                gameSettings = { ...gameSettings, ...cacheSet };
+            }
+            
+            const cacheCustom = await loadWithMigration('custom_strats.json', 'hd2_custom_stratagems');
+            if (cacheCustom && Array.isArray(cacheCustom)) {
+                customStratagems = cacheCustom;
+                stratagemDB = [...defaultStratagemDB, ...customStratagems];
+            } else {
+                stratagemDB = [...defaultStratagemDB];
+            }
+
+            activeLoadout = Array.from({ length: maxSlots }, () => ({ strat: null, hotkey: null }));
+            const cacheLoadout = await loadWithMigration('loadout.json', 'hd2_macro_current_loadout');
+            if (cacheLoadout && Array.isArray(cacheLoadout)) {
+                for (let i = 0; i < maxSlots; i++) {
+                    if (cacheLoadout[i]) {
+                        if (cacheLoadout[i].stratId !== undefined) {
+                            const s = cacheLoadout[i].stratId ? stratagemDB.find(x => x.id === cacheLoadout[i].stratId) : null;
+                            activeLoadout[i] = { strat: s || null, hotkey: cacheLoadout[i].hotkey };
+                        } else if (cacheLoadout[i].strat !== undefined) {
+                            activeLoadout[i] = cacheLoadout[i];
+                        } else {
+                            let hk = cacheLoadout[i].hotkey;
+                            delete cacheLoadout[i].hotkey;
+                            activeLoadout[i] = { strat: Object.keys(cacheLoadout[i]).length ? cacheLoadout[i] : null, hotkey: hk };
+                        }
+                    }
+                }
+            }
+
+            const cachePresets = await loadWithMigration('presets.json', 'hd2_macro_presets');
+            if (cachePresets && Array.isArray(cachePresets)) {
+                savedPresets = cachePresets;
+            }
+            
+            if(window.electronAPI && window.electronAPI.updateOverlaySettings) {
+                window.electronAPI.updateOverlaySettings({ opacity: gameSettings.ovOpacity, style: gameSettings.ovStyle });
+            }
+            
             updateI18n();
             renderMainList();
         }
 
+        window.handleToggleOverlay = () => {
+            isOverlayVisible = !isOverlayVisible;
+            if(window.electronAPI) {
+                window.electronAPI.resizeOverlay(gameSettings.ovWidth, gameSettings.ovHeight);
+                window.electronAPI.toggleOverlay();
+            }
+        };
+
         function saveCurrentLoadoutToCache() {
-            localStorage.setItem('hd2_macro_current_loadout', JSON.stringify(activeLoadout));
+            const compact = activeLoadout.map(item => ({
+                stratId: item.strat ? item.strat.id : null,
+                hotkey: item.hotkey
+            }));
+            saveDataToLocal('loadout.json', compact, 'hd2_macro_current_loadout');
         }
 
         window.toggleLanguage = () => {
             currentLang = currentLang === 'zh' ? 'en' : 'zh';
             updateI18n(); renderMainList();
-            if (document.getElementById('library-modal').classList.contains('active')) renderLibrary();
+            if (document.getElementById('library-modal').classList.contains('active')) {
+                const keyword = document.getElementById('lib-search-input').value;
+                renderLibrary(keyword);
+            }
             if (document.getElementById('presets-modal').classList.contains('active')) renderPresets();
         }
 
         function updateI18n() {
             const lang = i18n[currentLang];
+            document.getElementById('btn-top-overlay').textContent = lang.btnOverlay;
             document.getElementById('txt-app-title').textContent = lang.appTitle;
             document.getElementById('btn-top-settings').textContent = lang.btnSettings;
             document.getElementById('btn-top-presets').textContent = lang.btnPresets;
@@ -633,6 +996,11 @@
             document.getElementById('txt-set-menuMode').textContent = lang.setMenuMode;
             document.getElementById('mode-hold').textContent = lang.modeHold;
             document.getElementById('mode-toggle').textContent = lang.modeToggle;
+            
+            document.getElementById('txt-set-menuDelay').textContent = lang.setMenuDelay;
+            document.getElementById('txt-set-pressDelay').textContent = lang.setPressDelay;
+            document.getElementById('txt-set-intervalDelay').textContent = lang.setIntervalDelay;
+
             document.getElementById('txt-set-arrows').textContent = lang.setArrows;
             document.getElementById('txt-set-up').textContent = lang.up;
             document.getElementById('txt-set-down').textContent = lang.down;
@@ -647,34 +1015,82 @@
             document.getElementById('preset-name-input').placeholder = lang.phPresetName;
             document.getElementById('btn-pre-save').textContent = lang.btnSaveCurrent;  
             document.getElementById('btn-lib-add').textContent = lang.btnAddCustom;
-            const setSpeed = document.getElementById('txt-set-speed');
-            if(setSpeed) setSpeed.textContent = lang.setSpeed;
-            const addTitle = document.getElementById('txt-add-title');
-            if(addTitle) addTitle.textContent = lang.addTitle;
-            const addCat = document.getElementById('txt-add-cat');
-            if(addCat) addCat.textContent = lang.addCat;
-            const addIcon = document.getElementById('txt-add-icon');
-            if(addIcon) addIcon.textContent = lang.addIcon;
-            const uploadBtn = document.getElementById('txt-add-upload');
-            if(uploadBtn) uploadBtn.textContent = lang.uploadBtn;
-            const addNameZh = document.getElementById('txt-add-name-zh');
-            if(addNameZh) addNameZh.textContent = lang.nameZh;
-            const addNameEn = document.getElementById('txt-add-name-en');
-            if(addNameEn) addNameEn.textContent = lang.nameEn;
-            const addSeq = document.getElementById('txt-add-seq');
-            if(addSeq) addSeq.textContent = lang.addSeq;
-            const btnAddSave = document.getElementById('btn-add-save');
-            if(btnAddSave) btnAddSave.textContent = lang.addSave;
-            const btnOverlay = document.getElementById('btn-top-overlay');
-            if (btnOverlay) btnOverlay.textContent = lang.btnOverlay;
-            const setOverlayTitle = document.getElementById('txt-set-overlayTitle');
-            if (setOverlayTitle) setOverlayTitle.textContent = lang.setOverlayTitle;
-            const setOverlayLabel = document.getElementById('txt-set-overlayLabel');
-            if (setOverlayLabel) setOverlayLabel.textContent = lang.setOverlayLabel;
-            const btnUnlock = document.getElementById('btn-set-unlock');
-            if (btnUnlock) btnUnlock.textContent = lang.btnUnlock;
-            const txtAddHint = document.getElementById('txt-add-hint');
-            if (txtAddHint) txtAddHint.textContent = lang.addHint;
+            
+
+            document.getElementById('btn-pre-import').textContent = lang.btnImport;
+            document.getElementById('txt-import-title').textContent = lang.importTitle;
+            document.getElementById('import-code-input').placeholder = lang.importPh;
+            document.getElementById('btn-import-cancel').textContent = currentLang === 'zh' ? '取消' : 'CANCEL';
+            document.getElementById('btn-import-ok').textContent = currentLang === 'zh' ? '导入' : 'IMPORT';
+
+
+            document.getElementById('txt-rename-title').textContent = lang.renameTitle;
+            document.getElementById('btn-rename-cancel').textContent = currentLang === 'zh' ? '取消' : 'CANCEL';
+            document.getElementById('btn-rename-ok').textContent = currentLang === 'zh' ? '确认' : 'CONFIRM';
+
+
+            document.getElementById('txt-set-overlayTitle').textContent = lang.setOverlayTitle;
+            document.getElementById('txt-set-overlayLabel').textContent = lang.setOverlayLabel;
+            document.getElementById('btn-set-unlock').textContent = lang.btnUnlock;
+            document.getElementById('txt-set-opacity').textContent = lang.ovOpacity;
+            document.getElementById('txt-set-size').textContent = lang.ovSize;
+            document.getElementById('txt-set-style').textContent = lang.ovStyle;
+            document.getElementById('style-text').textContent = lang.ovText;
+            document.getElementById('style-svg').textContent = lang.ovIcon;
+            document.getElementById('txt-set-overlayCtrlTitle').textContent = lang.ovCtrlTitle;
+            document.getElementById('txt-set-ctrlUp').textContent = lang.ovCtrlUp;
+            document.getElementById('txt-set-ctrlDown').textContent = lang.ovCtrlDown;
+            document.getElementById('txt-set-ctrlExec').textContent = lang.ovCtrlExec;
+
+
+            document.getElementById('txt-desc-unlock').textContent = lang.descUnlock;
+            document.getElementById('txt-desc-opacity').textContent = lang.descOpacity;
+            document.getElementById('txt-desc-size').textContent = lang.descSize;
+            document.getElementById('txt-desc-style').textContent = lang.descStyle;
+            document.getElementById('txt-desc-ovUp').textContent = lang.descOvUp;
+            document.getElementById('txt-desc-ovDown').textContent = lang.descOvDown;
+            document.getElementById('txt-desc-ovExec').textContent = lang.descOvExec;
+            document.getElementById('txt-desc-menuKey').textContent = lang.descMenuKey;
+            document.getElementById('txt-desc-menuMode').textContent = lang.descMenuMode;
+            document.getElementById('txt-desc-menuDelay').textContent = lang.descMenuDelay;
+            document.getElementById('txt-desc-pressDelay').textContent = lang.descPressDelay;
+            document.getElementById('txt-desc-intervalDelay').textContent = lang.descIntervalDelay;
+            document.getElementById('txt-desc-upKey').textContent = lang.descUpKey;
+            document.getElementById('txt-desc-downKey').textContent = lang.descDownKey;
+            document.getElementById('txt-desc-leftKey').textContent = lang.descLeftKey;
+            document.getElementById('txt-desc-rightKey').textContent = lang.descRightKey;
+            
+
+            document.getElementById('txt-add-title').textContent = lang.addTitle;
+            document.getElementById('btn-add-cancel').textContent = currentLang === 'zh' ? '取消' : 'CANCEL';
+            document.getElementById('txt-add-cat').textContent = lang.addCat;
+            document.getElementById('txt-add-icon').textContent = lang.addIcon;
+            document.getElementById('txt-add-upload').textContent = lang.uploadBtn;
+            document.getElementById('txt-add-name-zh').textContent = lang.nameZh;
+            document.getElementById('add-strat-name-zh').placeholder = lang.addNameZhPh;
+            document.getElementById('txt-add-name-en').textContent = lang.nameEn;
+            document.getElementById('add-strat-name-en').placeholder = lang.addNameEnPh;
+            document.getElementById('txt-add-seq').textContent = lang.addSeq;
+            document.getElementById('add-strat-seq').placeholder = lang.addSeqPh;
+            document.getElementById('btn-add-save').textContent = lang.addSave;
+            document.getElementById('txt-add-hint').textContent = lang.addHint;
+            
+            document.getElementById('txt-desc-addCat').textContent = lang.descAddCat;
+            document.getElementById('txt-desc-addIcon').textContent = lang.descAddIcon;
+            document.getElementById('txt-desc-addZh').textContent = lang.descAddZh;
+            document.getElementById('txt-desc-addEn').textContent = lang.descAddEn;
+            document.getElementById('txt-desc-addSeq').textContent = lang.descAddSeq;
+
+            document.getElementById('opt-cat-support').textContent = lang.cat_support;
+            document.getElementById('opt-cat-orbital').textContent = lang.cat_orbital;
+            document.getElementById('opt-cat-eagle').textContent = lang.cat_eagle;
+            document.getElementById('opt-cat-emplacement').textContent = lang.cat_emplacement;
+            document.getElementById('opt-cat-sentry').textContent = lang.cat_sentry;
+            document.getElementById('opt-cat-backpack').textContent = lang.cat_backpack;
+            document.getElementById('opt-cat-vehicle').textContent = lang.cat_vehicle;
+            document.getElementById('opt-cat-mission').textContent = lang.cat_mission;
+
+            document.getElementById('lib-search-input').placeholder = lang.searchPh;
             
             updateSettingsUI();
         }
@@ -686,111 +1102,231 @@
             setTimeout(() => toast.classList.remove('show'), 2000);
         }
 
+        function formatDisplayKey(key) {
+            if(!key) return '';
+            return key.replace(/Key|Digit|Numpad/g, '')
+                      .replace('ControlLeft', 'LCtrl')
+                      .replace('ControlRight', 'RCtrl')
+                      .replace('ShiftLeft', 'LShift')
+                      .replace('ShiftRight', 'RShift')
+                      .replace('AltLeft', 'LAlt')
+                      .replace('AltRight', 'RAlt')
+                      .replace('MouseMiddle', 'M-Mid')
+                      .replace('MouseSide1', 'M-S1')
+                      .replace('MouseSide2', 'M-S2')
+                      .replace('WheelUp', 'W-Up')
+                      .replace('WheelDown', 'W-Down');
+        }
+
         function renderMainList() {
             const container = document.getElementById('slots-container');
             container.innerHTML = '';
             const lang = i18n[currentLang];
             for (let i = 0; i < maxSlots; i++) {
-                const item = activeLoadout[i];
+                const slot = activeLoadout[i];
                 const row = document.createElement('div');
-                if (item) {
+                
+
+                row.draggable = true;
+                row.dataset.index = i;
+                row.ondragstart = window.handleDragStart;
+                row.ondragover = window.handleDragOver;
+                row.ondragenter = window.handleDragEnter;
+                row.ondragleave = window.handleDragLeave;
+                row.ondrop = window.handleDrop;
+                row.ondragend = window.handleDragEnd;
+
+                let btnClass = 'bind-btn';
+                let btnText = lang.clickToBind;
+                let subText = lang.unboundSub;
+                if (bindingTarget && bindingTarget.type === 'macro' && bindingTarget.index === i) {
+                    btnClass += ' listening'; btnText = lang.waiting; subText = lang.bindSub;
+                } else if (slot.hotkey) {
+                    btnClass += ' bound'; btnText = `[ ${formatDisplayKey(slot.hotkey)} ]`; subText = lang.boundSub;
+                }
+                const bindBoxHtml = `<div class="row-bind-box"><button class="${btnClass}" onclick="startMacroBind(${i}, event)" oncontextmenu="clearMacroBind(${i}, event)">${btnText}<div class="bind-subtext">${subText}</div></button></div>`;
+                const dragHandleHtml = `<div class="drag-handle" title="${lang.dragHint || ''}"></div>`;
+
+                if (slot.strat) {
                     row.className = 'list-row';
-                    const arrowsHtml = item.seq.map(k => `<img class="arrow-img" src="${arrowSVGMap[k]}">`).join('');
-                    let btnClass = 'bind-btn';
-                    let btnText = lang.clickToBind;
-                    let subText = lang.unboundSub;
-                    if (bindingTarget && bindingTarget.type === 'macro' && bindingTarget.index === i) {
-                        btnClass += ' listening'; btnText = lang.waiting; subText = lang.bindSub;
-                    } else if (item.hotkey) {
-                        btnClass += ' bound'; btnText = `[ ${item.hotkey} ]`; subText = lang.boundSub;
-                    }
-                    const iconSrc = item.icon || 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
-                    row.innerHTML = `<div class="row-icon-box"><img src="${iconSrc}"><button class="btn-remove" onclick="removeStratagem(${i})">✕</button></div><div class="row-arrows">${arrowsHtml}</div><div class="row-bind-box"><button class="${btnClass}" onclick="startMacroBind(${i}, event)" oncontextmenu="clearMacroBind(${i}, event)">${btnText}<div class="bind-subtext">${subText}</div></button></div>`;
+                    const arrowsHtml = slot.strat.seq.map(k => `<img class="arrow-img" src="${arrowSVGMap[k]}">`).join('');
+                    const iconSrc = slot.strat.icon || 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
+                    row.innerHTML = `${dragHandleHtml}<div class="row-icon-box"><img src="${iconSrc}"><button class="btn-remove" onclick="removeStratagem(${i})">✕</button></div><div class="row-arrows">${arrowsHtml}</div>${bindBoxHtml}`;
                 } else {
-                    row.className = 'list-row empty'; row.textContent = lang.emptySlot; row.onclick = openLibrary;
+                    row.className = 'list-row empty'; 
+                    row.innerHTML = `${dragHandleHtml}<div class="empty-click-area" onclick="openLibrary()">${lang.emptySlot}</div>${bindBoxHtml}`;
                 }
                 container.appendChild(row);
             }
             saveCurrentLoadoutToCache();
-            if (window.electronAPI) {
+            if (window.electronAPI && window.electronAPI.updateOverlay) {
                 window.electronAPI.updateOverlay(activeLoadout);
                 window.electronAPI.updateSelection(overlaySelectedIndex);
             }
         }
 
-        window.openLibrary = () => { document.getElementById('library-modal').classList.add('active'); renderLibrary(); }
-        window.closeModals = () => { document.querySelectorAll('.modal-overlay').forEach(el => el.classList.remove('active')); cancelBinding(); }
+        window.openLibrary = () => { 
+            document.getElementById('library-modal').classList.add('active'); 
+            document.getElementById('lib-search-input').value = '';
+            document.getElementById('lib-search-hint').style.display = 'none';
+            renderLibrary(); 
+        }
+        
+        window.handleSearch = () => {
+            const keyword = document.getElementById('lib-search-input').value;
+            renderLibrary(keyword);
+        }
 
-        function renderLibrary() {
+        function renderLibrary(keyword = '') {
             const container = document.getElementById('lib-content');
             container.innerHTML = '';
-            const groups =['support', 'orbital', 'eagle', 'emplacement', 'sentry', 'backpack', 'vehicle', 'mission'];
+            
+            keyword = keyword.trim().toLowerCase();
             const lang = i18n[currentLang];
-            groups.forEach(grp => {
-                const items = stratagemDB.filter(s => s.grp === grp);
-                if(items.length === 0) return;
-                const header = document.createElement('div'); header.className = 'lib-cat-header'; header.textContent = lang[`cat_${grp}`];
-                container.appendChild(header);
-                const grid = document.createElement('div'); grid.className = 'lib-grid';
-                items.forEach(strat => {
-                    const isSelected = activeLoadout.some(s => s && s.id === strat.id);
-                    const isCustom = strat.id.startsWith('custom_');
-                    const card = document.createElement('div');
-                    card.className = `lib-card ${isSelected ? 'selected' : ''}`;
-                    card.onclick = () => toggleStratagem(strat.id);
-                    card.oncontextmenu = (e) => {
-                        e.preventDefault();
-                        if (isCustom) {
-                            confirmDeleteCustom(strat.id);
-                        }
-                    };
+            let hasAliasMatch = false;
 
-                    const iconSrc = strat.icon || 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
-                    card.innerHTML = `<img class="lib-icon" src="${iconSrc}"><div class="lib-name">${strat.name[currentLang]}</div><div class="lib-check">[ ✓ ]</div>`;
-                    grid.appendChild(card);
+            if (!keyword) {
+                document.getElementById('lib-search-hint').style.display = 'none';
+                const groups =['support', 'orbital', 'eagle', 'emplacement', 'sentry', 'backpack', 'vehicle', 'mission'];
+                groups.forEach(grp => {
+                    const items = stratagemDB.filter(s => s.grp === grp);
+                    if(items.length === 0) return;
+                    const header = document.createElement('div'); header.className = 'lib-cat-header'; header.textContent = lang[`cat_${grp}`];
+                    container.appendChild(header);
+                    const grid = document.createElement('div'); grid.className = 'lib-grid';
+                    items.forEach(strat => {
+                        grid.appendChild(createStratCard(strat));
+                    });
+                    container.appendChild(grid);
                 });
-                container.appendChild(grid);
-            });
+            } else {
+                const matchedStrats = stratagemDB.filter(strat => {
+                    const nameZhMatch = strat.name.zh.toLowerCase().includes(keyword);
+                    const nameEnMatch = strat.name.en.toLowerCase().includes(keyword);
+                    const aliasMatch = strat.aliases && strat.aliases.some(a => a.toLowerCase().includes(keyword));
+                    
+                    if (aliasMatch && !nameZhMatch && !nameEnMatch) {
+                        hasAliasMatch = true;
+                    }
+                    return nameZhMatch || nameEnMatch || aliasMatch;
+                });
+
+                if (hasAliasMatch) {
+                    document.getElementById('lib-search-hint').style.display = 'block';
+                    document.getElementById('lib-search-hint').textContent = lang.searchHint;
+                } else {
+                    document.getElementById('lib-search-hint').style.display = 'none';
+                }
+
+                if(matchedStrats.length > 0) {
+                    const grid = document.createElement('div'); grid.className = 'lib-grid';
+                    matchedStrats.forEach(strat => {
+                        grid.appendChild(createStratCard(strat));
+                    });
+                    container.appendChild(grid);
+                } else {
+                    container.innerHTML = `<div style="text-align:center; color: var(--hd-text-secondary); padding: 40px; font-weight: 500;">未找到相关战备 / NO STRATAGEM FOUND</div>`;
+                }
+            }
+        }
+
+        function createStratCard(strat) {
+            const isSelected = activeLoadout.some(s => s.strat && s.strat.id === strat.id);
+            const isCustom = strat.id.startsWith('custom_');
+            const card = document.createElement('div');
+            card.className = `lib-card ${isSelected ? 'selected' : ''}`;
+            card.onclick = () => { toggleStratagem(strat.id); };
+            card.oncontextmenu = (e) => { e.preventDefault(); if (isCustom) confirmDeleteCustom(strat.id); };
+            const iconSrc = strat.icon || 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
+            card.innerHTML = `<img class="lib-icon" src="${iconSrc}"><div class="lib-name">${strat.name[currentLang]}</div><div class="lib-check">✓</div>`;
+            return card;
         }
 
         window.toggleStratagem = (id) => {
-            const idx = activeLoadout.findIndex(s => s && s.id === id);
-            if (idx !== -1) { activeLoadout.splice(idx, 1); } 
-            else {
-                if (activeLoadout.length >= maxSlots) { showToast(i18n[currentLang].msgFull, true); return; }
+            const idx = activeLoadout.findIndex(item => item.strat && item.strat.id === id);
+            if (idx !== -1) { 
+                activeLoadout[idx].strat = null; 
+            } else {
+                const emptyIdx = activeLoadout.findIndex(item => !item.strat);
+                if (emptyIdx === -1) { showToast(i18n[currentLang].msgFull, true); return; }
                 const strat = stratagemDB.find(s => s.id === id);
-                activeLoadout.push({ ...strat, hotkey: null });
+                activeLoadout[emptyIdx].strat = strat;
             }
-            renderLibrary(); renderMainList();
+            const keyword = document.getElementById('lib-search-input').value;
+            renderLibrary(keyword); 
+            renderMainList();
         }
 
-        window.removeStratagem = (index) => { activeLoadout.splice(index, 1); if (bindingTarget && bindingTarget.type === 'macro' && bindingTarget.index === index) cancelBinding(); renderMainList(); }
+        window.closeModals = () => { 
+            document.querySelectorAll('.modal-overlay').forEach(el => el.classList.remove('active')); 
+            cancelBinding(); 
+        }
+
+        window.removeStratagem = (index) => { activeLoadout[index].strat = null; if (bindingTarget && bindingTarget.type === 'macro' && bindingTarget.index === index) cancelBinding(); renderMainList(); }
 
         window.openSettings = () => { document.getElementById('settings-modal').classList.add('active'); updateSettingsUI(); }
 
+        window.setOverlayStyle = (mode) => { gameSettings.ovStyle = mode; updateSettingsUI(); }
+        window.setMenuMode = (mode) => { gameSettings.menuMode = mode; updateSettingsUI(); }
+
         function updateSettingsUI() {
-            document.getElementById('btn-set-menuKey').textContent = gameSettings.menuKey;
-            document.getElementById('btn-set-upKey').textContent = gameSettings.upKey;
-            document.getElementById('btn-set-downKey').textContent = gameSettings.downKey;
-            document.getElementById('btn-set-leftKey').textContent = gameSettings.leftKey;
-            document.getElementById('btn-set-rightKey').textContent = gameSettings.rightKey;
+            document.getElementById('btn-set-menuKey').textContent = formatDisplayKey(gameSettings.menuKey);
+            document.getElementById('btn-set-upKey').textContent = formatDisplayKey(gameSettings.upKey);
+            document.getElementById('btn-set-downKey').textContent = formatDisplayKey(gameSettings.downKey);
+            document.getElementById('btn-set-leftKey').textContent = formatDisplayKey(gameSettings.leftKey);
+            document.getElementById('btn-set-rightKey').textContent = formatDisplayKey(gameSettings.rightKey);
+            
             document.getElementById('mode-hold').className = `toggle-option ${gameSettings.menuMode === 'hold' ? 'active' : ''}`;
             document.getElementById('mode-toggle').className = `toggle-option ${gameSettings.menuMode === 'toggle' ? 'active' : ''}`;
-            const speedInput = document.getElementById('input-set-speed');
-            if(speedInput) speedInput.value = (gameSettings.macroDelay && gameSettings.macroDelay !== 10) ? gameSettings.macroDelay : '';
+            
+            document.getElementById('input-set-menuDelay').value = gameSettings.menuOpenDelay || 100;
+            document.getElementById('input-set-pressDelay').value = gameSettings.pressDelay || 10;
+            document.getElementById('input-set-intervalDelay').value = gameSettings.intervalDelay || 10;
+            
+            document.getElementById('input-set-opacity').value = gameSettings.ovOpacity;
+            document.getElementById('opacity-val').innerText = gameSettings.ovOpacity + '%';
+            document.getElementById('input-set-w').value = gameSettings.ovWidth;
+            document.getElementById('input-set-h').value = gameSettings.ovHeight;
+            
+            document.getElementById('style-text').className = `toggle-option ${gameSettings.ovStyle === 'text' ? 'active' : ''}`;
+            document.getElementById('style-svg').className = `toggle-option ${gameSettings.ovStyle === 'svg' ? 'active' : ''}`;
+
+            document.getElementById('btn-set-ovUp').textContent = formatDisplayKey(gameSettings.ovUp) || '';
+            document.getElementById('btn-set-ovDown').textContent = formatDisplayKey(gameSettings.ovDown) || '';
+            document.getElementById('btn-set-ovExec').textContent = formatDisplayKey(gameSettings.ovExec) || '';
         }
 
         window.saveSettings = () => {
-            let speedVal = parseInt(document.getElementById('input-set-speed').value);
-            if (isNaN(speedVal) || speedVal < 10) speedVal = 10;
-            gameSettings.macroDelay = speedVal;
+            let md = parseInt(document.getElementById('input-set-menuDelay').value);
+            let pd = parseInt(document.getElementById('input-set-pressDelay').value);
+            let id = parseInt(document.getElementById('input-set-intervalDelay').value);
+            
+            gameSettings.menuOpenDelay = (isNaN(md) || md < 1) ? 100 : md;
+            gameSettings.pressDelay = (isNaN(pd) || pd < 1) ? 10 : pd;
+            gameSettings.intervalDelay = (isNaN(id) || id < 1) ? 10 : id;
+            
+            gameSettings.ovOpacity = parseInt(document.getElementById('input-set-opacity').value);
+            let widthVal = parseInt(document.getElementById('input-set-w').value);
+            let heightVal = parseInt(document.getElementById('input-set-h').value);
+            
+            if (isNaN(widthVal) || widthVal < 100) widthVal = 100;
+            if (widthVal > 1000) widthVal = 1000;
+            if (isNaN(heightVal) || heightVal < 100) heightVal = 100;
+            if (heightVal > 800) heightVal = 800;
 
-            localStorage.setItem('hd2_macro_settings', JSON.stringify(gameSettings));
+            gameSettings.ovWidth = widthVal;
+            gameSettings.ovHeight = heightVal;
+
+            saveDataToLocal('settings.json', gameSettings, 'hd2_macro_settings');
+            
+            if(window.electronAPI && window.electronAPI.resizeOverlay) {
+                window.electronAPI.resizeOverlay(gameSettings.ovWidth, gameSettings.ovHeight);
+                window.electronAPI.updateOverlaySettings({ opacity: gameSettings.ovOpacity, style: gameSettings.ovStyle });
+            }
+            
             showToast(i18n[currentLang].msgSetSaved);
             closeModals();
         }
-
-        window.setMenuMode = (mode) => { gameSettings.menuMode = mode; updateSettingsUI(); }
 
         window.startMacroBind = (index, e) => { e.stopPropagation(); cancelBinding(); bindingTarget = { type: 'macro', index: index }; renderMainList(); attachListeners(); }
         window.startSettingBind = (settingKey, e) => {
@@ -805,293 +1341,422 @@
             e.preventDefault(); e.stopPropagation();
             if (activeLoadout[index] && activeLoadout[index].hotkey) { activeLoadout[index].hotkey = null; showToast(i18n[currentLang].msgClear); renderMainList(); }
         }
+        
+        window.clearSettingBind = (key, e) => {
+            e.preventDefault(); e.stopPropagation();
+            if(gameSettings[key]) { gameSettings[key] = ''; updateSettingsUI(); }
+        }
 
-        function attachListeners() { window.addEventListener('keydown', handleKeyInput); window.addEventListener('mousedown', handleMouseInput); }
-        function cancelBinding() {
-            if (bindingTarget && bindingTarget.type === 'setting') {
-                const btn = document.getElementById(`btn-set-${bindingTarget.key}`);
-                if(btn) btn.classList.remove('listening');
+        function attachListeners() { 
+            window.addEventListener('keydown', handleKeyInput); 
+            window.addEventListener('mousedown', handleMouseInput); 
+        }
+        
+        function handleKeyInput(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (e.code === 'Escape') { 
+                cancelBinding();
+                return;
             }
-            bindingTarget = null; window.removeEventListener('keydown', handleKeyInput); window.removeEventListener('mousedown', handleMouseInput);
-            renderMainList(); updateSettingsUI();
+            saveInput(e.code);
+        }
+
+        function handleMouseInput(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            let mBtn = "";
+            if (e.button === 0 || e.button === 2) { 
+                cancelBinding(); 
+                return; 
+            }
+            if (e.button === 1) mBtn = "MouseMiddle";
+            else if (e.button === 3) mBtn = "MouseSide1";
+            else if (e.button === 4) mBtn = "MouseSide2";
+            
+            if (mBtn) saveInput(mBtn);
+        }
+
+        function cancelBinding() {
+            let needsRender = false;
+            if (bindingTarget) {
+                if (bindingTarget.type === 'setting') {
+                    const btn = document.getElementById(`btn-set-${bindingTarget.key}`);
+                    if(btn) btn.classList.remove('listening');
+                }
+                needsRender = true;
+            }
+            bindingTarget = null; 
+            window.removeEventListener('keydown', handleKeyInput); 
+            window.removeEventListener('mousedown', handleMouseInput);
+            if (needsRender) renderMainList(); 
+            updateSettingsUI();
         }
 
         function saveInput(keyStr) {
             if (!bindingTarget) return;
             const lang = i18n[currentLang];
             if (bindingTarget.type === 'macro') {
-                const conflictIdx = activeLoadout.findIndex((s, idx) => s && s.hotkey === keyStr && idx !== bindingTarget.index);
+                const conflictIdx = activeLoadout.findIndex((s, idx) => s.hotkey === keyStr && idx !== bindingTarget.index);
                 if (conflictIdx !== -1) {
                     if(!confirm(lang.msgConfirm)) { cancelBinding(); return; }
                     activeLoadout[conflictIdx].hotkey = null;
                 }
                 activeLoadout[bindingTarget.index].hotkey = keyStr;
-                showToast(`${lang.msgMacro} ${keyStr}`);
+                showToast(`${lang.msgMacro} ${formatDisplayKey(keyStr)}`);
             } else if (bindingTarget.type === 'setting') {
                 gameSettings[bindingTarget.key] = keyStr;
             }
             cancelBinding();
         }
 
-        function handleKeyInput(e) { e.preventDefault(); if (e.key === 'Escape') { cancelBinding(); return; } saveInput(e.code.replace('Key', '')); }
-        function handleMouseInput(e) {
-            if (e.button === 0 || e.button === 2) return; 
-            e.preventDefault(); 
-            let keyStr = '';
-            if (e.button === 1) keyStr = 'MouseMiddle';     
-            else if (e.button === 3) keyStr = 'MouseSide1'; 
-            else if (e.button === 4) keyStr = 'MouseSide2'; 
-            else if (e.button === 5) keyStr = 'MouseSide3'; 
-            else keyStr = `MouseBtn_${e.button}`;
-            saveInput(keyStr);
-        }
-
         let isMacroRunning = false; 
         let overlaySelectedIndex = 0;
 
-        function executeMacroByItem(stratagem, itemIndex) {
-            if (isMacroRunning || !stratagem) return; 
+        function executeMacroByItem(item, itemIndex) {
+            if (isMacroRunning || !item || !item.strat) return; 
             isMacroRunning = true; 
+            const stratagem = item.strat;
 
             overlaySelectedIndex = itemIndex;
-            if(window.electronAPI) window.electronAPI.updateSelection(overlaySelectedIndex);
+            if(window.electronAPI && window.electronAPI.updateSelection) window.electronAPI.updateSelection(overlaySelectedIndex);
 
             const seqDisplay = stratagem.seq.map(k => arrowDisplayMap[k]).join(' ');
             showToast(`${i18n[currentLang].msgExec}: [ ${seqDisplay} ]`);
             
             const keyMap = { 'W': gameSettings.upKey, 'S': gameSettings.downKey, 'A': gameSettings.leftKey, 'D': gameSettings.rightKey };
-            const payload = {
-                menuKey: gameSettings.menuKey,
-                menuMode: gameSettings.menuMode,
-                sequence: stratagem.seq.map(k => keyMap[k]),
-                delayMs: gameSettings.macroDelay || 10 
+            
+            const payload = { 
+                menuKey: gameSettings.menuKey, 
+                menuMode: gameSettings.menuMode, 
+                sequence: stratagem.seq.map(k => keyMap[k]), 
+                menuOpenDelay: gameSettings.menuOpenDelay || 100,
+                pressDelay: gameSettings.pressDelay || 10,
+                intervalDelay: gameSettings.intervalDelay || 10
             };
             
-            const estimatedTimeMs = 300 + (stratagem.seq.length * 130) + 200;
-
+            const estimatedTimeMs = payload.menuOpenDelay + (stratagem.seq.length * (payload.pressDelay + payload.intervalDelay)) + 100;
+            
             if(window.electronAPI) {
                 window.electronAPI.sendMacro(payload);
                 window.electronAPI.highlightOverlay({ index: itemIndex, duration: estimatedTimeMs });
             }
-
             setTimeout(() => { isMacroRunning = false; }, estimatedTimeMs);
         }
 
         function triggerMacro(inputKey) {
-            const itemIndex = activeLoadout.findIndex(item => item && item.hotkey === inputKey);
+            const itemIndex = activeLoadout.findIndex(item => item.hotkey === inputKey && item.strat);
             if (itemIndex !== -1) {
-                const validItems = activeLoadout.filter(item => item !== null);
-                const realOverlayIndex = validItems.findIndex(item => item.id === activeLoadout[itemIndex].id);
+                const validItems = activeLoadout.filter(item => item.strat);
+                const realOverlayIndex = validItems.findIndex(item => item.strat.id === activeLoadout[itemIndex].strat.id);
                 executeMacroByItem(activeLoadout[itemIndex], realOverlayIndex);
             }
         }
 
         if (window.electronAPI) {
-            window.minimizeApp = () => window.electronAPI.minimize();
-            window.trayApp = () => window.electronAPI.tray();
-            window.closeApp = () => window.electronAPI.close();
-
-            window.electronAPI.onGlobalKeyDown((keyName) => {
+            if(window.electronAPI.onGlobalKeyDown) window.electronAPI.onGlobalKeyDown((keyName) => {
                 if (bindingTarget) return; 
+                if (isOverlayVisible) {
+                    if (keyName === (gameSettings.ovExec || 'MouseMiddle')) { executeSelection(); return; }
+                    if (keyName === (gameSettings.ovUp || 'WheelUp')) { scrollOverlay(-1); return; }
+                    if (keyName === (gameSettings.ovDown || 'WheelDown')) { scrollOverlay(1); return; }
+                }
                 triggerMacro(keyName);
             });
 
-            window.electronAPI.onGlobalMouseDown((mouseKey) => {
+            if(window.electronAPI.onGlobalMouseDown) window.electronAPI.onGlobalMouseDown((mouseKey) => {
                 if (bindingTarget) return; 
-                if (mouseKey === 'MouseMiddle') {
-                    const validItems = activeLoadout.filter(item => item !== null);
-                    if (validItems.length > 0 && overlaySelectedIndex >= 0) {
-                        executeMacroByItem(validItems[overlaySelectedIndex], overlaySelectedIndex);
-                        return; 
-                    }
+                if (isOverlayVisible) {
+                    if (mouseKey === (gameSettings.ovExec || 'MouseMiddle')) { executeSelection(); return; }
+                    if (mouseKey === (gameSettings.ovUp || 'WheelUp')) { scrollOverlay(-1); return; }
+                    if (mouseKey === (gameSettings.ovDown || 'WheelDown')) { scrollOverlay(1); return; }
                 }
                 triggerMacro(mouseKey);
             });
 
-            window.electronAPI.onGlobalWheel((dir) => {
-                if (bindingTarget) return; 
-                const validItems = activeLoadout.filter(item => item !== null);
-                if (validItems.length === 0) return; 
-
-                overlaySelectedIndex += dir;
-                if (overlaySelectedIndex < 0) overlaySelectedIndex = validItems.length - 1;
-                if (overlaySelectedIndex >= validItems.length) overlaySelectedIndex = 0;
+            if(window.electronAPI.onGlobalWheel) window.electronAPI.onGlobalWheel((dir) => {
+                const wheelKey = dir < 0 ? 'WheelUp' : 'WheelDown';
+                if (bindingTarget) { saveInput(wheelKey); return; } 
                 
-                window.electronAPI.updateSelection(overlaySelectedIndex);
+                if (isOverlayVisible) {
+                    if (wheelKey === (gameSettings.ovUp || 'WheelUp')) { scrollOverlay(-1); return; }
+                    if (wheelKey === (gameSettings.ovDown || 'WheelDown')) { scrollOverlay(1); return; }
+                    if (wheelKey === (gameSettings.ovExec || 'MouseMiddle')) { executeSelection(); return; }
+                }
+                triggerMacro(wheelKey);
             });
         }
-
-        window.openPresets = () => {
-            document.getElementById('presets-modal').classList.add('active');
-            renderPresets();
+        
+        function scrollOverlay(direction) {
+            const validItems = activeLoadout.filter(item => item.strat);
+            if (validItems.length === 0) return; 
+            overlaySelectedIndex += direction;
+            if (overlaySelectedIndex < 0) overlaySelectedIndex = validItems.length - 1;
+            if (overlaySelectedIndex >= validItems.length) overlaySelectedIndex = 0;
+            if(window.electronAPI && window.electronAPI.updateSelection) window.electronAPI.updateSelection(overlaySelectedIndex);
+        }
+        
+        function executeSelection() {
+            const validItems = activeLoadout.filter(item => item.strat);
+            if (validItems.length > 0 && overlaySelectedIndex >= 0) {
+                executeMacroByItem(validItems[overlaySelectedIndex], overlaySelectedIndex);
+            }
         }
 
+        window.openPresets = () => { document.getElementById('presets-modal').classList.add('active'); renderPresets(); }
+        
         window.renderPresets = () => {
-            const container = document.getElementById('preset-list-container');
-            container.innerHTML = '';
-            const lang = i18n[currentLang];
-            
-            if (savedPresets.length === 0) {
-                container.innerHTML = `<div style="text-align:center; color: var(--hd-light-gray); padding: 20px;">暂无保存的预设 / NO PRESETS</div>`;
-                return;
-            }
-
+            const container = document.getElementById('preset-list-container'); container.innerHTML = ''; const lang = i18n[currentLang];
+            if (savedPresets.length === 0) { container.innerHTML = `<div style="text-align:center; color: var(--hd-text-secondary); padding: 40px; font-weight: 500;">暂无保存的预设 / NO PRESETS</div>`; return; }
             savedPresets.forEach((preset, index) => {
-                const card = document.createElement('div');
-                card.className = 'preset-card';
-                
-                const iconsHtml = preset.loadout.filter(item => item !== null).map(item => {
-                    const iconSrc = item.icon || 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
+                const card = document.createElement('div'); card.className = 'preset-card';
+                const iconsHtml = preset.loadout.filter(item => item.strat || item.stratId).map(item => {
+                    let iconSrc = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
+                    if (item.stratId !== undefined) {
+                        const s = item.stratId ? stratagemDB.find(x => x.id === item.stratId) : null;
+                        if (s && s.icon) iconSrc = s.icon;
+                    } else if (item.strat && item.strat.icon) {
+                        iconSrc = item.strat.icon;
+                    }
                     return `<img class="preset-icon-mini" src="${iconSrc}">`;
                 }).join('');
-
-                card.innerHTML = `
-                    <div class="preset-card-header">
-                        <div class="preset-name">${preset.name}</div>
-                        <div class="preset-actions">
-                            <button class="btn-square primary" onclick="loadPreset(${index})">${lang.btnLoad}</button>
-                            <button class="btn-square btn-danger" onclick="confirmDeletePreset(${index})">${lang.btnDel}</button>
-                        </div>
-                    </div>
-                    <div class="preset-icons-preview">${iconsHtml}</div>
-                `;
+                card.innerHTML = `<div class="preset-card-header"><div class="preset-name">${preset.name}</div><div class="preset-actions"><button class="btn-square primary" onclick="loadPreset(${index})">${lang.btnLoad}</button><button class="btn-square" onclick="updatePreset(${index})">${lang.btnUpdate}</button><button class="btn-square" onclick="renamePreset(${index})">${lang.btnRename}</button><button class="btn-square" onclick="exportPreset(${index})">${lang.btnExport}</button><button class="btn-square btn-danger" onclick="confirmDeletePreset(${index})">${lang.btnDel}</button></div></div><div class="preset-icons-preview">${iconsHtml}</div>`;
                 container.appendChild(card);
             });
         }
 
         window.saveCurrentPreset = () => {
-            const input = document.getElementById('preset-name-input');
-            const name = input.value.trim();
-            const lang = i18n[currentLang];
-            
+            const input = document.getElementById('preset-name-input'); const name = input.value.trim(); const lang = i18n[currentLang];
             if (!name) { showToast(lang.msgEnterName, true); return; }
-            const hasItem = activeLoadout.some(item => item !== null);
-            if (!hasItem) { showToast(lang.msgEmptyLoadout, true); return; }
-
-            const loadoutCopy = JSON.parse(JSON.stringify(activeLoadout));
-            savedPresets.push({ name: name, loadout: loadoutCopy });
+            if (!activeLoadout.some(item => item.strat)) { showToast(lang.msgEmptyLoadout, true); return; }
             
-            localStorage.setItem('hd2_macro_presets', JSON.stringify(savedPresets));
-            input.value = '';
-            showToast(lang.msgPreSaved);
-            renderPresets();
+            if (savedPresets.some(preset => preset.name === name)) {
+                showToast(lang.msgPresetExists, true); 
+                return;
+            }
+
+            const compactLoadout = activeLoadout.map(item => ({
+                stratId: item.strat ? item.strat.id : null,
+                hotkey: item.hotkey
+            }));
+
+            savedPresets.push({ name: name, loadout: compactLoadout });
+            try {
+                saveDataToLocal('presets.json', savedPresets, 'hd2_macro_presets');
+                input.value = ''; showToast(lang.msgPreSaved); renderPresets();
+            } catch(e) {
+                savedPresets.pop();
+                showToast("容量受限/保存失败: " + e.message, true);
+            }
         }
 
-        window.loadPreset = (index) => {
-            activeLoadout = JSON.parse(JSON.stringify(savedPresets[index].loadout));
-            saveCurrentLoadoutToCache();
-            renderMainList();
-            showToast(i18n[currentLang].msgPreLoaded);
-            closeModals();
+        window.updatePreset = (index) => {
+            const lang = i18n[currentLang];
+            if (!activeLoadout.some(item => item.strat)) { 
+                showToast(lang.msgEmptyLoadout, true); 
+                return; 
+            }
+            pendingDelete = { type: 'updatePreset', payload: index }; 
+            document.getElementById('txt-confirm-msg').textContent = lang.msgConfirmUpdate; 
+            document.getElementById('confirm-modal').classList.add('active');
+        }
+
+        let pendingRenameIndex = null;
+        window.renamePreset = (index) => {
+            pendingRenameIndex = index;
+            document.getElementById('rename-modal').classList.add('active');
+            const input = document.getElementById('rename-input');
+            input.value = savedPresets[index].name;
+            setTimeout(() => { input.focus(); input.select(); }, 100);
+        }
+        window.closeRenameModal = () => {
+            pendingRenameIndex = null;
+            document.getElementById('rename-modal').classList.remove('active');
+        }
+        window.executeRename = () => {
+            if (pendingRenameIndex === null) return;
+            const newName = document.getElementById('rename-input').value.trim();
+            const lang = i18n[currentLang];
+            
+            if (!newName) { showToast(lang.msgEnterName, true); return; }
+            if (savedPresets.some((p, idx) => p.name === newName && idx !== pendingRenameIndex)) {
+                showToast(lang.msgPresetExists, true); return;
+            }
+            
+            savedPresets[pendingRenameIndex].name = newName;
+            saveDataToLocal('presets.json', savedPresets, 'hd2_macro_presets');
+            showToast(lang.msgPreRenamed);
+            renderPresets();
+            closeRenameModal();
+        }
+
+        document.getElementById('rename-input').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') window.executeRename();
+            if (e.key === 'Escape') window.closeRenameModal();
+        });
+
+        window.loadPreset = (index) => { 
+            activeLoadout = savedPresets[index].loadout.map(item => {
+                if (item.stratId !== undefined) {
+                    const s = item.stratId ? stratagemDB.find(x => x.id === item.stratId) : null;
+                    return { strat: s || null, hotkey: item.hotkey };
+                } else {
+                    return { strat: item.strat || null, hotkey: item.hotkey };
+                }
+            });
+            saveCurrentLoadoutToCache(); 
+            overlaySelectedIndex = 0; 
+            renderMainList(); 
+            showToast(i18n[currentLang].msgPreLoaded); 
+            closeModals(); 
+        }
+
+        window.exportPreset = (index) => {
+            const preset = savedPresets[index];
+            const compactLoadout = preset.loadout.map(item => ({
+                s: item.stratId || (item.strat ? item.strat.id : null),
+                h: item.hotkey
+            }));
+            const dataObj = { n: preset.name, l: compactLoadout };
+            const base64Code = btoa(encodeURIComponent(JSON.stringify(dataObj)));
+            const lang = i18n[currentLang];
+            const shareText = lang.sharePrefix.replace('{code}', base64Code);
+            
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(shareText).then(() => {
+                    showToast(lang.msgExported);
+                }).catch(err => fallbackCopy(shareText, lang));
+            } else {
+                fallbackCopy(shareText, lang);
+            }
+        }
+
+        function fallbackCopy(text, lang) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed"; textArea.style.left = "-999999px";
+            document.body.appendChild(textArea);
+            textArea.focus(); textArea.select();
+            try {
+                document.execCommand('copy');
+                showToast(lang.msgExported);
+            } catch (err) {
+                showToast("复制失败 / Copy Failed", true);
+            }
+            textArea.remove();
+        }
+
+        window.openImportModal = () => {
+            document.getElementById('import-modal').classList.add('active');
+            document.getElementById('import-code-input').value = '';
+        }
+
+        window.closeImportModal = () => {
+            document.getElementById('import-modal').classList.remove('active');
+        }
+
+        window.executeImport = () => {
+            const input = document.getElementById('import-code-input').value.trim();
+            const lang = i18n[currentLang];
+            if (!input) return;
+            
+            const match = input.match(/[\(（]([A-Za-z0-9+/=]+)[)）]/);
+            const code = match ? match[1] : input; 
+            
+            try {
+                const jsonStr = decodeURIComponent(atob(code));
+                const dataObj = JSON.parse(jsonStr);
+                
+                if (dataObj.n && Array.isArray(dataObj.l)) {
+                    const restoredLoadout = dataObj.l.map(item => ({
+                        stratId: item.s,
+                        hotkey: item.h
+                    }));
+                    
+                    let finalName = dataObj.n;
+                    let counter = 1;
+                    while(savedPresets.some(p => p.name === finalName)) {
+                        finalName = `${dataObj.n} (${counter})`;
+                        counter++;
+                    }
+                    
+                    savedPresets.push({ name: finalName, loadout: restoredLoadout });
+                    saveDataToLocal('presets.json', savedPresets, 'hd2_macro_presets');
+                    
+                    showToast(lang.msgImportSuccess);
+                    renderPresets();
+                    closeImportModal();
+                } else {
+                    throw new Error("Invalid structure");
+                }
+            } catch (e) {
+                showToast(lang.msgImportFailed, true);
+            }
         }
 
         let pendingDelete = { type: null, payload: null };
-
-        window.confirmDeletePreset = (index) => {
-            pendingDelete = { type: 'preset', payload: index };
-            document.getElementById('txt-confirm-msg').textContent = i18n[currentLang].msgConfirmDel;
-            document.getElementById('confirm-modal').classList.add('active');
-        }
-
-        window.confirmDeleteCustom = (id) => {
-            pendingDelete = { type: 'custom', payload: id };
-            document.getElementById('txt-confirm-msg').textContent = i18n[currentLang].msgConfirmDelCustom;
-            document.getElementById('confirm-modal').classList.add('active');
-        }
-
-        window.closeConfirmModal = () => {
-            pendingDelete = { type: null, payload: null };
-            document.getElementById('confirm-modal').classList.remove('active');
-        }
-
+        window.confirmDeletePreset = (index) => { pendingDelete = { type: 'preset', payload: index }; document.getElementById('txt-confirm-msg').textContent = i18n[currentLang].msgConfirmDel; document.getElementById('confirm-modal').classList.add('active'); }
+        window.confirmDeleteCustom = (id) => { pendingDelete = { type: 'custom', payload: id }; document.getElementById('txt-confirm-msg').textContent = i18n[currentLang].msgConfirmDelCustom; document.getElementById('confirm-modal').classList.add('active'); }
+        window.closeConfirmModal = () => { pendingDelete = { type: null, payload: null }; document.getElementById('confirm-modal').classList.remove('active'); }
+        
         window.executeDelete = () => {
             if (pendingDelete.type === 'preset') {
-                savedPresets.splice(pendingDelete.payload, 1);
-                localStorage.setItem('hd2_macro_presets', JSON.stringify(savedPresets));
+                savedPresets.splice(pendingDelete.payload, 1); 
+                saveDataToLocal('presets.json', savedPresets, 'hd2_macro_presets');
                 renderPresets();
             } else if (pendingDelete.type === 'custom') {
                 const idToRemove = pendingDelete.payload;
-
-                customStratagems = customStratagems.filter(s => s.id !== idToRemove);
-                localStorage.setItem('hd2_custom_stratagems', JSON.stringify(customStratagems));
-                stratagemDB = [...defaultStratagemDB, ...customStratagems];
-                activeLoadout = activeLoadout.map(item => (item && item.id === idToRemove) ? null : item);
-                saveCurrentLoadoutToCache();
+                customStratagems = customStratagems.filter(s => s.id !== idToRemove); 
+                saveDataToLocal('custom_strats.json', customStratagems, 'hd2_custom_stratagems');
                 
-                renderLibrary();
-                renderMainList();
-                showToast(currentLang === 'zh' ? '已删除自定义战备' : 'Custom stratagem deleted');
+                stratagemDB = [...defaultStratagemDB, ...customStratagems]; 
+                activeLoadout = activeLoadout.map(item => {
+                    if (item.strat && item.strat.id === idToRemove) return { ...item, strat: null };
+                    return item;
+                });
+                saveCurrentLoadoutToCache(); 
+                const keyword = document.getElementById('lib-search-input').value;
+                renderLibrary(keyword); 
+                renderMainList(); showToast(currentLang === 'zh' ? '已删除自定义战备' : 'Custom stratagem deleted');
+            } else if (pendingDelete.type === 'updatePreset') {
+                const idx = pendingDelete.payload;
+                const compactLoadout = activeLoadout.map(item => ({
+                    stratId: item.strat ? item.strat.id : null,
+                    hotkey: item.hotkey
+                }));
+                savedPresets[idx].loadout = compactLoadout;
+                saveDataToLocal('presets.json', savedPresets, 'hd2_macro_presets');
+                showToast(i18n[currentLang].msgPreUpdated);
+                renderPresets();
             }
             closeConfirmModal();
         }
 
         let currentUploadBase64 = null;
-
-        window.openAddStratModal = () => {
-            document.getElementById('add-strat-modal').classList.add('active');
-            document.getElementById('add-strat-name-zh').value = '';
-            document.getElementById('add-strat-name-en').value = '';
-            document.getElementById('add-strat-seq').value = '';
-            document.getElementById('add-strat-icon').value = '';
-            document.getElementById('add-strat-preview').style.display = 'none';
-            currentUploadBase64 = null;
-        }
-
-        window.closeAddStratModal = () => {
-            document.getElementById('add-strat-modal').classList.remove('active');
-        }
-
+        window.openAddStratModal = () => { document.getElementById('add-strat-modal').classList.add('active'); document.getElementById('add-strat-name-zh').value = ''; document.getElementById('add-strat-name-en').value = ''; document.getElementById('add-strat-seq').value = ''; document.getElementById('add-strat-icon').value = ''; document.getElementById('add-strat-preview').style.display = 'none'; currentUploadBase64 = null; }
+        window.closeAddStratModal = () => { document.getElementById('add-strat-modal').classList.remove('active'); }
         window.handleSvgUpload = (event) => {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                currentUploadBase64 = e.target.result;
-                const preview = document.getElementById('add-strat-preview');
-                preview.src = currentUploadBase64;
-                preview.style.display = 'block';
-            };
+            const file = event.target.files[0]; if (!file) return; const reader = new FileReader();
+            reader.onload = function(e) { currentUploadBase64 = e.target.result; const preview = document.getElementById('add-strat-preview'); preview.src = currentUploadBase64; preview.style.display = 'block'; };
             reader.readAsDataURL(file);
         }
-
+        
         window.saveCustomStratagem = () => {
-            const lang = i18n[currentLang];
-            const nameZh = document.getElementById('add-strat-name-zh').value.trim();
-            const nameEn = document.getElementById('add-strat-name-en').value.trim();
-            const cat = document.getElementById('add-strat-cat').value;
-            let rawSeq = document.getElementById('add-strat-seq').value.toUpperCase().replace(/\s/g, '');
-
-            if (!nameZh || !nameEn || !rawSeq) {
-                showToast(lang.msgFillAll, true);
-                return;
-            }
-
-            if (/[^WASD]/.test(rawSeq)) {
-                showToast(lang.msgInvalidSeq, true);
-                return;
-            }
-
-            const newStrat = {
-                id: `custom_${Date.now()}`,
-                grp: cat,
-                name: { zh: nameZh, en: nameEn },
-                seq: rawSeq.split(''),
-                icon: currentUploadBase64 || 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='
-            };
-
-            customStratagems.push(newStrat);
-            stratagemDB = [...defaultStratagemDB, ...customStratagems];
+            const lang = i18n[currentLang]; const nameZh = document.getElementById('add-strat-name-zh').value.trim(); const nameEn = document.getElementById('add-strat-name-en').value.trim(); const cat = document.getElementById('add-strat-cat').value; let rawSeq = document.getElementById('add-strat-seq').value.toUpperCase().replace(/\s/g, '');
+            if (!nameZh || !nameEn || !rawSeq) { showToast(lang.msgFillAll, true); return; }
+            if (/[^WASD]/.test(rawSeq)) { showToast(lang.msgInvalidSeq, true); return; }
+            const newStrat = { id: `custom_${Date.now()}`, grp: cat, name: { zh: nameZh, en: nameEn }, aliases: [], seq: rawSeq.split(''), icon: currentUploadBase64 || 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=' };
             
-
-            localStorage.setItem('hd2_custom_stratagems', JSON.stringify(customStratagems));
+            customStratagems.push(newStrat); 
+            stratagemDB = [...defaultStratagemDB, ...customStratagems]; 
+            saveDataToLocal('custom_strats.json', customStratagems, 'hd2_custom_stratagems');
             
-            showToast(lang.msgCustomSaved);
-            closeAddStratModal();
-            renderLibrary(); 
+            showToast(lang.msgCustomSaved); closeAddStratModal(); 
+            const keyword = document.getElementById('lib-search-input').value;
+            renderLibrary(keyword); 
         }
         
         initData();
-
     </script>
 </body>
 </html>

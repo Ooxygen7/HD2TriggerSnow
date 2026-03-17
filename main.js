@@ -1,5 +1,6 @@
 const { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage } = require('electron');
 const path = require('path');
+const fs = require('fs');
 const { uIOhook } = require('uiohook-napi'); 
 const { keyboard, Key } = require('@nut-tree/nut-js');
 
@@ -8,7 +9,7 @@ let overlayWindow;
 let tray = null;
 let isQuitting = false; 
 
-keyboard.config.autoDelayMs = 40; 
+keyboard.config.autoDelayMs = 0; 
 
 const uioToChar = {
     30: "A", 48: "B", 46: "C", 32: "D", 18: "E", 33: "F", 34: "G", 35: "H",
@@ -38,7 +39,7 @@ const nutKeyMap = {
 
 function createWindow() {
     mainWindow = new BrowserWindow({
-        width: 670, height: 838, minWidth: 667, minHeight: 838,
+        width: 715, height: 940, minWidth: 710, minHeight: 938,
         frame: false, backgroundColor: '#000000',
         webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true }
     });
@@ -55,7 +56,9 @@ function createWindow() {
 function createOverlayWindow() {
     overlayWindow = new BrowserWindow({
         width: 300, height: 550, x: 50, y: 50, 
-        transparent: true, frame: false, alwaysOnTop: true, skipTaskbar: true, resizable: false, show: false,       
+        transparent: true, frame: false, alwaysOnTop: true, skipTaskbar: true, resizable: false, show: false,
+        focusable: false,
+        minWidth: 50, minHeight: 50,
         webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true }
     });
     overlayWindow.setAlwaysOnTop(true, 'screen-saver'); 
@@ -64,6 +67,16 @@ function createOverlayWindow() {
         if (!isQuitting) {
             event.preventDefault();
             overlayWindow.hide();
+        }
+    });
+    overlayWindow.on('show', () => {
+        if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('overlay-visibility-changed', true);
+        }
+    });
+    overlayWindow.on('hide', () => {
+        if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('overlay-visibility-changed', false);
         }
     });
 }
@@ -78,6 +91,30 @@ app.whenReady().then(() => {
         }
     };
 
+    const userDataPath = app.getPath('userData');
+    ipcMain.handle('load-data', async (event, filename) => {
+        const filePath = path.join(userDataPath, filename);
+        try {
+            if (fs.existsSync(filePath)) {
+                const data = fs.readFileSync(filePath, 'utf-8');
+                return JSON.parse(data);
+            }
+        } catch (e) {
+            console.error(`读取文件失败 ${filename}:`, e);
+        }
+        return null; 
+    });
+
+
+    ipcMain.on('save-data', (event, filename, data) => {
+        const filePath = path.join(userDataPath, filename);
+        try { 
+            fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
+        } catch (e) {
+            console.error(`保存文件失败 ${filename}:`, e);
+        }
+    });
+    
     try {
         const iconPath = path.join(__dirname, 'icon.png');
         const appIcon = nativeImage.createFromPath(iconPath);
@@ -113,6 +150,21 @@ app.whenReady().then(() => {
     ipcMain.on('lock-overlay', () => { if (overlayWindow && !overlayWindow.isDestroyed()) { overlayWindow.setIgnoreMouseEvents(true, { forward: true }); overlayWindow.webContents.send('overlay-locked'); } });
     ipcMain.on('unlock-overlay', () => { if (overlayWindow && !overlayWindow.isDestroyed()) { overlayWindow.setIgnoreMouseEvents(false); overlayWindow.showInactive(); overlayWindow.webContents.send('overlay-unlocked'); } });
     
+    ipcMain.on('resize-overlay', (event, w, h) => {
+        if (overlayWindow && !overlayWindow.isDestroyed()) {
+            overlayWindow.setResizable(true);
+            overlayWindow.setMinimumSize(50, 50);
+            overlayWindow.setSize(parseInt(w), parseInt(h));
+            overlayWindow.setResizable(false);
+        }
+    });
+    
+    ipcMain.on('update-overlay-settings', (event, settings) => {
+        if (overlayWindow && !overlayWindow.isDestroyed()) {
+            overlayWindow.webContents.send('overlay-settings', settings);
+        }
+    });
+
     ipcMain.on('update-overlay', (event, data) => { if (overlayWindow && !overlayWindow.isDestroyed()) overlayWindow.webContents.send('render-overlay', data); });
     ipcMain.on('highlight-overlay', (event, data) => { if (overlayWindow && !overlayWindow.isDestroyed()) overlayWindow.webContents.send('highlight-item', data); });
     ipcMain.on('update-selection', (event, index) => { if (overlayWindow && !overlayWindow.isDestroyed()) overlayWindow.webContents.send('selection-changed', index); });
@@ -142,21 +194,46 @@ app.whenReady().then(() => {
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 ipcMain.on('execute-macro', async (event, payload) => {
-    const { menuKey, menuMode, sequence, delayMs } = payload;
+
+    const { menuKey, menuMode, sequence, menuOpenDelay, pressDelay, intervalDelay } = payload;
+    
+    if (!sequence || sequence.length === 0) return;
+
     const mKey = nutKeyMap[menuKey] || Key[menuKey] || Key.LeftControl;
-    const baseDelay = Math.max(10, parseInt(delayMs) || 10);
-    const PRESS_DELAY = Math.max(5, Math.floor(baseDelay / 2)); 
-    const INTERVAL_DELAY = Math.max(5, Math.floor(baseDelay / 2));
-    const MENU_OPEN_DELAY = Math.max(50, baseDelay * 5); 
+    const MENU_OPEN_DELAY = Math.max(1, parseInt(menuOpenDelay) || 150);
+    const PRESS_DELAY = Math.max(1, parseInt(pressDelay) || 15);
+    const INTERVAL_DELAY = Math.max(1, parseInt(intervalDelay) || 15);
 
     try {
+        await keyboard.releaseKey(mKey).catch(() => {});
+        await delay(10);
+
         if (menuMode === 'hold') {
-            await keyboard.pressKey(mKey); await delay(MENU_OPEN_DELAY); 
-            for (let k of sequence) { let pressKey = nutKeyMap[k] || Key[k]; if(pressKey) { await keyboard.pressKey(pressKey); await delay(PRESS_DELAY); await keyboard.releaseKey(pressKey); await delay(INTERVAL_DELAY); } }
-            await delay(100); await keyboard.releaseKey(mKey);
+            await keyboard.pressKey(mKey);
         } else {
-            await keyboard.pressKey(mKey); await delay(PRESS_DELAY); await keyboard.releaseKey(mKey); await delay(MENU_OPEN_DELAY); 
-            for (let k of sequence) { let pressKey = nutKeyMap[k] || Key[k]; if(pressKey) { await keyboard.pressKey(pressKey); await delay(PRESS_DELAY); await keyboard.releaseKey(pressKey); await delay(INTERVAL_DELAY); } }
+            await keyboard.pressKey(mKey);
+            await delay(PRESS_DELAY + 20); 
+            await keyboard.releaseKey(mKey);
         }
-    } catch (e) { keyboard.releaseKey(mKey).catch(()=>{}); }
+
+        await delay(MENU_OPEN_DELAY); 
+
+        for (const k of sequence) {
+            const pressKey = nutKeyMap[k] || Key[k];
+            if(pressKey) {
+                await keyboard.pressKey(pressKey);
+                await delay(PRESS_DELAY); 
+                await keyboard.releaseKey(pressKey);
+                await delay(INTERVAL_DELAY); 
+            }
+        }
+
+    } catch (e) {
+        console.error("Macro execution error:", e);
+    } finally {
+        if (menuMode === 'hold') {
+            await delay(50); 
+            await keyboard.releaseKey(mKey).catch(() => {});
+        }
+    }
 });

@@ -1,3 +1,4 @@
+
 const { contextBridge, ipcRenderer } = require('electron');
 
 console.log("====== preload.js 已成功加载！======");
@@ -12,7 +13,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
     onGlobalWheel: (callback) => ipcRenderer.on('global-wheel', (_event, dir) => callback(dir)),
     toggleOverlay: () => ipcRenderer.send('toggle-overlay'),
     lockOverlay: () => ipcRenderer.send('lock-overlay'),
+    loadData: (filename) => ipcRenderer.invoke('load-data', filename),
+    saveData: (filename, data) => ipcRenderer.send('save-data', filename, data),
     unlockOverlay: () => ipcRenderer.send('unlock-overlay'),
+    
+    resizeOverlay: (w, h) => ipcRenderer.send('resize-overlay', w, h),
+    updateOverlaySettings: (settings) => ipcRenderer.send('update-overlay-settings', settings),
+    onOverlaySettings: (callback) => ipcRenderer.on('overlay-settings', (_event, settings) => callback(settings)),
+
     updateOverlay: (data) => ipcRenderer.send('update-overlay', data),
     highlightOverlay: (data) => ipcRenderer.send('highlight-overlay', data),
     updateSelection: (index) => ipcRenderer.send('update-selection', index),
