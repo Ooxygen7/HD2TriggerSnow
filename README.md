@@ -13,7 +13,7 @@ Display Mode: Set the game to Borderless Windowed mode.
 Administrator Privileges: Be sure to Run as Administrator, otherwise the system-wide hook will not function within the game window.
 Keybinding Conflicts: Ensure that the shortcut keys bound in the software are not already occupied within the game.
 
-# Please do not use mouse side buttons, the Caps Lock key, or certain function keys for any trigger keys or the in-game stratagem menu call-out button.
+**Please do not use mouse side buttons, the Caps Lock key, or certain function keys for any trigger keys or the in-game stratagem menu call-out button.**
 
 
 # Disclaimer：
