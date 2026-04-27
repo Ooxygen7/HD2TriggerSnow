@@ -1,13 +1,26 @@
-const { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage } = require('electron');
+const { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, screen } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { uIOhook } = require('uiohook-napi'); 
 const { keyboard, Key } = require('@nut-tree/nut-js');
+const screenshot = require('screenshot-desktop');
+const { Jimp } = require('jimp');
 
 let mainWindow;
 let overlayWindow; 
+let ocrSelectWindow;
+let toastWindow;
+let sponsorWindow;
+let ocrHelpWindow;
 let tray = null;
 let isQuitting = false; 
+let paddleOcrService = null;
+let paddleOcrPromise = null;
+const SPONSOR_URL = 'https://www.yifut.com/paypage/?merchant=a0ccz04gJj%2BJNsdjP9cTbIj2MrN958lGiZ7Ub2SdvLGZ';
+const SPONSOR_WINDOW_WIDTH = 525;
+const SPONSOR_WINDOW_HEIGHT = 675;
+const HELP_WINDOW_WIDTH = 525;
+const HELP_WINDOW_HEIGHT = 675;
 
 keyboard.config.autoDelayMs = 0; 
 
@@ -69,7 +82,7 @@ const nutKeyMap = {
 
 function createWindow() {
     mainWindow = new BrowserWindow({
-        width: 715, height: 940, minWidth: 710, minHeight: 938,
+        width: 715, height: 1030, minWidth: 715, minHeight: 1030,
         frame: false, backgroundColor: '#000000',
         webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true }
     });
@@ -81,6 +94,101 @@ function createWindow() {
             mainWindow.hide();
         }
     });
+}
+
+function normalizeSponsorUrl(url) {
+    try {
+        const parsed = new URL(url || SPONSOR_URL);
+        if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return SPONSOR_URL;
+        return parsed.toString();
+    } catch (e) {
+        return SPONSOR_URL;
+    }
+}
+
+async function openSponsorWindow(url = SPONSOR_URL) {
+    if (!mainWindow || mainWindow.isDestroyed()) return false;
+
+    const sponsorUrl = normalizeSponsorUrl(url);
+    if (sponsorWindow && !sponsorWindow.isDestroyed()) {
+        sponsorWindow.webContents.send('sponsor-url', sponsorUrl);
+        sponsorWindow.show();
+        sponsorWindow.focus();
+        return true;
+    }
+
+    sponsorWindow = new BrowserWindow({
+        width: SPONSOR_WINDOW_WIDTH,
+        height: SPONSOR_WINDOW_HEIGHT,
+        minWidth: SPONSOR_WINDOW_WIDTH,
+        minHeight: SPONSOR_WINDOW_HEIGHT,
+        maxWidth: SPONSOR_WINDOW_WIDTH,
+        maxHeight: SPONSOR_WINDOW_HEIGHT,
+        frame: false,
+        resizable: false,
+        title: '感谢您的赞助',
+        backgroundColor: '#000000',
+        parent: mainWindow,
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js'),
+            contextIsolation: true,
+            nodeIntegration: false,
+            webviewTag: true
+        }
+    });
+
+    sponsorWindow.webContents.on('did-attach-webview', (_event, webContents) => {
+        webContents.setWindowOpenHandler(({ url }) => {
+            webContents.loadURL(url);
+            return { action: 'deny' };
+        });
+    });
+    sponsorWindow.on('closed', () => { sponsorWindow = null; });
+
+    await sponsorWindow.loadFile('sponsor.html');
+    if (sponsorWindow && !sponsorWindow.isDestroyed()) {
+        sponsorWindow.webContents.send('sponsor-url', sponsorUrl);
+    }
+    return true;
+}
+
+async function openOcrHelpWindow(lang = 'zh') {
+    if (!mainWindow || mainWindow.isDestroyed()) return false;
+    const helpLang = lang === 'en' ? 'en' : 'zh';
+
+    if (ocrHelpWindow && !ocrHelpWindow.isDestroyed()) {
+        ocrHelpWindow.webContents.send('ocr-help-lang', helpLang);
+        ocrHelpWindow.show();
+        ocrHelpWindow.focus();
+        return true;
+    }
+
+    ocrHelpWindow = new BrowserWindow({
+        width: HELP_WINDOW_WIDTH,
+        height: HELP_WINDOW_HEIGHT,
+        minWidth: HELP_WINDOW_WIDTH,
+        minHeight: HELP_WINDOW_HEIGHT,
+        maxWidth: HELP_WINDOW_WIDTH,
+        maxHeight: HELP_WINDOW_HEIGHT,
+        frame: false,
+        resizable: false,
+        title: 'OCR Help',
+        backgroundColor: '#000000',
+        parent: mainWindow,
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js'),
+            contextIsolation: true,
+            nodeIntegration: false
+        }
+    });
+
+    ocrHelpWindow.on('closed', () => { ocrHelpWindow = null; });
+
+    await ocrHelpWindow.loadFile('ocr-help.html');
+    if (ocrHelpWindow && !ocrHelpWindow.isDestroyed()) {
+        ocrHelpWindow.webContents.send('ocr-help-lang', helpLang);
+    }
+    return true;
 }
 
 function createOverlayWindow() {
@@ -111,9 +219,234 @@ function createOverlayWindow() {
     });
 }
 
+function createToastWindow() {
+    const display = screen.getPrimaryDisplay();
+    const width = Math.min(760, display.workArea.width - 80);
+    const height = 110;
+    toastWindow = new BrowserWindow({
+        width,
+        height,
+        x: Math.round(display.workArea.x + (display.workArea.width - width) / 2),
+        y: Math.round(display.workArea.y + display.workArea.height - height - 120),
+        transparent: true,
+        frame: false,
+        alwaysOnTop: true,
+        skipTaskbar: true,
+        resizable: false,
+        movable: false,
+        focusable: false,
+        show: false,
+        webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true }
+    });
+    toastWindow.setAlwaysOnTop(true, 'screen-saver');
+    toastWindow.setIgnoreMouseEvents(true, { forward: true });
+    toastWindow.loadFile('toast.html');
+}
+
+function positionToastWindow() {
+    if (!toastWindow || toastWindow.isDestroyed()) return;
+    const display = screen.getPrimaryDisplay();
+    const bounds = toastWindow.getBounds();
+    toastWindow.setBounds({
+        x: Math.round(display.workArea.x + (display.workArea.width - bounds.width) / 2),
+        y: Math.round(display.workArea.y + display.workArea.height - bounds.height - 90),
+        width: bounds.width,
+        height: bounds.height
+    });
+}
+
+function getVirtualScreenBounds() {
+    const displays = screen.getAllDisplays();
+    const left = Math.min(...displays.map(d => d.bounds.x));
+    const top = Math.min(...displays.map(d => d.bounds.y));
+    const right = Math.max(...displays.map(d => d.bounds.x + d.bounds.width));
+    const bottom = Math.max(...displays.map(d => d.bounds.y + d.bounds.height));
+    return { x: left, y: top, width: right - left, height: bottom - top };
+}
+
+function createOcrSelectWindow() {
+    if (ocrSelectWindow && !ocrSelectWindow.isDestroyed()) {
+        ocrSelectWindow.close();
+    }
+
+    const bounds = getVirtualScreenBounds();
+    ocrSelectWindow = new BrowserWindow({
+        ...bounds,
+        transparent: true,
+        frame: false,
+        alwaysOnTop: true,
+        skipTaskbar: true,
+        resizable: false,
+        movable: false,
+        fullscreenable: false,
+        focusable: true,
+        webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true }
+    });
+    ocrSelectWindow.setAlwaysOnTop(true, 'screen-saver');
+    ocrSelectWindow.loadFile('ocr-select.html');
+    ocrSelectWindow.on('closed', () => { ocrSelectWindow = null; });
+}
+
+function bufferToArrayBuffer(buffer) {
+    return buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
+}
+
+function loadPaddleOcrModule() {
+    const modulePath = path.join(__dirname, 'node_modules', 'paddleocr', 'dist', 'index.js');
+    const source = fs.readFileSync(modulePath, 'utf-8');
+    const module = { exports: {} };
+    const exports = module.exports;
+    const loader = new Function('exports', 'module', source + '\nreturn module.exports;');
+    return loader(exports, module);
+}
+
+function patchPaddleOcrModule(paddleModule) {
+    const { DetectionService } = paddleModule;
+    if (!DetectionService || DetectionService.__hd2Patched) return;
+
+    DetectionService.prototype.calculateResizeDimensions = function(image) {
+        const maxSideLength = this.options.maxSideLength;
+        const { width: srcWidth, height: srcHeight } = image;
+        const ratio = srcWidth > srcHeight ? maxSideLength / srcWidth : maxSideLength / srcHeight;
+        let dstWidth = Math.floor(srcWidth * ratio);
+        let dstHeight = Math.floor(srcHeight * ratio);
+
+        dstWidth = Math.max(Math.floor(dstWidth / 32) * 32, 32);
+        dstHeight = Math.max(Math.floor(dstHeight / 32) * 32, 32);
+
+        return {
+            srcHeight,
+            srcWidth,
+            dstHeight,
+            dstWidth,
+            scaleWidth: dstWidth / srcWidth,
+            scaleHeight: dstHeight / srcHeight
+        };
+    };
+
+    const originalRun = DetectionService.prototype.run;
+    DetectionService.prototype.run = async function(image) {
+        const boxes = await originalRun.call(this, image);
+        if (boxes.length > 0) return boxes;
+
+        return [{
+            x: 0,
+            y: 0,
+            width: image.width,
+            height: image.height
+        }];
+    };
+
+    DetectionService.__hd2Patched = true;
+}
+
+async function getPaddleOcrService() {
+    if (paddleOcrService) return paddleOcrService;
+    if (!paddleOcrPromise) {
+        paddleOcrPromise = (async () => {
+            const ort = require('onnxruntime-node');
+            const createSession = ort.InferenceSession.create.bind(ort.InferenceSession);
+            class CompatibleTensor extends ort.Tensor {
+                constructor(type, data, dims) {
+                    if (type === 'float32') {
+                        data = data instanceof Float32Array
+                            ? new Float32Array(data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength))
+                            : Float32Array.from(data);
+                    }
+                    super(type, data, dims);
+                }
+            }
+            const compatibleOrt = {
+                ...ort,
+                Tensor: CompatibleTensor,
+                InferenceSession: {
+                    ...ort.InferenceSession,
+                    create: (model, options = {}) => createSession(model, {
+                        ...options,
+                        enableMemPattern: false,
+                        executionMode: 'sequential'
+                    })
+                }
+            };
+            const paddleModule = loadPaddleOcrModule();
+            patchPaddleOcrModule(paddleModule);
+            const { PaddleOcrService } = paddleModule;
+            if (!PaddleOcrService) throw new Error('PaddleOCR service failed to load');
+
+            const modelDir = path.join(__dirname, 'models', 'ocr');
+            const detectionModel = fs.readFileSync(path.join(modelDir, 'PP-OCRv5_mobile_det_infer.onnx'));
+            const recognitionModel = fs.readFileSync(path.join(modelDir, 'PP-OCRv5_mobile_rec_infer.onnx'));
+            const dictionary = fs.readFileSync(path.join(modelDir, 'ppocrv5_dict.txt'), 'utf-8')
+                .split(/\r?\n/)
+                .filter(line => line.length > 0);
+            dictionary.unshift('');
+
+            paddleOcrService = await PaddleOcrService.createInstance({
+                ort: compatibleOrt,
+                detection: {
+                    modelBuffer: bufferToArrayBuffer(detectionModel),
+                    maxSideLength: 1536,
+                    minimumAreaThreshold: 6,
+                    textPixelThreshold: 0.25,
+                    paddingBoxVertical: 0.45,
+                    paddingBoxHorizontal: 0.6
+                },
+                recognition: {
+                    modelBuffer: bufferToArrayBuffer(recognitionModel),
+                    charactersDictionary: dictionary,
+                    imageHeight: 48
+                }
+            });
+            return paddleOcrService;
+        })().catch((err) => {
+            paddleOcrPromise = null;
+            throw err;
+        });
+    }
+    return paddleOcrPromise;
+}
+
+async function recognizeOcrRegion(region) {
+    if (!region || !Number.isFinite(region.x) || !Number.isFinite(region.y) || !Number.isFinite(region.width) || !Number.isFinite(region.height)) {
+        throw new Error('Invalid OCR region');
+    }
+
+    const pngBuffer = await screenshot({ format: 'png' });
+    const image = await Jimp.read(pngBuffer);
+    const x = Math.max(0, Math.round(region.x));
+    const y = Math.max(0, Math.round(region.y));
+    const width = Math.min(image.bitmap.width - x, Math.max(1, Math.round(region.width)));
+    const height = Math.min(image.bitmap.height - y, Math.max(1, Math.round(region.height)));
+    if (width <= 0 || height <= 0) throw new Error('OCR region is outside the screenshot');
+
+    const scale = Math.max(1, Math.min(4, Math.floor(1200 / Math.max(width, height))));
+    image
+        .crop({ x, y, w: width, h: height })
+        .contrast(0.18);
+
+    if (scale > 1) {
+        image.resize({ w: width * scale });
+    }
+
+    const service = await getPaddleOcrService();
+    const bitmap = image.bitmap;
+    const input = {
+        width: bitmap.width,
+        height: bitmap.height,
+        data: new Uint8Array(bitmap.data)
+    };
+    const result = await service.recognize(input, { flatten: true, direct: false });
+    console.log('[OCR raw]', result && result.text ? result.text.trim() : '<empty>', 'confidence:', result && result.confidence);
+    return {
+        text: result && result.text ? result.text.trim() : '',
+        confidence: result && Number.isFinite(result.confidence) ? result.confidence : 0
+    };
+}
+
 app.whenReady().then(() => {
     createWindow();
     createOverlayWindow();
+    createToastWindow();
     const showMainWindow = () => {
         if (mainWindow && !mainWindow.isDestroyed()) {
             mainWindow.show();
@@ -164,15 +497,76 @@ app.whenReady().then(() => {
     ipcMain.on('window-min', () => mainWindow.minimize());
     ipcMain.on('window-tray', () => mainWindow.hide());
     
-    ipcMain.on('window-close', () => { 
-        isQuitting = true; 
-        uIOhook.stop(); 
-        app.quit(); 
+    ipcMain.on('window-close', () => {
+        isQuitting = true;
+        uIOhook.stop();
+        app.quit();
     });
+
+    ipcMain.handle('open-sponsor', async (_event, url) => {
+        try {
+            return await openSponsorWindow(url);
+        } catch (e) {
+            console.error('打开外部链接失败:', e.message);
+            return false;
+        }
+    });
+
+    ipcMain.on('sponsor-window-close', () => {
+        if (sponsorWindow && !sponsorWindow.isDestroyed()) sponsorWindow.close();
+    });
+
+    ipcMain.handle('open-ocr-help', async (_event, lang) => {
+        try {
+            return await openOcrHelpWindow(lang);
+        } catch (e) {
+            console.error('Open OCR help failed:', e.message);
+            return false;
+        }
+    });
+
+    ipcMain.on('ocr-help-window-close', () => {
+        if (ocrHelpWindow && !ocrHelpWindow.isDestroyed()) ocrHelpWindow.close();
+    });
+
+    ipcMain.handle('get-app-version', async () => app.getVersion());
 
     ipcMain.on('toggle-overlay', () => {
         if (overlayWindow && !overlayWindow.isDestroyed()) {
             overlayWindow.isVisible() ? overlayWindow.hide() : overlayWindow.showInactive();
+        }
+    });
+
+    ipcMain.on('start-ocr-region-select', () => {
+        createOcrSelectWindow();
+    });
+
+    ipcMain.on('ocr-region-selected', (_event, region) => {
+        const bounds = ocrSelectWindow && !ocrSelectWindow.isDestroyed()
+            ? ocrSelectWindow.getBounds()
+            : getVirtualScreenBounds();
+        const normalized = {
+            x: Math.round(bounds.x + Math.min(region.startX, region.endX)),
+            y: Math.round(bounds.y + Math.min(region.startY, region.endY)),
+            width: Math.round(Math.abs(region.endX - region.startX)),
+            height: Math.round(Math.abs(region.endY - region.startY))
+        };
+        if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('ocr-region-selected', normalized);
+        }
+        if (ocrSelectWindow && !ocrSelectWindow.isDestroyed()) ocrSelectWindow.close();
+    });
+
+    ipcMain.on('cancel-ocr-region-select', () => {
+        if (ocrSelectWindow && !ocrSelectWindow.isDestroyed()) ocrSelectWindow.close();
+    });
+
+    ipcMain.handle('recognize-ocr-region', async (_event, region) => {
+        try {
+            return { ok: true, ...(await recognizeOcrRegion(region)) };
+        } catch (e) {
+            console.error('OCR error:', e);
+            return { ok: false, error: e.message || String(e), text: '', confidence: 0 };
         }
     });
 
@@ -197,6 +591,13 @@ app.whenReady().then(() => {
     ipcMain.on('update-overlay', (event, data) => { if (overlayWindow && !overlayWindow.isDestroyed()) overlayWindow.webContents.send('render-overlay', data); });
     ipcMain.on('highlight-overlay', (event, data) => { if (overlayWindow && !overlayWindow.isDestroyed()) overlayWindow.webContents.send('highlight-item', data); });
     ipcMain.on('update-selection', (event, index) => { if (overlayWindow && !overlayWindow.isDestroyed()) overlayWindow.webContents.send('selection-changed', index); });
+    ipcMain.on('show-toast', (_event, payload) => {
+        if (toastWindow && !toastWindow.isDestroyed()) {
+            positionToastWindow();
+            toastWindow.showInactive();
+            toastWindow.webContents.send('show-toast', payload);
+        }
+    });
 
     uIOhook.on('keydown', (e) => {
         const char = uioToChar[e.keycode]; 
@@ -218,6 +619,14 @@ app.whenReady().then(() => {
     });
 
     uIOhook.start();
+});
+
+app.on('before-quit', () => {
+    if (paddleOcrService) {
+        paddleOcrService.destroy().catch(() => {});
+        paddleOcrService = null;
+    }
+    paddleOcrPromise = null;
 });
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));

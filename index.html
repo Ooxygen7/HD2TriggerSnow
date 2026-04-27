@@ -76,7 +76,7 @@
 
         #app-content { flex-grow: 1; display: flex; flex-direction: column; padding: 24px; gap: 24px; overflow-y: auto; }
 
-        .top-controls { display: flex; justify-content: space-between; gap: 12px; }
+        .top-controls { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
         .btn-square {
             background-color: var(--glass-panel); color: var(--hd-text-primary); 
             border: 1px solid var(--glass-border); border-radius: var(--radius-md);
@@ -146,6 +146,16 @@
         }
         .list-row:hover .btn-remove { opacity: 1; }
         .btn-remove:hover { background: var(--hd-red); color: white; border-color: var(--hd-red); transform: scale(1.1); }
+        .btn-lock {
+            position: absolute; top: 6px; right: 6px; background: var(--glass-panel); color: var(--hd-text-secondary);
+            border: 1px solid var(--glass-border); border-radius: 50%; width: 22px; height: 22px; padding: 0;
+            display: flex; justify-content: center; align-items: center; cursor: pointer; opacity: 0; transition: var(--transition);
+        }
+        .btn-lock svg { width: 12px; height: 12px; pointer-events: none; }
+        .list-row:hover .btn-lock, .btn-lock.locked { opacity: 1; }
+        .btn-lock.locked { background: var(--hd-yellow); color: var(--hd-black); border-color: var(--hd-yellow); }
+        .btn-lock:hover { background: var(--hd-yellow-alpha); color: var(--hd-yellow); border-color: var(--hd-yellow); transform: scale(1.1); }
+        .btn-lock.locked:hover { background: rgba(255, 69, 58, 0.18); color: var(--hd-red); border-color: var(--hd-red); }
 
         .row-arrows { flex-grow: 1; display: flex; justify-content: flex-start; align-items: center; gap: 10px; padding: 0 24px; }
         .arrow-img { width: 24px; height: 24px; filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.8)); transition: transform 0.2s;}
@@ -298,12 +308,45 @@
         .file-upload-btn:hover { background: var(--hd-yellow-alpha); color: var(--hd-yellow); border-color: var(--hd-yellow); }
         #add-strat-preview { width: 44px; height: 44px; object-fit: contain; border: 1px solid var(--glass-border); border-radius: var(--radius-sm); background: rgba(0,0,0,0.5); display: none; padding: 4px; }
         .hint-text { font-size: 12px; color: var(--hd-text-secondary); text-align: center; margin-top: 12px; line-height: 1.6; }
+        .announcement-box {
+            width: 560px; max-width: calc(100% - 32px); max-height: calc(100vh - 120px);
+            background: var(--glass-panel-hover); border: 1px solid var(--glass-border);
+            border-radius: var(--radius-xl); display: flex; flex-direction: column; overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05) inset;
+            backdrop-filter: blur(20px); margin: auto;
+        }
+        .announcement-header {
+            padding: 18px 24px; background: rgba(255, 232, 10, 0.1); color: var(--hd-yellow);
+            border-bottom: 1px solid rgba(255, 232, 10, 0.2); font-size: 24px; font-weight: 900; line-height: 1.25;
+        }
+        .announcement-content {
+            padding: 24px; overflow-y: auto; color: var(--hd-text-primary);
+            font-size: 15px; line-height: 1.7; user-select: text;
+        }
+        .announcement-content h1, .announcement-content h2, .announcement-content h3 {
+            color: var(--hd-text-primary); margin: 12px 0 8px; line-height: 1.25;
+        }
+        .announcement-content h1 { font-size: 24px; }
+        .announcement-content h2 { font-size: 20px; }
+        .announcement-content h3 { font-size: 17px; }
+        .announcement-content p { margin: 8px 0; }
+        .announcement-content strong { color: var(--hd-yellow); font-weight: 900; }
+        .announcement-content code {
+            background: rgba(0,0,0,0.45); border: 1px solid var(--glass-border);
+            border-radius: 5px; padding: 2px 6px; font-family: Consolas, "Cascadia Mono", monospace; font-size: 13px;
+        }
+        .announcement-content pre {
+            background: rgba(0,0,0,0.55); border: 1px solid var(--glass-border);
+            border-radius: var(--radius-sm); padding: 14px; overflow-x: auto; margin: 12px 0;
+        }
+        .announcement-content pre code { background: transparent; border: none; padding: 0; color: var(--hd-text-primary); }
     </style>
 </head>
 <body>
     <div id="titlebar">
         <div class="title-text" id="txt-app-title">HD2 MACRO TERMINAL</div>
         <div class="titlebar-controls">
+            <button class="lang-btn" id="btn-title-sponsor" onclick="openSponsorModal()">赞助</button>
             <button class="lang-btn" id="btn-lang" onclick="toggleLanguage()">EN / 中文</button>
             <button class="window-btn" onclick="window.electronAPI.tray()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
             <button class="window-btn" onclick="window.electronAPI.minimize()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
@@ -411,6 +454,40 @@
             </div>
 
             <div class="set-group">
+                <div class="set-title">
+                    <span id="txt-set-ocrTitle">OCR AUTO LOADOUT</span>
+                    <button class="set-btn" id="btn-set-ocrHelp" style="margin-left: auto; padding: 6px 12px; min-height: 30px;" onclick="openOcrHelp()">HELP</button>
+                </div>
+                <div class="set-row">
+                    <div class="set-label">
+                        <span id="txt-set-ocrRegion">OCR REGION</span>
+                        <span class="set-desc" id="txt-desc-ocrRegion">Drag a rectangle over the in-game stratagem list. The region is saved until replaced.</span>
+                    </div>
+                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
+                        <button class="set-btn" id="btn-set-ocrRegion" onclick="startOcrRegionSelect()">SELECT REGION</button>
+                        <span class="set-desc" id="txt-ocr-region-status" style="max-width: 260px; text-align: right;">NOT SET</span>
+                    </div>
+                </div>
+                <div class="set-row">
+                    <div class="set-label">
+                        <span id="txt-set-ocrHotkey">OCR HOTKEY</span>
+                        <span class="set-desc" id="txt-desc-ocrHotkey">Press this key to recognize the selected screen region and equip matched stratagems.</span>
+                    </div>
+                    <button class="set-btn" id="btn-set-ocrHotkey" onclick="startSettingBind('ocrHotkey', event)" oncontextmenu="clearSettingBind('ocrHotkey', event)">F8</button>
+                </div>
+                <div class="set-row">
+                    <div class="set-label">
+                        <span id="txt-set-toastEnabled">TOAST NOTIFICATIONS</span>
+                        <span class="set-desc" id="txt-desc-toastEnabled">Show notification bubbles on the player screen.</span>
+                    </div>
+                    <div class="toggle-box">
+                        <div class="toggle-option active" id="toast-on" onclick="setToastEnabled(true)">ON</div>
+                        <div class="toggle-option" id="toast-off" onclick="setToastEnabled(false)">OFF</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="set-group">
                 <div class="set-title" id="txt-set-menu">STRATAGEM MENU CONTROL</div>
                 <div class="set-row">
                     <div class="set-label">
@@ -512,6 +589,17 @@
         </div>
     </div>
 
+    <div id="sponsor-modal" class="modal-overlay" style="z-index: 70;">
+        <div class="confirm-box" style="width: 500px; max-width: calc(100% - 32px);">
+            <div class="confirm-header" id="txt-sponsor-title" style="background: rgba(255, 232, 10, 0.1); color: var(--hd-yellow); border-bottom: 1px solid rgba(255, 232, 10, 0.2);">赞助</div>
+            <div class="confirm-body" id="txt-sponsor-msg">赞助可以使开发者更好的完善软件，赞助目前并不会得到任何权益，一切都是自愿的。</div>
+            <div class="confirm-footer">
+                <button class="btn-square primary" id="btn-sponsor-go" onclick="goSponsor()">前往赞助</button>
+                <button class="btn-square" id="btn-sponsor-close" onclick="closeSponsorModal()">明白了</button>
+            </div>
+        </div>
+    </div>
+
     <div id="import-modal" class="modal-overlay" style="z-index: 70;">
         <div class="confirm-box" style="width: 440px; padding: 0;">
             <div class="confirm-header" id="txt-import-title" style="background: rgba(255, 232, 10, 0.1); color: var(--hd-yellow); border-bottom: 1px solid rgba(255, 232, 10, 0.2);">IMPORT PRESET CODE</div>
@@ -534,6 +622,16 @@
             <div class="confirm-footer">
                 <button class="btn-square" id="btn-rename-cancel" onclick="closeRenameModal()">CANCEL</button>
                 <button class="btn-square primary" id="btn-rename-ok" onclick="executeRename()">CONFIRM</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="announcement-modal" class="modal-overlay" style="z-index: 80;">
+        <div class="announcement-box">
+            <div class="announcement-header" id="announcement-title">Notice</div>
+            <div class="announcement-content" id="announcement-content"></div>
+            <div class="confirm-footer">
+                <button class="btn-square primary" id="btn-announcement-ok" onclick="closeAnnouncementModal()">OK</button>
             </div>
         </div>
     </div>
@@ -597,6 +695,13 @@
                     </div>
                     <input type="text" id="add-strat-seq" class="set-input set-input-wide" placeholder="例如: W A S D">
                 </div>
+                <div class="set-row" style="border-bottom: none;">
+                    <div class="set-label">
+                        <span id="txt-add-ocr">OCR MATCH TERMS</span>
+                        <span class="set-desc" id="txt-desc-addOcr">Use English commas to separate OCR terms.</span>
+                    </div>
+                    <input type="text" id="add-strat-ocr" class="set-input set-input-wide" placeholder="C4背包, C4 Pack, B/MD C4 背包">
+                </div>
             </div>
             
             <button class="btn-square primary" id="btn-add-save" style="margin-top: 10px; width: 100%; height: 50px; font-size: 15px;" onclick="saveCustomStratagem()">SAVE / 保存并添加</button>
@@ -611,7 +716,7 @@
             zh: {
                 // UI
                 btnOverlay: "悬浮窗", setOverlayTitle: "悬浮窗外观", setOverlayLabel: "如果悬浮窗已锁定，点击此处恢复可拖拽状态。",
-                btnUnlock: "解锁", appTitle: "绝地潜兵2 战备触发器", btnSettings: "游戏设置", btnPresets: "预设管理", btnOpenLib: "打开战备库",
+                btnUnlock: "解锁", appTitle: "绝地潜兵2 战备触发器", btnSettings: "游戏设置", btnPresets: "预设管理", btnSponsor: "赞助", btnOpenLib: "打开战备库",
                 emptySlot: "空置槽位 (点击前往战备库添加)", clickToBind: "点击绑定", waiting: "等待输入...",
                 unboundSub: "未绑定触发键", bindSub: "请按下按键 (ESC取消)", boundSub: "右键点击清除绑定",
                 libTitle: "战备配置档案库", btnDone: "完成", dragHint: "按住拖动排序 (不改变键位)",
@@ -632,16 +737,16 @@
                 renameTitle: "重命名预设",
 
                 // 提示
-                msgFull: "配置槽位已满 (9/9)", msgClear: "已清除快捷键", msgMacro: "绑定成功:", msgKey: "键位设定成功:", msgConfirm: "该键位已被绑定，是否顶替？", msgExec: ">>> 执行战备", msgSetSaved: "游戏设置已保存",
+                msgFull: "配置槽位已满 (10/10)", msgClear: "已清除快捷键", msgMacro: "绑定成功:", msgKey: "键位设定成功:", msgConfirm: "该键位已被绑定，是否顶替？", msgOcrHotkeyConflict: "该键位已被设置为 OCR 识别快捷键，无法绑定为战备快捷键", msgExec: ">>> 执行战备", msgSetSaved: "游戏设置已保存",
                 msgEnterName: "请输入预设名称", msgEmptyLoadout: "当前装配为空，无法保存", msgPreSaved: "预设已成功保存", msgPreLoaded: "预设已加载并同步悬浮窗", msgConfirmDel: "警告：确定要删除此预设吗？", msgPresetExists: "保存失败：该预设名称已存在！",
                 btnAddCustom: "+ 自定义战备",
                 setMenuDelay: "菜单展开等待 (ms)", setPressDelay: "按压时长 (ms)", setIntervalDelay: "指令间隔 (ms)",
                 
                 // 自定义
                 addTitle: "添加自定义战备", addCat: "战备分类", addIcon: "战备图标", uploadBtn: "选择文件", nameZh: "中文名称", nameEn: "英文名称",
-                addSeq: "指令序列 (输入W A S D)", addSave: "保存并添加", msgInvalidSeq: "序列只能包含W A S D", msgFillAll: "请填写名称、分类和指令序列", msgCustomSaved: "自定义战备已添加！",
+                addSeq: "指令序列 (输入W A S D)", addOcr: "OCR 匹配字段", addSave: "保存并添加", msgInvalidSeq: "序列只能包含W A S D", msgFillAll: "请填写名称、分类和指令序列", msgCustomSaved: "自定义战备已添加！",
                 addHint: "提示：在战备库中，对自定义战备点击右键即可将其删除。", msgConfirmDelCustom: "警告：确定要删除该自定义战备吗？",
-                addNameZhPh: "输入中文名称", addNameEnPh: "输入英文名称", addSeqPh: "例如:WDSSS",
+                addNameZhPh: "输入中文名称", addNameEnPh: "输入英文名称", addSeqPh: "例如:WDSSS", addOcrPh: "例如: C4背包, C4 Pack, B/MD C4 背包",
                 
                 // 悬浮窗
                 ovOpacity: "透明度", ovSize: "宽高尺寸", ovStyle: "按键样式", ovText: "文本", ovIcon: "图标",
@@ -652,12 +757,21 @@
                 descOvUp: "设置悬浮窗选中框向上移动的按键(留空为默认配置)", descOvDown: "设置悬浮窗选中框向下移动的按键(留空为默认配置)", descOvExec: "一键执行悬浮窗当前选中的战备指令。(留空为默认配置)",
                 descMenuKey: "在此设定你在游戏内用于呼出战备菜单的按键", descMenuMode: "在此选择你游戏内的设定", descMenuDelay: "按下呼出键后，等待多少毫秒再开始输入指令", descPressDelay: "模拟每次按下方向键的持续时间",
                 descIntervalDelay: "松开上一个按键与按下下一个按键之间的间隔时间", descUpKey: "游戏设定的“上”指令键", descDownKey: "游戏设定的“下”指令键", descLeftKey: "游戏设定的“左”指令键", descRightKey: "游戏设定的“右”指令键",
-                descAddCat: "该战备所属的分类", descAddIcon: "上传战备图标，推荐使用SVG或PNG", descAddZh: "战备在中文界面下的显示名称", descAddEn: "战备在英文界面下的显示名称", descAddSeq: "请使用 WASD 字母输入指令，忽略大小写"
+                descAddCat: "该战备所属的分类", descAddIcon: "上传战备图标，推荐使用SVG或PNG", descAddZh: "战备在中文界面下的显示名称", descAddEn: "战备在英文界面下的显示名称", descAddSeq: "请使用 WASD 字母输入指令，忽略大小写", descAddOcr: "OCR 自动识别只会对比这里的字段，请使用英文逗号分隔多个可能识别到的写法。",
+                sponsorTitle: "赞助",
+                sponsorMsg: "赞助可以使开发者更好的完善软件，赞助目前并不会得到任何权益，一切都是自愿的。",
+                sponsorGo: "前往赞助",
+                sponsorClose: "明白了",
+                msgSponsorFail: "打开赞助链接失败",
+                ocrHelp: "帮助",
+                ocrTitle: "OCR 自动识别", ocrRegion: "识别区域", ocrSelectRegion: "框选识别区域", ocrHotkey: "识别快捷键", toastEnabled: "提示气泡", toastOn: "开启", toastOff: "关闭", ocrRegionUnset: "未设置", ocrRegionSet: "已设置: {width} x {height} @ {x},{y}",
+                descOcrRegion: "在屏幕叠加层上拖动鼠标框选游戏左上角战备栏文字区域，保存后 OCR 只识别此区域。", descOcrHotkey: "按下该快捷键后自动识别区域内文字，并和中英文战备库名称比对后装备识别结果。", descToastEnabled: "在玩家屏幕底部稍微靠上的位置显示提示气泡。",
+                msgOcrSelectStarted: "请在屏幕上拖动框选 OCR 识别区域", msgOcrRegionSaved: "OCR 识别区域已保存", msgOcrNoRegion: "请先在设置中框选 OCR 识别区域", msgOcrRunning: "OCR 识别中...", msgOcrNoText: "OCR 未识别到文字", msgOcrNoMatch: "未匹配到战备", msgOcrLoaded: "已成功装备 {count} 个战备", msgOcrNoSpace: "剩余战备空位不足", msgOcrFailed: "OCR 识别失败: {error}", announcementOk: "我知道了"
             },
             en: {
                 // UI
                 btnOverlay: "OVERLAY", setOverlayTitle: "OVERLAY APPEARANCE", setOverlayLabel: "If overlay is locked, click here to make it draggable again.",
-                btnUnlock: "UNLOCK OVERLAY", appTitle: "HD2 Trigger", btnSettings: "GAME SETTINGS", btnPresets: "PRESETS", btnOpenLib: "OPEN LIBRARY",
+                btnUnlock: "UNLOCK OVERLAY", appTitle: "HD2 Trigger", btnSettings: "GAME SETTINGS", btnPresets: "PRESETS", btnSponsor: "SPONSOR", btnOpenLib: "OPEN LIBRARY",
                 emptySlot: "EMPTY SLOT (CLICK TO ADD)", clickToBind: "CLICK TO BIND", waiting: "WAITING...",
                 unboundSub: "NO HOTKEY BOUND", bindSub: "PRESS KEY (ESC CANCEL)", boundSub: "RIGHT CLICK TO CLEAR",
                 libTitle: "STRATAGEM LIBRARY", btnDone: "DONE", dragHint: "Hold and drag to reorder",
@@ -678,16 +792,16 @@
                 renameTitle: "RENAME PRESET",
 
                 // 提示
-                msgFull: "SLOTS FULL (9/9)", msgClear: "HOTKEY CLEARED", msgMacro: "MACRO BOUND:", msgKey: "KEY ASSIGNED:", msgConfirm: "KEY IN USE. REPLACE IT?", msgExec: ">>> EXECUTE MACRO", msgSetSaved: "SETTINGS SAVED",
+                msgFull: "SLOTS FULL (10/10)", msgClear: "HOTKEY CLEARED", msgMacro: "MACRO BOUND:", msgKey: "KEY ASSIGNED:", msgConfirm: "KEY IN USE. REPLACE IT?", msgOcrHotkeyConflict: "This key is already used as the OCR hotkey and cannot be bound to a stratagem.", msgExec: ">>> EXECUTE MACRO", msgSetSaved: "SETTINGS SAVED",
                 msgEnterName: "PLEASE ENTER A PRESET NAME", msgEmptyLoadout: "LOADOUT IS EMPTY", msgPreSaved: "PRESET SAVED SUCCESSFULLY", msgPreLoaded: "PRESET LOADED AND SYNCED", msgConfirmDel: "WARNING: DELETE THIS PRESET?", msgPresetExists: "FAILED: PRESET NAME ALREADY EXISTS!",
                 btnAddCustom: "+ ADD CUSTOM",
                 setMenuDelay: "MENU OPEN DELAY (ms)", setPressDelay: "PRESS DURATION (ms)", setIntervalDelay: "INTERVAL DELAY (ms)",
                 
                 // 自定义战备
                 addTitle: "ADD CUSTOM STRATAGEM", addCat: "CATEGORY", addIcon: "ICON (.svg)", uploadBtn: "CHOOSE FILE", nameZh: "NAME (ZH)", nameEn: "NAME (EN)",
-                addSeq: "SEQUENCE (USE W A S D)", addSave: "SAVE & ADD", msgInvalidSeq: "Sequence must only contain W, A, S, D", msgFillAll: "Please fill names, category and sequence", msgCustomSaved: "Custom stratagem added!",
+                addSeq: "SEQUENCE (USE W A S D)", addOcr: "OCR MATCH TERMS", addSave: "SAVE & ADD", msgInvalidSeq: "Sequence must only contain W, A, S, D", msgFillAll: "Please fill names, category and sequence", msgCustomSaved: "Custom stratagem added!",
                 addHint: "Hint: Right-click a custom stratagem in the Library to delete it.", msgConfirmDelCustom: "WARNING: Delete this custom stratagem?",
-                addNameZhPh: "Enter Chinese name", addNameEnPh: "Enter English name", addSeqPh: "e.g. W A S D",
+                addNameZhPh: "Enter Chinese name", addNameEnPh: "Enter English name", addSeqPh: "e.g. W A S D", addOcrPh: "e.g. C4背包, C4 Pack, B/MD C4 Backpack",
                 
                 // 悬浮窗
                 ovOpacity: "OPACITY", ovSize: "SIZE (W x H)", ovStyle: "HOTKEY STYLE", ovText: "TEXT", ovIcon: "ICON",
@@ -698,106 +812,115 @@
                 descOvUp: "Scroll up the stratagem list in the overlay. (Leave empty for default)", descOvDown: "Scroll down the stratagem list in the overlay. (Leave empty for default)", descOvExec: "Execute the currently selected stratagem in the overlay. (Leave empty for default)",
                 descMenuKey: "The key used to open the stratagem menu in-game.", descMenuMode: "Hold the key to keep menu open, or press once to toggle.", descMenuDelay: "Time to wait after opening the menu before typing commands.", descPressDelay: "How long each directional key is held down.",
                 descIntervalDelay: "Time between releasing one key and pressing the next.", descUpKey: "In-game directional key mapped to UP.", descDownKey: "In-game directional key mapped to DOWN.", descLeftKey: "In-game directional key mapped to LEFT.", descRightKey: "In-game directional key mapped to RIGHT.",
-                descAddCat: "Select the library category for this stratagem.", descAddIcon: "Upload an icon, SVG or PNG with transparent background recommended.", descAddZh: "Display name in the Chinese interface.", descAddEn: "Display name in the English interface.", descAddSeq: "Use letters W A S D to input sequence, case-insensitive."
+                descAddCat: "Select the library category for this stratagem.", descAddIcon: "Upload an icon, SVG or PNG with transparent background recommended.", descAddZh: "Display name in the Chinese interface.", descAddEn: "Display name in the English interface.", descAddSeq: "Use letters W A S D to input sequence, case-insensitive.", descAddOcr: "OCR auto equip only compares these terms. Separate multiple possible OCR spellings with English commas.",
+                sponsorTitle: "Sponsor",
+                sponsorMsg: "Sponsorship helps the developer continue improving the software. Sponsoring currently does not grant any benefits, and everything is entirely voluntary.",
+                sponsorGo: "Sponsor Now",
+                sponsorClose: "Got it",
+                msgSponsorFail: "Failed to open sponsor link",
+                ocrHelp: "Help",
+                ocrTitle: "OCR AUTO LOADOUT", ocrRegion: "OCR REGION", ocrSelectRegion: "SELECT REGION", ocrHotkey: "OCR HOTKEY", toastEnabled: "TOAST NOTIFICATIONS", toastOn: "ON", toastOff: "OFF", ocrRegionUnset: "NOT SET", ocrRegionSet: "SET: {width} x {height} @ {x},{y}",
+                descOcrRegion: "Drag a rectangle over the in-game stratagem text area. OCR will only read this saved region until you replace it.", descOcrHotkey: "Press this hotkey to recognize the selected region and equip stratagems matched against the English and Chinese library names.", descToastEnabled: "Show notification bubbles slightly above the bottom of the player screen.",
+                msgOcrSelectStarted: "Drag on screen to select the OCR region", msgOcrRegionSaved: "OCR region saved", msgOcrNoRegion: "Select an OCR region in settings first", msgOcrRunning: "OCR recognizing...", msgOcrNoText: "OCR did not read any text", msgOcrNoMatch: "No stratagems matched", msgOcrLoaded: "Successfully equipped {count} stratagems", msgOcrNoSpace: "Not enough remaining stratagem slots", msgOcrFailed: "OCR failed: {error}", announcementOk: "Got it"
             }
         };
 
         const defaultStratagemDB = [
-            { id:'wpn_mg', grp:'support', name:{zh:'MG-43 机枪',en:'MG-43 Machine Gun'}, aliases:['机枪'], seq:['S','A','S','W','D'] , icon: 'Machine_Gun_Stratagem_Icon.svg'},
-            { id:'wpn_eat', grp:'support', name:{zh:'EAT-17 消耗性反坦克武器',en:'EAT-17 Expendable Anti-Tank'}, aliases:['筒子', '次抛', 'eat'], seq:['S','S','A','W','D'], icon: 'Expendable_Anti-Tank_Stratagem_Icon.svg'},
-            { id:'wpn_stalwart', grp:'support', name:{zh:'M-105 盟友',en:'M-105 Stalwart'}, aliases:['盟友', '小机枪'], seq:['S','A','S','W','W','A'], icon: 'Stalwart_Stratagem_Icon.svg' },
-            { id:'wpn_laser', grp:'support', name:{zh:'LAS-98 激光大炮',en:'LAS-98 Laser Cannon'}, aliases:['激光炮'], seq:['S','A','S','W','A'] , icon: 'Laser_Cannon_Stratagem_Icon.svg'},
-            { id:'wpn_amr', grp:'support', name:{zh:'APW-1 反器材步枪',en:'APW-1 Anti-Materiel Rifle'}, aliases:['大狙', '反器材'], seq:['S','A','D','W','S'], icon: 'Anti-Materiel_Rifle_Stratagem_Icon.svg' },
-            { id:'wpn_rr', grp:'support', name:{zh:'GR-8 无后坐力炮',en:'GR-8 Recoilless Rifle'}, aliases:['无后座'], seq:['S','A','D','D','A'] , icon: 'Recoilless_Rifle_Stratagem_Icon.svg'},
-            { id:'wpn_gl', grp:'support', name:{zh:'GL-21 榴弹发射器',en:'GL-21 Grenade Launcher'}, aliases:['榴弹'], seq:['S','A','W','A','S'] , icon: 'Grenade_Launcher_Stratagem_Icon.svg'},
-            { id:'wpn_flame', grp:'support', name:{zh:'FLAM-40 火焰喷射器',en:'FLAM-40 Flamethrower'}, aliases:['喷火器'], seq:['S','A','W','S','W'] , icon: 'Flamethrower_Stratagem_Icon.svg'},
-            { id:'wpn_hmg', grp:'support', name:{zh:'MG-206 重机枪',en:'MG-206 Heavy Machine Gun'}, aliases:['重机枪'], seq:['S','A','W','S','S'] , icon: 'Heavy_Machine_Gun_Stratagem_Icon.svg'},
-            { id:'wpn_ac', grp:'support', name:{zh:'AC-8 机炮',en:'AC-8 Autocannon'}, aliases:['机炮'], seq:['S','A','S','W','W','D'] , icon: 'Autocannon_Stratagem_Icon.svg'},
-            { id:'wpn_arc', grp:'support', name:{zh:'ARC-3 电弧发射器',en:'ARC-3 Arc Thrower'}, aliases:['电弧', '杨永信'], seq:['S','D','S','W','A','A'] , icon: 'Arc_Thrower_Stratagem_Icon.svg'},
-            { id:'wpn_quasar', grp:'support', name:{zh:'LAS-99类星体加农炮',en:'LAS-99 Quasar Cannon'}, aliases:['类星体'], seq:['S','S','W','A','D'] , icon: 'Quasar_Cannon_Stratagem_Icon.svg'},
-            { id:'wpn_airburst', grp:'support', name:{zh:'RL-77 空爆火箭弹发射器',en:'RL-77 Airburst Rocket Launcher'}, aliases:['空爆'], seq:['S','W','W','A','D'], icon: 'Airburst_Rocket_Launcher_Stratagem_Icon.svg'},
-            { id:'wpn_commando', grp:'support', name:{zh:'MLS-4X 突击兵',en:'MLS-4X Commando'}, aliases:['突击兵'], seq:['S','A','W','S','D'], icon: 'Commando_Stratagem_Icon.svg' },
-            { id:'wpn_spear', grp:'support', name:{zh:'FAF-14 飞矛',en:'FAF-14 Spear'}, aliases:['飞矛', '长矛'], seq:['S','S','W','S','S'] , icon: 'Spear_Stratagem_Icon.svg'},
-            { id:'wpn_railgun', grp:'support', name:{zh:'RS-422 磁轨炮',en:'RS-422 Railgun'}, aliases:['磁轨炮', '电磁炮'], seq:['S','D','S','W','A','D'] , icon: 'Railgun_Stratagem_Icon.svg'},
-            { id:'wpn_wasp', grp:'support', name:{zh:'StA-X3 W.A.S.P. 发射器',en:'StA-X3 W.A.S.P. Launcher'}, aliases:['wasp', '蜂'], seq:['S','S','W','S','D'] , icon: 'W.A.S.P._Launcher_Stratagem_Icon.svg'},
-            { id:'wpn_breach', grp:'support', name:{zh:'CQC-20 破门锤',en:'CQC-20 Breaching Hammer'}, aliases:['破门锤', '大锤', '锤子'], seq:['S','A','D','A','W'] , icon: 'Breaching_Hammer_Stratagem_Icon.svg'},
-            { id:'wpn_epoch', grp:'support', name:{zh:'PLAS-45 纪元',en:'PLAS-45 Epoch'}, aliases:['纪元'], seq:['S','A','W','A','D'] , icon: 'Epoch_Stratagem_Icon.svg'},
-            { id:'wpn_speargun', grp:'support', name:{zh:'S-11 矛枪',en:'S-11 Speargun'}, aliases:['矛枪'], seq:['S','D','S','A','W','D'] , icon: 'Speargun_Stratagem_Icon.svg'},
-            { id:'wpn_defoliator', grp:'support', name:{zh:'CQC-9 除叶工具',en:'CQC-9 Defoliation Tool'}, aliases:['电锯'], seq:['S','A','D','D','S'], icon: 'Defoliation_Tool_Stratagem_Icon.svg' },
-            { id:'wpn_leveller', grp:'support', name:{zh:'EAT-411 荡平者',en:'EAT-411 Leveller'}, aliases:['荡平者','大通牒'], seq:['S','S','A','W','S'] , icon: 'Leveller_Stratagem_Icon.svg'},
-            { id:'wpn_sterilizer', grp:'support', name:{zh:'TX-41 灭菌器',en:'TX-41 Sterilizer'}, aliases:['灭菌器', '毒喷'], seq:['S','A','W','S','A'] , icon: 'Sterilizer_Stratagem_Icon.svg'},
-            { id:'wpn_deescalator', grp:'support', name:{zh:'GL-52 缓和使者',en:'GL-52 De-Escalator'}, aliases:['电榴'], seq:['S','D','W','A','D'] , icon: 'De-Escalator_Stratagem_Icon.svg'},
-            { id:'wpn_napalm', grp:'support', name:{zh:'EAT-700 消耗性凝固汽油弹',en:'EAT-700 Expendable Napalm'}, aliases:['凝固汽油弹', '火筒'], seq:['S','S','A','W','A'], icon: 'Expendable_Napalm_Stratagem_Icon.svg' },
-            { id:'wpn_beltgl', grp:'support', name:{zh:'GL-28 弹链式榴弹发射器',en:'GL-28 Belt-Fed Grenade Launcher'}, aliases:['弹链榴'], seq:['S','A','W','A','W','W'] , icon: 'Belt-Fed_Grenade_Launcher_Stratagem_Icon.svg'},
-            { id:'wpn_maxigun', grp:'support', name:{zh:'M-1000 重装机枪',en:'M-1000 Maxigun'}, aliases:['加特林'], seq:['S','A','D','S','W','W'] , icon: 'Maxigun_Stratagem_Icon.svg'},
-            { id:'wpn_silo', grp:'support', name:{zh:'MS-11 单兵导弹发射井',en:'MS-11 Solo Silo'}, aliases:['发射井'], seq:['S','W','D','S','S'] , icon: 'Solo_Silo_Stratagem_Icon.svg'},
-            { id:'wpn_flag', grp:'support', name:{zh:'CQC-1 唯一真旗',en:'CQC-1 One True Flag'}, aliases:['真旗', '旗子'], seq:['S','A','D','D','W'] , icon: 'One_True_Flag_Stratagem_Icon.svg'},
-            { id:'wpn_flam80', grp:'support', name:{zh:'B/FLAM-80 焚燃者',en:'B/FLAM-80 Cremator'}, aliases:['喷火器','火'], seq:['S','S','D','S','W','W'] , icon: 'B-FLAM-80_Cremator_Stratagem_Icon.svg'},
-            { id:'wpn_c4', grp:'support', name:{zh:'B/MD C4背包',en:'B/MD C4 Pack'}, aliases:['c4'], seq:['S','D','W','W','D','W'] , icon: 'C4_Pack_Stratagem_Icon.svg'},
+            { id:'wpn_mg', grp:'support', name:{zh:'MG-43 机枪',en:'MG-43 Machine Gun'}, aliases:[],ocr:['机枪'], seq:['S','A','S','W','D'] , icon: 'Machine_Gun_Stratagem_Icon.svg'},
+            { id:'wpn_eat', grp:'support', name:{zh:'EAT-17 消耗性反坦克武器',en:'EAT-17 Expendable Anti-Tank'}, aliases:['筒子', '次抛', 'eat'],ocr:['消耗性反坦克武器'], seq:['S','S','A','W','D'], icon: 'Expendable_Anti-Tank_Stratagem_Icon.svg'},
+            { id:'wpn_stalwart', grp:'support', name:{zh:'M-105 盟友',en:'M-105 Stalwart'}, aliases:['盟友', '小机枪'], ocr:['盟友'],ocr:['盟友'],seq:['S','A','S','W','W','A'], icon: 'Stalwart_Stratagem_Icon.svg' },
+            { id:'wpn_laser', grp:'support', name:{zh:'LAS-98 激光大炮',en:'LAS-98 Laser Cannon'}, aliases:['激光炮'], ocr:['激光大炮'],seq:['S','A','S','W','A'] , icon: 'Laser_Cannon_Stratagem_Icon.svg'},
+            { id:'wpn_amr', grp:'support', name:{zh:'APW-1 反器材步枪',en:'APW-1 Anti-Materiel Rifle'}, aliases:['大狙', '反器材'], ocr:['反器材步枪'],seq:['S','A','D','W','S'], icon: 'Anti-Materiel_Rifle_Stratagem_Icon.svg' },
+            { id:'wpn_rr', grp:'support', name:{zh:'GR-8 无后坐力炮',en:'GR-8 Recoilless Rifle'}, aliases:['无后座'], ocr:['无后坐力炮'],seq:['S','A','D','D','A'] , icon: 'Recoilless_Rifle_Stratagem_Icon.svg'},
+            { id:'wpn_gl', grp:'support', name:{zh:'GL-21 榴弹发射器',en:'GL-21 Grenade Launcher'}, aliases:['榴弹'],ocr:['榴弹发射器'], seq:['S','A','W','A','S'] , icon: 'Grenade_Launcher_Stratagem_Icon.svg'},
+            { id:'wpn_flame', grp:'support', name:{zh:'FLAM-40 火焰喷射器',en:'FLAM-40 Flamethrower'}, aliases:['喷火器'], ocr:['火焰喷射器'],seq:['S','A','W','S','W'] , icon: 'Flamethrower_Stratagem_Icon.svg'},
+            { id:'wpn_hmg', grp:'support', name:{zh:'MG-206 重机枪',en:'MG-206 Heavy Machine Gun'}, aliases:[], ocr:['重机枪'],seq:['S','A','W','S','S'] , icon: 'Heavy_Machine_Gun_Stratagem_Icon.svg'},
+            { id:'wpn_ac', grp:'support', name:{zh:'AC-8 机炮',en:'AC-8 Autocannon'}, aliases:['机炮'], ocr:['机炮'],seq:['S','A','S','W','W','D'] , icon: 'Autocannon_Stratagem_Icon.svg'},
+            { id:'wpn_arc', grp:'support', name:{zh:'ARC-3 电弧发射器',en:'ARC-3 Arc Thrower'}, aliases:['电弧', '杨永信'],ocr:['电弧发射器'], seq:['S','D','S','W','A','A'] , icon: 'Arc_Thrower_Stratagem_Icon.svg'},
+            { id:'wpn_quasar', grp:'support', name:{zh:'LAS-99类星体加农炮',en:'LAS-99 Quasar Cannon'}, aliases:['类星体'], ocr:['类星体加农炮'],seq:['S','S','W','A','D'] , icon: 'Quasar_Cannon_Stratagem_Icon.svg'},
+            { id:'wpn_airburst', grp:'support', name:{zh:'RL-77 空爆火箭弹发射器',en:'RL-77 Airburst Rocket Launcher'}, aliases:['空爆火箭弹发射器'],ocr:['空爆火箭弹发射器'], seq:['S','W','W','A','D'], icon: 'Airburst_Rocket_Launcher_Stratagem_Icon.svg'},
+            { id:'wpn_commando', grp:'support', name:{zh:'MLS-4X 突击兵',en:'MLS-4X Commando'}, aliases:['突击兵'],ocr:['突击兵'], seq:['S','A','W','S','D'], icon: 'Commando_Stratagem_Icon.svg' },
+            { id:'wpn_spear', grp:'support', name:{zh:'FAF-14 飞矛',en:'FAF-14 Spear'}, aliases:['飞矛', '长矛'], ocr:['飞矛'],seq:['S','S','W','S','S'] , icon: 'Spear_Stratagem_Icon.svg'},
+            { id:'wpn_railgun', grp:'support', name:{zh:'RS-422 磁轨炮',en:'RS-422 Railgun'}, aliases:['磁轨炮', '电磁炮'],ocr:['磁轨炮'], seq:['S','D','S','W','A','D'] , icon: 'Railgun_Stratagem_Icon.svg'},
+            { id:'wpn_wasp', grp:'support', name:{zh:'StA-X3 W.A.S.P. 发射器',en:'StA-X3 W.A.S.P. Launcher'}, aliases:['wasp', '蜂'], ocr:['W.A.S.P发射器'],seq:['S','S','W','S','D'] , icon: 'W.A.S.P._Launcher_Stratagem_Icon.svg'},
+            { id:'wpn_breach', grp:'support', name:{zh:'CQC-20 破门锤',en:'CQC-20 Breaching Hammer'}, aliases:['破门锤', '大锤', '锤子'], ocr:['破门锤'],seq:['S','A','D','A','W'] , icon: 'Breaching_Hammer_Stratagem_Icon.svg'},
+            { id:'wpn_epoch', grp:'support', name:{zh:'PLAS-45 纪元',en:'PLAS-45 Epoch'}, aliases:['纪元'], ocr:['纪元'],seq:['S','A','W','A','D'] , icon: 'Epoch_Stratagem_Icon.svg'},
+            { id:'wpn_speargun', grp:'support', name:{zh:'S-11 矛枪',en:'S-11 Speargun'}, aliases:['矛枪','渔叉','毒矛'], ocr:['矛枪'],seq:['S','D','S','A','W','D'] , icon: 'Speargun_Stratagem_Icon.svg'},
+            { id:'wpn_defoliator', grp:'support', name:{zh:'CQC-9 除叶工具',en:'CQC-9 Defoliation Tool'}, aliases:['电锯'], ocr:['除叶工具'],seq:['S','A','D','D','S'], icon: 'Defoliation_Tool_Stratagem_Icon.svg' },
+            { id:'wpn_leveller', grp:'support', name:{zh:'EAT-411 荡平者',en:'EAT-411 Leveller'}, aliases:['荡平','大通牒'], ocr:['荡平者'],seq:['S','S','A','W','S'] , icon: 'Leveller_Stratagem_Icon.svg'},
+            { id:'wpn_sterilizer', grp:'support', name:{zh:'TX-41 灭菌器',en:'TX-41 Sterilizer'}, aliases:['灭菌器', '毒喷'], ocr:['灭菌器'],seq:['S','A','W','S','A'] , icon: 'Sterilizer_Stratagem_Icon.svg'},
+            { id:'wpn_deescalator', grp:'support', name:{zh:'GL-52 缓和使者',en:'GL-52 De-Escalator'}, aliases:['电榴','电榴弹'], ocr:['缓和使者'],seq:['S','D','W','A','D'] , icon: 'De-Escalator_Stratagem_Icon.svg'},
+            { id:'wpn_napalm', grp:'support', name:{zh:'EAT-700 消耗性凝固汽油弹',en:'EAT-700 Expendable Napalm'}, aliases:['凝固汽油弹', '火次抛'], ocr:['消耗性凝固汽油弹'],seq:['S','S','A','W','A'], icon: 'Expendable_Napalm_Stratagem_Icon.svg' },
+            { id:'wpn_beltgl', grp:'support', name:{zh:'GL-28 弹链式榴弹发射器',en:'GL-28 Belt-Fed Grenade Launcher'}, aliases:['弹链榴'],ocr:['弹链式榴弹发射器'], seq:['S','A','W','A','W','W'] , icon: 'Belt-Fed_Grenade_Launcher_Stratagem_Icon.svg'},
+            { id:'wpn_maxigun', grp:'support', name:{zh:'M-1000 重装机枪',en:'M-1000 Maxigun'}, aliases:['加特林'], ocr:['重装机枪'],seq:['S','A','D','S','W','W'] , icon: 'Maxigun_Stratagem_Icon.svg'},
+            { id:'wpn_silo', grp:'support', name:{zh:'MS-11 单兵导弹发射井',en:'MS-11 Solo Silo'}, aliases:['发射井','导弹井'], ocr:['单兵导弹发射井'],seq:['S','W','D','S','S'] , icon: 'Solo_Silo_Stratagem_Icon.svg'},
+            { id:'wpn_flag', grp:'support', name:{zh:'CQC-1 唯一真旗',en:'CQC-1 One True Flag'}, aliases:['真旗', '旗子'], ocr:['唯一真旗'],seq:['S','A','D','D','W'] , icon: 'One_True_Flag_Stratagem_Icon.svg'},
+            { id:'wpn_flam80', grp:'support', name:{zh:'B/FLAM-80 焚燃者',en:'B/FLAM-80 Cremator'}, aliases:['背包火','火'], ocr:['焚燃者'],seq:['S','S','D','S','W','W'] , icon: 'B-FLAM-80_Cremator_Stratagem_Icon.svg'},
+            { id:'wpn_c4', grp:'support', name:{zh:'B/MD C4背包',en:'B/MD C4 Pack'}, aliases:['c4'],ocr:['C4背包'], seq:['S','D','W','W','D','W'] , icon: 'C4_Pack_Stratagem_Icon.svg'},
 
-            { id:'orb_precision', grp:'orbital', name:{zh:'轨道精准攻击',en:'Orbital Precision Strike'}, aliases:['精准'], seq:['D','D','W'] , icon: 'Orbital_Precision_Strike_Stratagem_Icon.svg'},
-            { id:'orb_gatling', grp:'orbital', name:{zh:'轨道加特林火力网',en:'Orbital Gatling Barrage'}, aliases:['轨道加特林'], seq:['D','S','A','W','W'] , icon: 'Orbital_Gatling_Barrage_Stratagem_Icon.svg'},
-            { id:'orb_gas', grp:'orbital', name:{zh:'轨道毒气攻击',en:'Orbital Gas Strike'}, aliases:['轨道毒气'], seq:['D','D','S','D'] , icon: 'Orbital_Gas_Strike_Stratagem_Icon.svg'},
-            { id:'orb_120', grp:'orbital', name:{zh:'轨道120mm高爆弹火力网',en:'Orbital 120mm HE Barrage'}, aliases:['120'], seq:['D','D','S','A','D','S'] , icon: 'Orbital_120mm_HE_Barrage_Stratagem_Icon.svg'},
-            { id:'orb_airburst', grp:'orbital', name:{zh:'轨道空爆攻击',en:'Orbital Airburst Strike'}, aliases:['轨道空爆'], seq:['D','D','D'], icon: 'Orbital_Airburst_Strike_Stratagem_Icon.svg' },
-            { id:'orb_smoke', grp:'orbital', name:{zh:'轨道烟雾攻击',en:'Orbital Smoke Strike'}, aliases:['轨道烟雾'], seq:['D','D','S','W'] , icon: 'Orbital_Smoke_Strike_Stratagem_Icon.svg'},
-            { id:'orb_ems', grp:'orbital', name:{zh:'轨道电磁冲击波攻击',en:'Orbital EMS Strike'}, aliases:['轨道电磁'], seq:['D','D','A','S'] , icon: 'Orbital_EMS_Strike_Stratagem_Icon.svg'},
-            { id:'orb_380', grp:'orbital', name:{zh:'轨道380mm高爆弹火力网',en:'Orbital 380mm HE Barrage'}, aliases:['380'], seq:['D','S','W','W','A','S','S'] , icon: 'Orbital_380mm_HE_Barrage_Stratagem_Icon.svg'},
-            { id:'orb_walking', grp:'orbital', name:{zh:'轨道游走火力网',en:'Orbital Walking Barrage'}, aliases:['游走'], seq:['D','S','D','S','D','S'] , icon: 'Orbital_Walking_Barrage_Stratagem_Icon.svg'},
-            { id:'orb_laser', grp:'orbital', name:{zh:'轨道激光炮',en:'Orbital Laser'}, aliases:['轨道激光', '滋水枪'], seq:['D','S','W','D','S'] , icon: 'Orbital_Laser_Stratagem_Icon.svg'},
-            { id:'orb_napalm', grp:'orbital', name:{zh:'轨道凝固汽油弹火力网',en:'Orbital Napalm Barrage'}, aliases:['轨道凝固'], seq:['D','D','S','A','D','W'] , icon: 'Orbital_Napalm_Barrage_Stratagem_Icon.svg'},
-            { id:'orb_railcannon', grp:'orbital', name:{zh:'轨道炮攻击',en:'Orbital Railcannon Strike'}, aliases:['轨道炮'], seq:['D','W','S','S','D'] , icon: 'Orbital_Railcannon_Strike_Stratagem_Icon.svg'},
+            { id:'orb_precision', grp:'orbital', name:{zh:'轨道精准攻击',en:'Orbital Precision Strike'}, aliases:['精准'], ocr:['轨道精准攻击'],seq:['D','D','W'] , icon: 'Orbital_Precision_Strike_Stratagem_Icon.svg'},
+            { id:'orb_gatling', grp:'orbital', name:{zh:'轨道加特林火力网',en:'Orbital Gatling Barrage'}, aliases:['轨道加特林'], ocr:['轨道加特林火力网'],seq:['D','S','A','W','W'] , icon: 'Orbital_Gatling_Barrage_Stratagem_Icon.svg'},
+            { id:'orb_gas', grp:'orbital', name:{zh:'轨道毒气攻击',en:'Orbital Gas Strike'}, aliases:['轨道毒气'], ocr:['轨道毒气攻击'],seq:['D','D','S','D'] , icon: 'Orbital_Gas_Strike_Stratagem_Icon.svg'},
+            { id:'orb_120', grp:'orbital', name:{zh:'轨道120mm高爆弹火力网',en:'Orbital 120mm HE Barrage'}, aliases:[],ocr:['轨道120MM高爆弹火力网'], seq:['D','D','S','A','D','S'] , icon: 'Orbital_120mm_HE_Barrage_Stratagem_Icon.svg'},
+            { id:'orb_airburst', grp:'orbital', name:{zh:'轨道空爆攻击',en:'Orbital Airburst Strike'}, aliases:['轨道空爆'], ocr:['轨道空爆攻击'],seq:['D','D','D'], icon: 'Orbital_Airburst_Strike_Stratagem_Icon.svg' },
+            { id:'orb_smoke', grp:'orbital', name:{zh:'轨道烟雾攻击',en:'Orbital Smoke Strike'}, aliases:['轨道烟雾'],ocr:['轨道烟雾攻击'], seq:['D','D','S','W'] , icon: 'Orbital_Smoke_Strike_Stratagem_Icon.svg'},
+            { id:'orb_ems', grp:'orbital', name:{zh:'轨道电磁冲击波攻击',en:'Orbital EMS Strike'}, aliases:['轨道电磁'], ocr:['轨道电磁冲击波攻击'],seq:['D','D','A','S'] , icon: 'Orbital_EMS_Strike_Stratagem_Icon.svg'},
+            { id:'orb_380', grp:'orbital', name:{zh:'轨道380mm高爆弹火力网',en:'Orbital 380mm HE Barrage'}, aliases:[],ocr:['轨道380MM高爆弹火力网'], seq:['D','S','W','W','A','S','S'] , icon: 'Orbital_380mm_HE_Barrage_Stratagem_Icon.svg'},
+            { id:'orb_walking', grp:'orbital', name:{zh:'轨道游走火力网',en:'Orbital Walking Barrage'}, aliases:['游走'], ocr:['轨道游走火力网'],seq:['D','S','D','S','D','S'] , icon: 'Orbital_Walking_Barrage_Stratagem_Icon.svg'},
+            { id:'orb_laser', grp:'orbital', name:{zh:'轨道激光炮',en:'Orbital Laser'}, aliases:['轨道激光'], ocr:['轨道激光炮'],seq:['D','S','W','D','S'] , icon: 'Orbital_Laser_Stratagem_Icon.svg'},
+            { id:'orb_napalm', grp:'orbital', name:{zh:'轨道凝固汽油弹火力网',en:'Orbital Napalm Barrage'}, aliases:['轨道火'],ocr:['轨道凝固汽油弹火力网'], seq:['D','D','S','A','D','W'] , icon: 'Orbital_Napalm_Barrage_Stratagem_Icon.svg'},
+            { id:'orb_railcannon', grp:'orbital', name:{zh:'轨道炮攻击',en:'Orbital Railcannon Strike'}, aliases:['自瞄'], ocr:['轨道炮攻击'],seq:['D','W','S','S','D'] , icon: 'Orbital_Railcannon_Strike_Stratagem_Icon.svg'},
 
-            { id:'eagle_strafing', grp:'eagle', name:{zh:'“飞鹰”机枪扫射',en:'Eagle Strafing Run'}, aliases:['飞鹰机枪', '扫射'], seq:['W','D','D'] , icon: 'Eagle_Strafing_Run_Stratagem_Icon.svg'},
-            { id:'eagle_airstrike', grp:'eagle', name:{zh:'“飞鹰”空袭',en:'Eagle Airstrike'}, aliases:['空袭', '飞鹰空袭'], seq:['W','D','S','D'] , icon: 'Eagle_Airstrike_Stratagem_Icon.svg'},
-            { id:'eagle_cluster', grp:'eagle', name:{zh:'“飞鹰”集束炸弹',en:'Eagle Cluster Bomb'}, aliases:['集束', '集束炸弹'], seq:['W','D','S','S','D'] , icon: 'Eagle_Cluster_Bomb_Stratagem_Icon.svg'},
-            { id:'eagle_smoke', grp:'eagle', name:{zh:'“飞鹰”烟雾攻击',en:'Eagle Smoke Strike'}, aliases:['飞鹰烟雾'], seq:['W','D','W','S'] , icon: 'Eagle_Smoke_Strike_Stratagem_Icon.svg'},
-            { id:'eagle_napalm', grp:'eagle', name:{zh:'“飞鹰”凝固汽油弹空袭',en:'Eagle Napalm Airstrike'}, aliases:['飞鹰凝固', '火海'], seq:['W','D','S','W'] , icon: 'Eagle_Napalm_Airstrike_Stratagem_Icon.svg'},
-            { id:'eagle_110', grp:'eagle', name:{zh:'“飞鹰”110MM火箭巢',en:'Eagle 110mm Rocket Pods'}, aliases:['110', '火箭巢'], seq:['W','D','W','A'] , icon: 'Eagle_110mm_Rocket_Pods_Stratagem_Icon.svg'},
-            { id:'eagle_500kg', grp:'eagle', name:{zh:'“飞鹰”500KG炸弹',en:'Eagle 500kg Bomb'}, aliases:['500', '500k'], seq:['W','D','S','S','S'], icon: 'Eagle_500kg_Bomb_Stratagem_Icon.svg' },
+            { id:'eagle_strafing', grp:'eagle', name:{zh:'“飞鹰”机枪扫射',en:'Eagle Strafing Run'}, aliases:['飞鹰机枪', '扫射'],ocr:['“飞鹰”机枪扫射'], seq:['W','D','D'] , icon: 'Eagle_Strafing_Run_Stratagem_Icon.svg'},
+            { id:'eagle_airstrike', grp:'eagle', name:{zh:'“飞鹰”空袭',en:'Eagle Airstrike'}, aliases:['空袭', '飞鹰空袭'], ocr:['“飞鹰”空袭'],seq:['W','D','S','D'] , icon: 'Eagle_Airstrike_Stratagem_Icon.svg'},
+            { id:'eagle_cluster', grp:'eagle', name:{zh:'“飞鹰”集束炸弹',en:'Eagle Cluster Bomb'}, aliases:['集束', '集束炸弹'],ocr:['“飞鹰”集束炸弹'], seq:['W','D','S','S','D'] , icon: 'Eagle_Cluster_Bomb_Stratagem_Icon.svg'},
+            { id:'eagle_smoke', grp:'eagle', name:{zh:'“飞鹰”烟雾攻击',en:'Eagle Smoke Strike'}, aliases:['飞鹰烟雾'], ocr:['“飞鹰”烟雾攻击'],seq:['W','D','W','S'] , icon: 'Eagle_Smoke_Strike_Stratagem_Icon.svg'},
+            { id:'eagle_napalm', grp:'eagle', name:{zh:'“飞鹰”凝固汽油弹空袭',en:'Eagle Napalm Airstrike'}, aliases:['飞鹰火'], ocr:['“飞鹰”凝固汽油弹空袭'],seq:['W','D','S','W'] , icon: 'Eagle_Napalm_Airstrike_Stratagem_Icon.svg'},
+            { id:'eagle_110', grp:'eagle', name:{zh:'“飞鹰”110MM火箭巢',en:'Eagle 110mm Rocket Pods'}, aliases:['110', '火箭巢'],ocr:['“飞鹰”110MM火箭巢'], seq:['W','D','W','A'] , icon: 'Eagle_110mm_Rocket_Pods_Stratagem_Icon.svg'},
+            { id:'eagle_500kg', grp:'eagle', name:{zh:'“飞鹰”500KG炸弹',en:'Eagle 500kg Bomb'}, aliases:['500', '500kg'],ocr:['“飞鹰”500KG炸弹'], seq:['W','D','S','S','S'], icon: 'Eagle_500kg_Bomb_Stratagem_Icon.svg' },
 
-            { id:'emp_mine_ap', grp:'emplacement', name:{zh:'MD-6 反步兵雷区',en:'MD-6 Anti-Personnel Minefield'}, aliases:['反步兵地雷'], seq:['S','A','W','D'] , icon: 'Anti-Personnel_Minefield_Stratagem_Icon.svg'},
-            { id:'emp_mine_inc', grp:'emplacement', name:{zh:'MD-I4 燃烧地雷',en:'MD-I4 Incendiary Mines'}, aliases:['燃烧地雷', '火雷'], seq:['S','A','A','S'] , icon: 'Incendiary_Mines_Stratagem_Icon.svg'},
-            { id:'emp_mine_at', grp:'emplacement', name:{zh:'MD-17 反坦克地雷',en:'MD-17 Anti-Tank Mines'}, aliases:['反坦克地雷'], seq:['S','A','W','W'] , icon: 'Anti-Tank_Mines_Stratagem_Icon.svg'},
-            { id:'emp_shield', grp:'emplacement', name:{zh:'FX-12 防护罩生成中继器',en:'FX-12 Shield Generator Relay'}, aliases:['大护盾', '泡泡罩'], seq:['S','S','A','D','A','D'] , icon: 'Shield_Generator_Relay_Stratagem_Icon.svg'},
-            { id:'emp_hmg', grp:'emplacement', name:{zh:'E/MG-101 重机枪部署支架',en:'E/MG-101 HMG Emplacement'}, aliases:['固定机枪'], seq:['S','W','A','D','D','A'] , icon: 'HMG_Emplacement_Stratagem_Icon.svg'},
-            { id:'emp_grenadier', grp:'emplacement', name:{zh:'E/GL-21 掷弹兵防卫墙',en:'E/GL-21 Grenadier Battlement'}, aliases:['防卫墙'], seq:['S','D','S','A','D'] , icon: 'Grenadier_Battlement_Stratagem_Icon.svg'},
-            { id:'emp_mine_gas', grp:'emplacement', name:{zh:'MD-8 毒气地雷',en:'MD-8 Gas Mines'}, aliases:['毒气雷'], seq:['S','A','A','D'] , icon: 'Gas_Mines_Stratagem_Icon.svg'},
-            { id:'emp_at', grp:'emplacement', name:{zh:'E/AT-12 反坦克炮台',en:'E/AT-12 Anti-Tank Emplacement'}, aliases:['固定反坦克'], seq:['S','W','A','D','D','D'] , icon: 'Anti-Tank_Emplacement_Stratagem_Icon.svg'},
+            { id:'emp_mine_ap', grp:'emplacement', name:{zh:'MD-6 反步兵雷区',en:'MD-6 Anti-Personnel Minefield'}, aliases:['反步兵地雷'],ocr:['反步兵雷区'], seq:['S','A','W','D'] , icon: 'Anti-Personnel_Minefield_Stratagem_Icon.svg'},
+            { id:'emp_mine_inc', grp:'emplacement', name:{zh:'MD-I4 燃烧地雷',en:'MD-I4 Incendiary Mines'}, aliases:['燃烧地雷', '火雷'], ocr:['燃烧地雷'],seq:['S','A','A','S'] , icon: 'Incendiary_Mines_Stratagem_Icon.svg'},
+            { id:'emp_mine_at', grp:'emplacement', name:{zh:'MD-17 反坦克地雷',en:'MD-17 Anti-Tank Mines'}, aliases:['反坦克地雷'], ocr:['反坦克地雷'],seq:['S','A','W','W'] , icon: 'Anti-Tank_Mines_Stratagem_Icon.svg'},
+            { id:'emp_shield', grp:'emplacement', name:{zh:'FX-12 防护罩生成中继器',en:'FX-12 Shield Generator Relay'}, aliases:['大蛋盾'], ocr:['防护罩生成中继器'],seq:['S','S','A','D','A','D'] , icon: 'Shield_Generator_Relay_Stratagem_Icon.svg'},
+            { id:'emp_hmg', grp:'emplacement', name:{zh:'E/MG-101 重机枪部署支架',en:'E/MG-101 HMG Emplacement'}, aliases:['固定机枪'], ocr:['重机枪部署支架'],seq:['S','W','A','D','D','A'] , icon: 'HMG_Emplacement_Stratagem_Icon.svg'},
+            { id:'emp_grenadier', grp:'emplacement', name:{zh:'E/GL-21 掷弹兵防卫墙',en:'E/GL-21 Grenadier Battlement'}, aliases:['防卫墙'], ocr:['掷弹兵防卫墙'],seq:['S','D','S','A','D'] , icon: 'Grenadier_Battlement_Stratagem_Icon.svg'},
+            { id:'emp_mine_gas', grp:'emplacement', name:{zh:'MD-8 毒气地雷',en:'MD-8 Gas Mines'}, aliases:['毒气地雷'], ocr:['毒气地雷'],seq:['S','A','A','D'] , icon: 'Gas_Mines_Stratagem_Icon.svg'},
+            { id:'emp_at', grp:'emplacement', name:{zh:'E/AT-12 反坦克炮台',en:'E/AT-12 Anti-Tank Emplacement'}, aliases:['轮椅炮'], ocr:['反坦克炮台'],seq:['S','W','A','D','D','D'] , icon: 'Anti-Tank_Emplacement_Stratagem_Icon.svg'},
 
-            { id:'sen_mg', grp:'sentry', name:{zh:'A/MG-43 哨戒机枪',en:'A/MG-43 Machine Gun Sentry'}, aliases:['机枪塔'], seq:['S','W','D','D','W'] , icon: 'Machine_Gun_Sentry_Stratagem_Icon.svg'},
-            { id:'sen_gatling', grp:'sentry', name:{zh:'A/G-16 加特林哨戒炮',en:'A/G-16 Gatling Sentry'}, aliases:['加特林塔'], seq:['S','W','D','A'], icon: 'Gatling_Sentry_Stratagem_Icon.svg' },
-            { id:'sen_ac', grp:'sentry', name:{zh:'A/AC-8 自动哨戒炮',en:'A/AC-8 Autocannon Sentry'}, aliases:['机炮塔'], seq:['S','W','D','W','A','W'] , icon: 'Autocannon_Sentry_Stratagem_Icon.svg'},
-            { id:'sen_mortar', grp:'sentry', name:{zh:'A/M-12 迫击哨戒炮',en:'A/M-12 Mortar Sentry'}, aliases:['迫击炮'], seq:['S','W','D','D','S'], icon: 'Mortar_Sentry_Stratagem_Icon.svg' },
-            { id:'sen_rocket', grp:'sentry', name:{zh:'A/MLS-4X 火箭哨戒炮',en:'A/MLS-4X Rocket Sentry'}, aliases:['火箭'], seq:['S','W','D','D','A'] , icon: 'Rocket_Sentry_Stratagem_Icon.svg'},
-            { id:'sen_tesla', grp:'sentry', name:{zh:'A/ARC-3 特斯拉塔',en:'A/ARC-3 Tesla Tower'}, aliases:['电塔', '特斯拉'], seq:['S','W','D','W','A','D'], icon: 'Tesla_Tower_Stratagem_Icon.svg' },
-            { id:'sen_ems', grp:'sentry', name:{zh:'A/M-23 电磁冲击波迫击哨戒炮',en:'A/M-23 EMS Mortar Sentry'}, aliases:['电磁迫击炮'], seq:['S','W','D','S','D'] , icon: 'EMS_Mortar_Sentry_Stratagem_Icon.svg'},
-            { id:'sen_flame', grp:'sentry', name:{zh:'A/FLAM-40 火焰喷射哨戒炮',en:'A/FLAM-40 Flame Sentry'}, aliases:['喷火塔'], seq:['S','W','D','S','W','W'] , icon: 'Flame_Sentry_Stratagem_Icon.svg'},
-            { id:'sen_laser', grp:'sentry', name:{zh:'A/LAS-98 激光哨戒炮',en:'A/LAS-98 Laser Sentry'}, aliases:['激光塔'], seq:['S','W','D','S','W','D'] , icon: 'Laser_Sentry_Stratagem_Icon.svg'},
-            { id:'sen_gas', grp:'sentry', name:{zh:'A/GM-17 瓦斯哨戒迫击炮',en:'A/GM-17 Gas Mortar Sentry'}, aliases:['毒'], seq:['S','W','D','S','A'] , icon: 'AGM-17_Gas_Mortar_Sentry.svg'},
+            { id:'sen_mg', grp:'sentry', name:{zh:'A/MG-43 哨戒机枪',en:'A/MG-43 Machine Gun Sentry'}, aliases:['机枪塔'],ocr:['哨戒机枪'],seq:['S','W','D','D','W'] , icon: 'Machine_Gun_Sentry_Stratagem_Icon.svg'},
+            { id:'sen_gatling', grp:'sentry', name:{zh:'A/G-16 加特林哨戒炮',en:'A/G-16 Gatling Sentry'}, aliases:['加特林塔'], ocr:['加特林哨戒炮'],seq:['S','W','D','A'], icon: 'Gatling_Sentry_Stratagem_Icon.svg' },
+            { id:'sen_ac', grp:'sentry', name:{zh:'A/AC-8 自动哨戒炮',en:'A/AC-8 Autocannon Sentry'}, aliases:['机炮塔'], ocr:['自动哨戒炮'],seq:['S','W','D','W','A','W'] , icon: 'Autocannon_Sentry_Stratagem_Icon.svg'},
+            { id:'sen_mortar', grp:'sentry', name:{zh:'A/M-12 迫击哨戒炮',en:'A/M-12 Mortar Sentry'}, aliases:['迫击炮'],ocr:['迫击哨戒炮'], seq:['S','W','D','D','S'], icon: 'Mortar_Sentry_Stratagem_Icon.svg' },
+            { id:'sen_rocket', grp:'sentry', name:{zh:'A/MLS-4X 火箭哨戒炮',en:'A/MLS-4X Rocket Sentry'}, aliases:['火箭'], ocr:['火箭哨戒炮'],seq:['S','W','D','D','A'] , icon: 'Rocket_Sentry_Stratagem_Icon.svg'},
+            { id:'sen_tesla', grp:'sentry', name:{zh:'A/ARC-3 特斯拉塔',en:'A/ARC-3 Tesla Tower'}, aliases:['电塔', '特斯拉'], ocr:['特斯拉塔'],seq:['S','W','D','W','A','D'], icon: 'Tesla_Tower_Stratagem_Icon.svg' },
+            { id:'sen_ems', grp:'sentry', name:{zh:'A/M-23 电磁冲击波迫击哨戒炮',en:'A/M-23 EMS Mortar Sentry'}, aliases:['电磁迫击炮'],ocr:['电磁冲击波迫击哨戒炮'], seq:['S','W','D','S','D'] , icon: 'EMS_Mortar_Sentry_Stratagem_Icon.svg'},
+            { id:'sen_flame', grp:'sentry', name:{zh:'A/FLAM-40 火焰喷射哨戒炮',en:'A/FLAM-40 Flame Sentry'}, aliases:['喷火塔'], ocr:['火焰喷射哨戒炮'],seq:['S','W','D','S','W','W'] , icon: 'Flame_Sentry_Stratagem_Icon.svg'},
+            { id:'sen_laser', grp:'sentry', name:{zh:'A/LAS-98 激光哨戒炮',en:'A/LAS-98 Laser Sentry'}, aliases:['激光塔'],ocr:['激光哨戒炮'], seq:['S','W','D','S','W','D'] , icon: 'Laser_Sentry_Stratagem_Icon.svg'},
+            { id:'sen_gas', grp:'sentry', name:{zh:'A/GM-17 瓦斯迫击哨戒炮',en:'A/GM-17 Gas Mortar Sentry'}, aliases:['毒'], ocr:['瓦斯迫击哨戒炮'],seq:['S','W','D','S','A'] , icon: 'AGM-17_Gas_Mortar_Sentry.svg'},
 
-            { id:'pack_supply', grp:'backpack', name:{zh:'B-1 补给背包',en:'B-1 Supply Pack'}, aliases:['补包', '弹药包'], seq:['S','A','S','W','W','S'] , icon: 'Supply_Pack_Stratagem_Icon.svg'},
-            { id:'pack_jump', grp:'backpack', name:{zh:'LIFT-850 喷射背包',en:'LIFT-850 Jump Pack'}, aliases:['跳包', '喷射包'], seq:['S','W','W','S','W'] , icon: 'Jump_Pack_Stratagem_Icon.svg'},
-            { id:'pack_ballistic', grp:'backpack', name:{zh:'SH-20 防弹护盾背包',en:'SH-20 Ballistic Shield Backpack'}, aliases:['防弹盾'], seq:['S','A','S','S','W','A'] , icon: 'Ballistic_Shield_Backpack_Stratagem_Icon.svg'},
-            { id:'pack_guard', grp:'backpack', name:{zh:'AX/AR-23 “护卫犬”',en:'AX/AR-23 Guard Dog'}, aliases:['实弹狗'], seq:['S','W','A','W','D','S'], icon: 'Guard_Dog_Stratagem_Icon.svg' },
-            { id:'pack_rover', grp:'backpack', name:{zh:'AX/LAS-5 漫游车',en:'AX/LAS-5 Rover'}, aliases:['激光狗'], seq:['S','W','A','W','D','D'] , icon: 'Rover_Stratagem_Icon.svg'},
-            { id:'pack_shield', grp:'backpack', name:{zh:'SH-32 防护罩生成包',en:'SH-32 Shield Generator Pack'}, aliases:['护盾背包', '蛋壳'], seq:['S','W','A','D','A','D'] , icon: 'Shield_Generator_Pack_Stratagem_Icon.svg'},
-            { id:'pack_dir_shield', grp:'backpack', name:{zh:'SH-51 定向护盾',en:'SH-51 Directional Shield'}, aliases:['定向盾'], seq:['S','W','A','D','W','W'] , icon: 'Directional_Shield_Stratagem_Icon.svg'},
-            { id:'pack_hotdog', grp:'backpack', name:{zh:'AX/FLAM-75 热狗',en:'AX/FLAM-75 Hot Dog'}, aliases:['火狗', '热狗'], seq:['S','W','A','W','A','A'] , icon: 'Hot_Dog_Stratagem_Icon.svg'},
-            { id:'pack_portable_hb', grp:'backpack', name:{zh:'B-100 便携式地狱火炸弹',en:'B-100 Portable Hellbomb'}, aliases:['地狱火'], seq:['S','D','W','W','W'] , icon: 'Portable_Hellbomb_Stratagem_Icon.svg'},
-            { id:'pack_k9', grp:'backpack', name:{zh:'AX/ARC-3 K-9',en:'AX/ARC-3 K-9'}, aliases:['电狗'], seq:['S','W','A','W','D','A'] , icon: 'K-9_Stratagem_Icon.svg'},
-            { id:'pack_hover', grp:'backpack', name:{zh:'LIFT-860 悬浮背包',en:'LIFT-860 Hover Pack'}, aliases:['悬浮包'], seq:['S','W','W','S','A','D'] , icon: 'Hover_Pack_Stratagem_Icon.svg'},
-            { id:'pack_dog_breath', grp:'backpack', name:{zh:'AX/TX-13 腐息',en:'AX/TX-13 Dog Breath'}, aliases:['毒狗'], seq:['S','W','A','W','D','W'] , icon: 'Dog_Breath_Stratagem_Icon.svg'},
-            { id:'pack_warp', grp:'backpack', name:{zh:'LIFT-182 传送背包',en:'LIFT-182 Warp Pack'}, aliases:['传包'], seq:['S','A','D','S','A','D'] , icon: 'Warp_Pack_Stratagem_Icon.svg'},
+            { id:'pack_supply', grp:'backpack', name:{zh:'B-1 补给背包',en:'B-1 Supply Pack'}, aliases:['补包', '弹药包'],ocr:['补给背包'], seq:['S','A','S','W','W','S'] , icon: 'Supply_Pack_Stratagem_Icon.svg'},
+            { id:'pack_jump', grp:'backpack', name:{zh:'LIFT-850 喷射背包',en:'LIFT-850 Jump Pack'}, aliases:['跳包', '喷射包'], ocr:['喷射背包'],seq:['S','W','W','S','W'] , icon: 'Jump_Pack_Stratagem_Icon.svg'},
+            { id:'pack_ballistic', grp:'backpack', name:{zh:'SH-20 防弹护盾背包',en:'SH-20 Ballistic Shield Backpack'}, aliases:['防弹盾'], ocr:['防弹护盾背包'],seq:['S','A','S','S','W','A'] , icon: 'Ballistic_Shield_Backpack_Stratagem_Icon.svg'},
+            { id:'pack_guard', grp:'backpack', name:{zh:'AX/AR-23 “护卫犬”',en:'AX/AR-23 Guard Dog'}, aliases:['实弹狗'],ocr:['“护卫犬”'], seq:['S','W','A','W','D','S'], icon: 'Guard_Dog_Stratagem_Icon.svg' },
+            { id:'pack_rover', grp:'backpack', name:{zh:'AX/LAS-5 漫游车',en:'AX/LAS-5 Rover'}, aliases:['激光狗'], ocr:['漫游车'],seq:['S','W','A','W','D','D'] , icon: 'Rover_Stratagem_Icon.svg'},
+            { id:'pack_shield', grp:'backpack', name:{zh:'SH-32 防护罩生成包',en:'SH-32 Shield Generator Pack'}, aliases:['护盾背包', '蛋壳'], ocr:['防护罩生成包'],seq:['S','W','A','D','A','D'] , icon: 'Shield_Generator_Pack_Stratagem_Icon.svg'},
+            { id:'pack_dir_shield', grp:'backpack', name:{zh:'SH-51 定向护盾',en:'SH-51 Directional Shield'}, aliases:['定向盾'], ocr:['定向护盾'],seq:['S','W','A','D','W','W'] , icon: 'Directional_Shield_Stratagem_Icon.svg'},
+            { id:'pack_hotdog', grp:'backpack', name:{zh:'AX/FLAM-75 热狗',en:'AX/FLAM-75 Hot Dog'}, aliases:['火狗', '热狗'], ocr:['热狗'],seq:['S','W','A','W','A','A'] , icon: 'Hot_Dog_Stratagem_Icon.svg'},
+            { id:'pack_portable_hb', grp:'backpack', name:{zh:'B-100 便携式地狱火炸弹',en:'B-100 Portable Hellbomb'}, aliases:['地狱火'],ocr:['便携式地狱火炸弹'], seq:['S','D','W','W','W'] , icon: 'Portable_Hellbomb_Stratagem_Icon.svg'},
+            { id:'pack_k9', grp:'backpack', name:{zh:'AX/ARC-3 K-9',en:'AX/ARC-3 K-9'}, aliases:['电狗'], ocr:['K-9'],seq:['S','W','A','W','D','A'] , icon: 'K-9_Stratagem_Icon.svg'},
+            { id:'pack_hover', grp:'backpack', name:{zh:'LIFT-860 悬浮背包',en:'LIFT-860 Hover Pack'}, aliases:['悬浮包'],ocr:['悬浮背包'],seq:['S','W','W','S','A','D'] , icon: 'Hover_Pack_Stratagem_Icon.svg'},
+            { id:'pack_dog_breath', grp:'backpack', name:{zh:'AX/TX-13 腐息',en:'AX/TX-13 Dog Breath'}, aliases:['毒狗'],ocr:['腐息'], seq:['S','W','A','W','D','W'] , icon: 'Dog_Breath_Stratagem_Icon.svg'},
+            { id:'pack_warp', grp:'backpack', name:{zh:'LIFT-182 传送背包',en:'LIFT-182 Warp Pack'}, aliases:['传包'], ocr:['传送背包'],seq:['S','A','D','S','A','D'] , icon: 'Warp_Pack_Stratagem_Icon.svg'},
 
-            { id:'veh_patriot', grp:'vehicle', name:{zh:'EXO-45 “爱国者” 外骨骼装甲',en:'EXO-45 Patriot Exosuit'}, aliases:['机甲', '爱国者'], seq:['A','S','D','W','A','S','S'] , icon: 'Patriot_Exosuit_Stratagem_Icon.svg'},
-            { id:'veh_emancipator', grp:'vehicle', name:{zh:'EXO-49 “解放者” 外骨骼装甲',en:'Emancipator Exosuit'}, aliases:['解放者', '机甲'], seq:['A','S','D','W','A','S','W'] , icon: 'Emancipator_Exosuit_Stratagem_Icon.svg'},
-            { id:'veh_recon', grp:'vehicle', name:{zh:'M-102 快速侦察载具',en:'M-102 Fast Recon Vehicle'}, aliases:['四轮车', '越野车'], seq:['A','S','D','S','D','S','W'] , icon: 'Fast_Recon_Vehicle_Stratagem_Icon.svg'},
-            { id:'veh_bastion', grp:'vehicle', name:{zh:'TD-220 堡垒 MK XVI',en:'TD-220 Bastion MK XVI'}, aliases:['坦克', '堡垒'], seq:['A','S','D','S','A','S','W','S','W'] , icon: 'Bastion_MK_XVI_Stratagem_Icon.svg'},
+            { id:'veh_patriot', grp:'vehicle', name:{zh:'EXO-45 “爱国者” 外骨骼装甲',en:'EXO-45 Patriot Exosuit'}, aliases:[,'爱国者'], ocr:['“爱国者” 外骨骼装甲'],seq:['A','S','D','W','A','S','S'] , icon: 'Patriot_Exosuit_Stratagem_Icon.svg'},
+            { id:'veh_emancipator', grp:'vehicle', name:{zh:'EXO-49 “解放者” 外骨骼装甲',en:'Emancipator Exosuit'}, aliases:['解放者'],ocr:['“解放者” 外骨骼装甲'], seq:['A','S','D','W','A','S','W'] , icon: 'Emancipator_Exosuit_Stratagem_Icon.svg'},
+            { id:'veh_recon', grp:'vehicle', name:{zh:'M-102 快速侦察载具',en:'M-102 Fast Recon Vehicle'}, aliases:['四轮车', '越野车'], ocr:['快速侦察载具'],seq:['A','S','D','S','D','S','W'] , icon: 'Fast_Recon_Vehicle_Stratagem_Icon.svg'},
+            { id:'veh_bastion', grp:'vehicle', name:{zh:'TD-220 堡垒 MK XVI',en:'TD-220 Bastion MK XVI'}, aliases:['坦克', '堡垒'], ocr:['堡垒MK XVI'],seq:['A','S','D','S','A','S','W','S','W'] , icon: 'Bastion_MK_XVI_Stratagem_Icon.svg'},
 
             { id:'mis_sos', grp:'mission', name:{zh:'SOS救援信标',en:'SOS Beacon'}, aliases:['sos', '求救'], seq:['W','S','D','W'] , icon: 'SOS_Beacon_Stratagem_Icon.svg'},
-            { id:'mis_resupply', grp:'mission', name:{zh:'呼叫补给',en:'Resupply'}, aliases:['补给'], seq:['S','S','W','D'] , icon: 'Resupply_Stratagem_Icon.svg'},
-            { id:'mis_reinforce', grp:'mission', name:{zh:'呼叫增援',en:'Reinforce'}, aliases:['复活', '增援'], seq:['W','S','D','A','W'] , icon: 'Reinforce_Stratagem_Icon.svg'},
+            { id:'mis_resupply', grp:'mission', name:{zh:'重新补给',en:'Resupply'}, aliases:['补给'], seq:['S','S','W','D'] , icon: 'Resupply_Stratagem_Icon.svg'},
+            { id:'mis_reinforce', grp:'mission', name:{zh:'增援',en:'Reinforce'}, aliases:['复活', '增援'], seq:['W','S','D','A','W'] , icon: 'Reinforce_Stratagem_Icon.svg'},
             { id:'mis_hellbomb', grp:'mission', name:{zh:'呼叫地狱火炸弹',en:'Hellbomb'}, aliases:['地狱火', '炸弹'], seq:['S','W','A','S','W','D','S','W'] , icon: 'Hellbomb_Stratagem_Icon.svg'},
             { id:'mis_flag', grp:'mission', name:{zh:'呼叫超级地球旗帜',en:'Super Earth Flag'}, aliases:['升旗'], seq:['S','W','S','W'], icon: 'Super_Earth_Flag_Stratagem_Icon.svg' },
             { id:'mis_eagleresupply', grp:'mission', name:{zh:'重新武装 “飞鹰”',en:'Eagle Rearm'}, aliases:['重装飞鹰', '洗飞鹰'], seq:['W','W','A','W','D'], icon: 'Eagle_Rearm_Stratagem_Icon.svg' },
@@ -811,7 +934,10 @@
         let customStratagems = [];
         let activeLoadout = [];
         let savedPresets = [];
-        const maxSlots = 9;
+        let announcementState = { lastSeenId: null };
+        let pendingAnnouncementId = null;
+        let sponsorPayUrl = 'https://www.yifut.com/paypage/?merchant=a0ccz04gJj%2BJNsdjP9cTbIj2MrN958lGiZ7Ub2SdvLGZ';
+        const maxSlots = 10;
         let bindingTarget = null;
         let isOverlayVisible = false; 
         
@@ -819,8 +945,11 @@
             menuKey: 'ControlLeft', menuMode: 'hold', upKey: 'W', downKey: 'S', leftKey: 'A', rightKey: 'D',
             menuOpenDelay: 100, pressDelay: 10, intervalDelay: 10, 
             ovOpacity: 100, ovWidth: 300, ovHeight: 550, ovStyle: 'text',
-            ovUp: 'WheelUp', ovDown: 'WheelDown', ovExec: 'MouseMiddle'
+            ovUp: 'WheelUp', ovDown: 'WheelDown', ovExec: 'MouseMiddle',
+            ocrHotkey: 'F8', ocrRegion: null, showToasts: true
         };
+
+        ensureOcrFields(defaultStratagemDB);
         
         const arrowSVGMap = { 'W': './Up.svg', 'S': './Down.svg', 'A': './Left.svg', 'D': './Right.svg' };
         const arrowDisplayMap = { 'W': '↑', 'S': '↓', 'A': '←', 'D': '→' };
@@ -833,6 +962,10 @@
                 return;
             }
             dragSrcIndex = parseInt(e.currentTarget.dataset.index);
+            if (activeLoadout[dragSrcIndex] && activeLoadout[dragSrcIndex].locked) {
+                e.preventDefault();
+                return;
+            }
             e.dataTransfer.effectAllowed = 'move';
             e.dataTransfer.setData('text/plain', dragSrcIndex);
             e.currentTarget.classList.add('dragging');
@@ -858,13 +991,18 @@
         window.handleDrop = function(e) {
             if (e.stopPropagation) e.stopPropagation();
             const dropIndex = parseInt(e.currentTarget.dataset.index);
-            if (dragSrcIndex !== null && dragSrcIndex !== dropIndex) {
-                let strats = activeLoadout.map(slot => slot.strat);
-                const [movedStrat] = strats.splice(dragSrcIndex, 1);
-                strats.splice(dropIndex, 0, movedStrat);
-                
-                for(let i = 0; i < maxSlots; i++) {
-                    activeLoadout[i].strat = strats[i];
+            if (dragSrcIndex !== null && dragSrcIndex !== dropIndex && !activeLoadout[dropIndex].locked) {
+                const unlockedIndexes = activeLoadout.map((slot, index) => slot.locked ? null : index).filter(index => index !== null);
+                const from = unlockedIndexes.indexOf(dragSrcIndex);
+                const to = unlockedIndexes.indexOf(dropIndex);
+                if (from !== -1 && to !== -1) {
+                    let strats = unlockedIndexes.map(index => activeLoadout[index].strat);
+                    const [movedStrat] = strats.splice(from, 1);
+                    strats.splice(to, 0, movedStrat);
+                    
+                    unlockedIndexes.forEach((slotIndex, index) => {
+                        activeLoadout[slotIndex].strat = strats[index];
+                    });
                 }
                 renderMainList();
             }
@@ -905,6 +1043,181 @@
             return data;
         }
 
+        const ANNOUNCEMENT_URL = 'https://ooxygen7.github.io/HD2TriggerAnnouncement_Snow/announcement.json';
+        const PAYURL_URL = 'https://ooxygen7.github.io/HD2TriggerAnnouncement_Snow/payurl.json';
+
+        function pickLocalized(value) {
+            if (value && typeof value === 'object') {
+                return value[currentLang] || value.en || value.zh || '';
+            }
+            return String(value || '');
+        }
+
+        function escapeHtml(value) {
+            return String(value || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function renderInlineMarkdown(value) {
+            return escapeHtml(value)
+                .replace(/`([^`]+)`/g, '<code>$1</code>')
+                .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+        }
+
+        function renderAnnouncementMarkdown(markdown) {
+            const lines = String(markdown || '').replace(/\r\n/g, '\n').split('\n');
+            const html = [];
+            let paragraph = [];
+            let inCode = false;
+            let codeLines = [];
+
+            const flushParagraph = () => {
+                if (paragraph.length === 0) return;
+                html.push(`<p>${paragraph.map(renderInlineMarkdown).join('<br>')}</p>`);
+                paragraph = [];
+            };
+
+            for (const line of lines) {
+                if (line.trim().startsWith('```')) {
+                    if (inCode) {
+                        html.push(`<pre><code>${escapeHtml(codeLines.join('\n'))}</code></pre>`);
+                        codeLines = [];
+                        inCode = false;
+                    } else {
+                        flushParagraph();
+                        inCode = true;
+                    }
+                    continue;
+                }
+
+                if (inCode) {
+                    codeLines.push(line);
+                    continue;
+                }
+
+                const heading = line.match(/^(#{1,3})\s+(.+)$/);
+                if (heading) {
+                    flushParagraph();
+                    const level = heading[1].length;
+                    html.push(`<h${level}>${renderInlineMarkdown(heading[2])}</h${level}>`);
+                    continue;
+                }
+
+                if (!line.trim()) {
+                    flushParagraph();
+                    continue;
+                }
+
+                paragraph.push(line);
+            }
+
+            if (inCode) html.push(`<pre><code>${escapeHtml(codeLines.join('\n'))}</code></pre>`);
+            flushParagraph();
+            return html.join('');
+        }
+
+        function compareVersions(a, b) {
+            const pa = String(a || '0').split('.').map(n => parseInt(n, 10) || 0);
+            const pb = String(b || '0').split('.').map(n => parseInt(n, 10) || 0);
+            const len = Math.max(pa.length, pb.length);
+            for (let i = 0; i < len; i++) {
+                if ((pa[i] || 0) > (pb[i] || 0)) return 1;
+                if ((pa[i] || 0) < (pb[i] || 0)) return -1;
+            }
+            return 0;
+        }
+
+        async function shouldShowAnnouncement(announcement) {
+            if (!announcement || announcement.enabled !== true || !announcement.id) return false;
+            const id = String(announcement.id);
+            if (!/^\d+$/.test(id)) return false;
+            if (String(announcementState.lastSeenId || '') === id) return false;
+
+            const now = Date.now();
+            if (announcement.startAt && Date.parse(announcement.startAt) > now) return false;
+            if (announcement.endAt && Date.parse(announcement.endAt) < now) return false;
+
+            const version = window.electronAPI && window.electronAPI.getAppVersion ? await window.electronAPI.getAppVersion() : '0.0.0';
+            if (announcement.minVersion && compareVersions(version, announcement.minVersion) < 0) return false;
+            if (announcement.maxVersion && compareVersions(version, announcement.maxVersion) > 0) return false;
+            return true;
+        }
+
+        async function checkRemoteAnnouncement() {
+            try {
+                const controller = new AbortController();
+                const timer = setTimeout(() => controller.abort(), 3000);
+                const response = await fetch(ANNOUNCEMENT_URL, { cache: 'no-store', signal: controller.signal });
+                clearTimeout(timer);
+                if (!response.ok) return;
+                const announcement = await response.json();
+                if (!(await shouldShowAnnouncement(announcement))) return;
+
+                pendingAnnouncementId = String(announcement.id);
+                document.getElementById('announcement-title').textContent = pickLocalized(announcement.title) || 'Notice';
+                document.getElementById('announcement-content').innerHTML = renderAnnouncementMarkdown(pickLocalized(announcement.content));
+                document.getElementById('announcement-modal').classList.add('active');
+            } catch (e) {
+            }
+        }
+
+        function isValidPayUrlConfig(config) {
+            if (!config || config.enabled !== true || !config.id || !config.url) return false;
+            if (!/^\d{3}$/.test(String(config.id))) return false;
+            try {
+                const parsed = new URL(config.url);
+                return parsed.protocol === 'https:' || parsed.protocol === 'http:';
+            } catch (e) {
+                return false;
+            }
+        }
+
+        async function shouldUsePayUrlConfig(config) {
+            if (!isValidPayUrlConfig(config)) return false;
+
+            const now = Date.now();
+            if (config.startAt && Date.parse(config.startAt) > now) return false;
+            if (config.endAt && Date.parse(config.endAt) < now) return false;
+
+            const version = window.electronAPI && window.electronAPI.getAppVersion ? await window.electronAPI.getAppVersion() : '0.0.0';
+            if (config.minVersion && compareVersions(version, config.minVersion) < 0) return false;
+            if (config.maxVersion && compareVersions(version, config.maxVersion) > 0) return false;
+            return true;
+        }
+
+        async function checkRemotePayUrl() {
+            try {
+                const controller = new AbortController();
+                const timer = setTimeout(() => controller.abort(), 3000);
+                const response = await fetch(PAYURL_URL, { cache: 'no-store', signal: controller.signal });
+                clearTimeout(timer);
+                if (!response.ok) return;
+
+                const payUrlConfig = await response.json();
+                if (!(await shouldUsePayUrlConfig(payUrlConfig))) return;
+
+                sponsorPayUrl = payUrlConfig.url;
+                saveDataToLocal('payurl.json', {
+                    id: String(payUrlConfig.id),
+                    url: sponsorPayUrl
+                }, 'hd2_payurl_state');
+            } catch (e) {
+            }
+        }
+
+        window.closeAnnouncementModal = () => {
+            if (pendingAnnouncementId) {
+                announcementState.lastSeenId = pendingAnnouncementId;
+                saveDataToLocal('announcement.json', announcementState, 'hd2_announcement_state');
+            }
+            pendingAnnouncementId = null;
+            document.getElementById('announcement-modal').classList.remove('active');
+        }
+
         async function initData() {
             const cacheSet = await loadWithMigration('settings.json', 'hd2_macro_settings');
             if (cacheSet) {
@@ -914,11 +1227,25 @@
                     cacheSet.menuOpenDelay = 100;
                 }
                 gameSettings = { ...gameSettings, ...cacheSet };
+                if (gameSettings.language === 'zh' || gameSettings.language === 'en') {
+                    currentLang = gameSettings.language;
+                }
+            }
+
+            const cacheAnnouncement = await loadWithMigration('announcement.json', 'hd2_announcement_state');
+            if (cacheAnnouncement && typeof cacheAnnouncement === 'object') {
+                announcementState = { ...announcementState, ...cacheAnnouncement };
+            }
+
+            const cachePayUrl = await loadWithMigration('payurl.json', 'hd2_payurl_state');
+            if (cachePayUrl && cachePayUrl.url && isValidPayUrlConfig({ enabled: true, id: cachePayUrl.id || '001', url: cachePayUrl.url })) {
+                sponsorPayUrl = cachePayUrl.url;
             }
             
             const cacheCustom = await loadWithMigration('custom_strats.json', 'hd2_custom_stratagems');
             if (cacheCustom && Array.isArray(cacheCustom)) {
                 customStratagems = cacheCustom;
+                ensureOcrFields(customStratagems);
                 stratagemDB = [...defaultStratagemDB, ...customStratagems];
             } else {
                 stratagemDB = [...defaultStratagemDB];
@@ -928,16 +1255,19 @@
             const cacheLoadout = await loadWithMigration('loadout.json', 'hd2_macro_current_loadout');
             if (cacheLoadout && Array.isArray(cacheLoadout)) {
                 for (let i = 0; i < maxSlots; i++) {
-                    if (cacheLoadout[i]) {
+                        if (cacheLoadout[i]) {
                         if (cacheLoadout[i].stratId !== undefined) {
                             const s = cacheLoadout[i].stratId ? stratagemDB.find(x => x.id === cacheLoadout[i].stratId) : null;
-                            activeLoadout[i] = { strat: s || null, hotkey: cacheLoadout[i].hotkey };
+                            activeLoadout[i] = { strat: s || null, hotkey: cacheLoadout[i].hotkey, locked: !!cacheLoadout[i].locked };
                         } else if (cacheLoadout[i].strat !== undefined) {
+                            cacheLoadout[i].locked = !!cacheLoadout[i].locked;
                             activeLoadout[i] = cacheLoadout[i];
                         } else {
                             let hk = cacheLoadout[i].hotkey;
+                            let locked = !!cacheLoadout[i].locked;
                             delete cacheLoadout[i].hotkey;
-                            activeLoadout[i] = { strat: Object.keys(cacheLoadout[i]).length ? cacheLoadout[i] : null, hotkey: hk };
+                            delete cacheLoadout[i].locked;
+                            activeLoadout[i] = { strat: Object.keys(cacheLoadout[i]).length ? cacheLoadout[i] : null, hotkey: hk, locked };
                         }
                     }
                 }
@@ -954,6 +1284,8 @@
             
             updateI18n();
             renderMainList();
+            setTimeout(checkRemotePayUrl, 500);
+            setTimeout(checkRemoteAnnouncement, 800);
         }
 
         window.handleToggleOverlay = () => {
@@ -967,13 +1299,16 @@
         function saveCurrentLoadoutToCache() {
             const compact = activeLoadout.map(item => ({
                 stratId: item.strat ? item.strat.id : null,
-                hotkey: item.hotkey
+                hotkey: item.hotkey,
+                locked: !!item.locked
             }));
             saveDataToLocal('loadout.json', compact, 'hd2_macro_current_loadout');
         }
 
         window.toggleLanguage = () => {
             currentLang = currentLang === 'zh' ? 'en' : 'zh';
+            gameSettings.language = currentLang;
+            saveDataToLocal('settings.json', gameSettings, 'hd2_macro_settings');
             updateI18n(); renderMainList();
             if (document.getElementById('library-modal').classList.contains('active')) {
                 const keyword = document.getElementById('lib-search-input').value;
@@ -988,6 +1323,7 @@
             document.getElementById('txt-app-title').textContent = lang.appTitle;
             document.getElementById('btn-top-settings').textContent = lang.btnSettings;
             document.getElementById('btn-top-presets').textContent = lang.btnPresets;
+            document.getElementById('btn-title-sponsor').textContent = lang.btnSponsor;
             document.getElementById('btn-top-lib').textContent = lang.btnOpenLib;
             document.getElementById('txt-lib-title').textContent = lang.libTitle;
             document.getElementById('btn-lib-done').textContent = lang.btnDone;
@@ -1012,6 +1348,10 @@
             document.getElementById('btn-confirm-cancel').textContent = currentLang === 'zh' ? '取消' : 'CANCEL';
             document.getElementById('btn-confirm-ok').textContent = currentLang === 'zh' ? '确认' : 'CONFIRM';
             document.getElementById('txt-confirm-title').textContent = currentLang === 'zh' ? '警告' : 'WARNING';
+            document.getElementById('txt-sponsor-title').textContent = lang.sponsorTitle;
+            document.getElementById('txt-sponsor-msg').textContent = lang.sponsorMsg;
+            document.getElementById('btn-sponsor-go').textContent = lang.sponsorGo;
+            document.getElementById('btn-sponsor-close').textContent = lang.sponsorClose;
             document.getElementById('txt-pre-title').textContent = lang.preTitle;
             document.getElementById('btn-pre-done').textContent = lang.btnDone;
             document.getElementById('preset-name-input').placeholder = lang.phPresetName;
@@ -1043,6 +1383,14 @@
             document.getElementById('txt-set-ctrlUp').textContent = lang.ovCtrlUp;
             document.getElementById('txt-set-ctrlDown').textContent = lang.ovCtrlDown;
             document.getElementById('txt-set-ctrlExec').textContent = lang.ovCtrlExec;
+            document.getElementById('txt-set-ocrTitle').textContent = lang.ocrTitle;
+            document.getElementById('btn-set-ocrHelp').textContent = lang.ocrHelp;
+            document.getElementById('txt-set-ocrRegion').textContent = lang.ocrRegion;
+            document.getElementById('btn-set-ocrRegion').textContent = lang.ocrSelectRegion;
+            document.getElementById('txt-set-ocrHotkey').textContent = lang.ocrHotkey;
+            document.getElementById('txt-set-toastEnabled').textContent = lang.toastEnabled;
+            document.getElementById('toast-on').textContent = lang.toastOn;
+            document.getElementById('toast-off').textContent = lang.toastOff;
 
 
             document.getElementById('txt-desc-unlock').textContent = lang.descUnlock;
@@ -1052,6 +1400,9 @@
             document.getElementById('txt-desc-ovUp').textContent = lang.descOvUp;
             document.getElementById('txt-desc-ovDown').textContent = lang.descOvDown;
             document.getElementById('txt-desc-ovExec').textContent = lang.descOvExec;
+            document.getElementById('txt-desc-ocrRegion').textContent = lang.descOcrRegion;
+            document.getElementById('txt-desc-ocrHotkey').textContent = lang.descOcrHotkey;
+            document.getElementById('txt-desc-toastEnabled').textContent = lang.descToastEnabled;
             document.getElementById('txt-desc-menuKey').textContent = lang.descMenuKey;
             document.getElementById('txt-desc-menuMode').textContent = lang.descMenuMode;
             document.getElementById('txt-desc-menuDelay').textContent = lang.descMenuDelay;
@@ -1074,6 +1425,8 @@
             document.getElementById('add-strat-name-en').placeholder = lang.addNameEnPh;
             document.getElementById('txt-add-seq').textContent = lang.addSeq;
             document.getElementById('add-strat-seq').placeholder = lang.addSeqPh;
+            document.getElementById('txt-add-ocr').textContent = lang.addOcr;
+            document.getElementById('add-strat-ocr').placeholder = lang.addOcrPh;
             document.getElementById('btn-add-save').textContent = lang.addSave;
             document.getElementById('txt-add-hint').textContent = lang.addHint;
             
@@ -1082,6 +1435,7 @@
             document.getElementById('txt-desc-addZh').textContent = lang.descAddZh;
             document.getElementById('txt-desc-addEn').textContent = lang.descAddEn;
             document.getElementById('txt-desc-addSeq').textContent = lang.descAddSeq;
+            document.getElementById('txt-desc-addOcr').textContent = lang.descAddOcr;
 
             document.getElementById('opt-cat-support').textContent = lang.cat_support;
             document.getElementById('opt-cat-orbital').textContent = lang.cat_orbital;
@@ -1093,11 +1447,17 @@
             document.getElementById('opt-cat-mission').textContent = lang.cat_mission;
 
             document.getElementById('lib-search-input').placeholder = lang.searchPh;
+            document.getElementById('btn-announcement-ok').textContent = lang.announcementOk;
             
             updateSettingsUI();
         }
 
         function showToast(msg, isError = false) {
+            if (!gameSettings.showToasts) return;
+            if (window.electronAPI && window.electronAPI.showToast) {
+                window.electronAPI.showToast({ message: msg, isError });
+                return;
+            }
             const toast = document.getElementById('global-status');
             toast.textContent = msg;
             toast.className = isError ? 'error show' : 'show';
@@ -1153,7 +1513,10 @@
                     row.className = 'list-row';
                     const arrowsHtml = slot.strat.seq.map(k => `<img class="arrow-img" src="${arrowSVGMap[k]}">`).join('');
                     const iconSrc = slot.strat.icon || 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
-                    row.innerHTML = `${dragHandleHtml}<div class="row-icon-box"><img src="${iconSrc}"><button class="btn-remove" onclick="removeStratagem(${i})">✕</button></div><div class="row-arrows">${arrowsHtml}</div>${bindBoxHtml}`;
+                    const lockIcon = slot.locked
+                        ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>'
+                        : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 9.9-1"></path></svg>';
+                    row.innerHTML = `${dragHandleHtml}<div class="row-icon-box"><img src="${iconSrc}"><button class="btn-remove" onclick="removeStratagem(${i})">✕</button><button class="btn-lock ${slot.locked ? 'locked' : ''}" onclick="toggleStratagemLock(${i}, event)">${lockIcon}</button></div><div class="row-arrows">${arrowsHtml}</div>${bindBoxHtml}`;
                 } else {
                     row.className = 'list-row empty'; 
                     row.innerHTML = `${dragHandleHtml}<div class="empty-click-area" onclick="openLibrary()">${lang.emptySlot}</div>${bindBoxHtml}`;
@@ -1167,11 +1530,25 @@
             }
         }
 
-        window.openLibrary = () => { 
-            document.getElementById('library-modal').classList.add('active'); 
+        window.openLibrary = () => {
+            document.getElementById('library-modal').classList.add('active');
             document.getElementById('lib-search-input').value = '';
             document.getElementById('lib-search-hint').style.display = 'none';
-            renderLibrary(); 
+            renderLibrary();
+        }
+
+        window.openSponsorModal = () => {
+            document.getElementById('sponsor-modal').classList.add('active');
+        }
+
+        window.closeSponsorModal = () => {
+            document.getElementById('sponsor-modal').classList.remove('active');
+        }
+
+        window.goSponsor = async () => {
+            const ok = await window.electronAPI.openSponsor(sponsorPayUrl);
+            if (ok) closeSponsorModal();
+            if (!ok) showToast(i18n[currentLang].msgSponsorFail, true);
         }
         
         window.handleSearch = () => {
@@ -1248,28 +1625,39 @@
             const idx = activeLoadout.findIndex(item => item.strat && item.strat.id === id);
             if (idx !== -1) { 
                 activeLoadout[idx].strat = null; 
+                activeLoadout[idx].locked = false;
             } else {
                 const emptyIdx = activeLoadout.findIndex(item => !item.strat);
                 if (emptyIdx === -1) { showToast(i18n[currentLang].msgFull, true); return; }
                 const strat = stratagemDB.find(s => s.id === id);
                 activeLoadout[emptyIdx].strat = strat;
+                activeLoadout[emptyIdx].locked = false;
             }
             const keyword = document.getElementById('lib-search-input').value;
             renderLibrary(keyword); 
             renderMainList();
         }
 
-        window.closeModals = () => { 
-            document.querySelectorAll('.modal-overlay').forEach(el => el.classList.remove('active')); 
-            cancelBinding(); 
+        window.closeModals = () => {
+            document.querySelectorAll('.modal-overlay').forEach(el => el.classList.remove('active'));
+            cancelBinding();
         }
 
-        window.removeStratagem = (index) => { activeLoadout[index].strat = null; if (bindingTarget && bindingTarget.type === 'macro' && bindingTarget.index === index) cancelBinding(); renderMainList(); }
+        window.removeStratagem = (index) => { activeLoadout[index].strat = null; activeLoadout[index].locked = false; if (bindingTarget && bindingTarget.type === 'macro' && bindingTarget.index === index) cancelBinding(); renderMainList(); }
+
+        window.toggleStratagemLock = (index, e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (!activeLoadout[index] || !activeLoadout[index].strat) return;
+            activeLoadout[index].locked = !activeLoadout[index].locked;
+            renderMainList();
+        }
 
         window.openSettings = () => { document.getElementById('settings-modal').classList.add('active'); updateSettingsUI(); }
 
         window.setOverlayStyle = (mode) => { gameSettings.ovStyle = mode; updateSettingsUI(); }
         window.setMenuMode = (mode) => { gameSettings.menuMode = mode; updateSettingsUI(); }
+        window.setToastEnabled = (enabled) => { gameSettings.showToasts = !!enabled; updateSettingsUI(); }
 
         function updateSettingsUI() {
             document.getElementById('btn-set-menuKey').textContent = formatDisplayKey(gameSettings.menuKey);
@@ -1296,6 +1684,39 @@
             document.getElementById('btn-set-ovUp').textContent = formatDisplayKey(gameSettings.ovUp) || '';
             document.getElementById('btn-set-ovDown').textContent = formatDisplayKey(gameSettings.ovDown) || '';
             document.getElementById('btn-set-ovExec').textContent = formatDisplayKey(gameSettings.ovExec) || '';
+            document.getElementById('btn-set-ocrHotkey').textContent = formatDisplayKey(gameSettings.ocrHotkey) || '';
+            document.getElementById('toast-on').className = `toggle-option ${gameSettings.showToasts ? 'active' : ''}`;
+            document.getElementById('toast-off').className = `toggle-option ${gameSettings.showToasts ? '' : 'active'}`;
+            const ocrStatus = document.getElementById('txt-ocr-region-status');
+            if (gameSettings.ocrRegion) {
+                ocrStatus.textContent = i18n[currentLang].ocrRegionSet
+                    .replace('{width}', Math.round(gameSettings.ocrRegion.width))
+                    .replace('{height}', Math.round(gameSettings.ocrRegion.height))
+                    .replace('{x}', Math.round(gameSettings.ocrRegion.x))
+                    .replace('{y}', Math.round(gameSettings.ocrRegion.y));
+            } else {
+                ocrStatus.textContent = i18n[currentLang].ocrRegionUnset;
+            }
+        }
+
+        window.startOcrRegionSelect = () => {
+            if (!window.electronAPI || !window.electronAPI.startOcrRegionSelect) return;
+            showToast(i18n[currentLang].msgOcrSelectStarted);
+            window.electronAPI.startOcrRegionSelect();
+        }
+
+        window.openOcrHelp = async () => {
+            if (!window.electronAPI || !window.electronAPI.openOcrHelp) return;
+            window.electronAPI.openOcrHelp(currentLang);
+        }
+
+        if (window.electronAPI && window.electronAPI.onOcrRegionSelected) {
+            window.electronAPI.onOcrRegionSelected((region) => {
+                gameSettings.ocrRegion = region;
+                saveDataToLocal('settings.json', gameSettings, 'hd2_macro_settings');
+                updateSettingsUI();
+                showToast(i18n[currentLang].msgOcrRegionSaved);
+            });
         }
 
         window.saveSettings = () => {
@@ -1399,6 +1820,11 @@
             if (!bindingTarget) return;
             const lang = i18n[currentLang];
             if (bindingTarget.type === 'macro') {
+                if (gameSettings.ocrHotkey && keyStr === gameSettings.ocrHotkey) {
+                    showToast(lang.msgOcrHotkeyConflict, true);
+                    cancelBinding();
+                    return;
+                }
                 const conflictIdx = activeLoadout.findIndex((s, idx) => s.hotkey === keyStr && idx !== bindingTarget.index);
                 if (conflictIdx !== -1) {
                     if(!confirm(lang.msgConfirm)) { cancelBinding(); return; }
@@ -1412,7 +1838,146 @@
             cancelBinding();
         }
 
+        function normalizeOcrText(value) {
+            return String(value || '')
+                .toLowerCase()
+                .replace(/[“”"']/g, '')
+                .replace(/[^a-z0-9\u4e00-\u9fff]+/g, '');
+        }
+
+        function ensureOcrFields(list) {
+            list.forEach(strat => {
+                if (!Array.isArray(strat.ocr)) strat.ocr = [];
+            });
+        }
+
+        function levenshteinSimilarity(a, b) {
+            if (!a || !b) return 0;
+            if (a === b) return 1;
+            const rows = a.length + 1;
+            const cols = b.length + 1;
+            const dp = Array.from({ length: rows }, () => Array(cols).fill(0));
+            for (let i = 0; i < rows; i++) dp[i][0] = i;
+            for (let j = 0; j < cols; j++) dp[0][j] = j;
+            for (let i = 1; i < rows; i++) {
+                for (let j = 1; j < cols; j++) {
+                    const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+                    dp[i][j] = Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost);
+                }
+            }
+            return 1 - (dp[a.length][b.length] / Math.max(a.length, b.length));
+        }
+
+        function getStratagemMatchTerms(strat) {
+            const terms = Array.isArray(strat.ocr) ? strat.ocr : [];
+            return [...new Set(terms.map(t => String(t || '').trim()).filter(t => t.length >= 2))];
+        }
+
+        function getOcrCandidates() {
+            return stratagemDB
+                .filter(strat => strat.grp !== 'mission')
+                .flatMap(strat => getStratagemMatchTerms(strat).map(term => ({
+                    strat,
+                    term,
+                    normalizedTerm: normalizeOcrText(term)
+                })))
+                .filter(candidate => candidate.normalizedTerm.length >= 2);
+        }
+
+        function scoreStratagemAgainstOcr(strat, lines) {
+            let bestScore = 0;
+            let firstIndex = Number.MAX_SAFE_INTEGER;
+
+            for (const term of getStratagemMatchTerms(strat)) {
+                const normalizedTerm = normalizeOcrText(term);
+                if (normalizedTerm.length < 2) continue;
+
+                for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+                    const line = lines[lineIndex];
+                    const normalizedLine = normalizeOcrText(line);
+                    if (normalizedLine.length < 2) continue;
+                    if (normalizedLine.includes(normalizedTerm) || normalizedTerm.includes(normalizedLine)) continue;
+
+                    const similarity = levenshteinSimilarity(normalizedLine, normalizedTerm);
+                    if (normalizedTerm.length <= 3 && similarity < 0.94) continue;
+                    if (normalizedTerm.length <= 5 && similarity < 0.84) continue;
+                    if (normalizedTerm.length > 5 && similarity < 0.74) continue;
+
+                    firstIndex = Math.min(firstIndex, lineIndex);
+                    bestScore = Math.max(bestScore, similarity);
+                }
+            }
+
+            return { strat, score: bestScore, firstIndex };
+        }
+
+        function matchOcrStratagems(rawText) {
+            const lines = String(rawText || '').split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+            const candidates = getOcrCandidates();
+            const exactMatches = [];
+            const fuzzyLines = [];
+
+            lines.forEach((line, lineIndex) => {
+                const normalizedLine = normalizeOcrText(line);
+                if (normalizedLine.length < 2) return;
+
+                const lineMatches = candidates
+                    .filter(candidate => normalizedLine === candidate.normalizedTerm || normalizedLine.includes(candidate.normalizedTerm))
+                    .sort((a, b) => b.normalizedTerm.length - a.normalizedTerm.length);
+
+                if (lineMatches.length > 0) {
+                    const bestLength = lineMatches[0].normalizedTerm.length;
+                    const bestMatches = lineMatches.filter(match => match.normalizedTerm.length === bestLength);
+                    bestMatches.forEach(match => exactMatches.push({ strat: match.strat, score: 1, firstIndex: lineIndex }));
+                } else {
+                    fuzzyLines.push(line);
+                }
+            });
+
+            const fuzzyMatches = stratagemDB
+                .filter(strat => strat.grp !== 'mission')
+                .map(strat => scoreStratagemAgainstOcr(strat, fuzzyLines))
+                .filter(match => match.score >= 0.74);
+
+            return [...exactMatches, ...fuzzyMatches]
+                .sort((a, b) => {
+                    if (a.firstIndex !== b.firstIndex) return a.firstIndex - b.firstIndex;
+                    const aLen = Math.max(...getStratagemMatchTerms(a.strat).map(term => normalizeOcrText(term).length), 0);
+                    const bLen = Math.max(...getStratagemMatchTerms(b.strat).map(term => normalizeOcrText(term).length), 0);
+                    if (a.score === 1 && b.score === 1 && aLen !== bLen) return bLen - aLen;
+                    return b.score - a.score;
+                })
+                .filter((match, index, all) => all.findIndex(item => item.strat.id === match.strat.id) === index)
+                .slice(0, maxSlots)
+                .map(match => match.strat);
+        }
+
+        function applyOcrLoadout(matches) {
+            const lockedIds = new Set(activeLoadout.filter(item => item.locked && item.strat).map(item => item.strat.id));
+            const equipTargets = matches.filter(strat => !lockedIds.has(strat.id));
+            const availableIndexes = [];
+
+            for (let i = 0; i < maxSlots; i++) {
+                if (activeLoadout[i].locked) continue;
+                activeLoadout[i].strat = null;
+                availableIndexes.push(i);
+            }
+
+            if (equipTargets.length > availableIndexes.length) {
+                return { ok: false, reason: 'no-space', count: 0 };
+            }
+
+            equipTargets.forEach((strat, index) => {
+                activeLoadout[availableIndexes[index]].strat = strat;
+            });
+            overlaySelectedIndex = 0;
+            saveCurrentLoadoutToCache();
+            renderMainList();
+            return { ok: true, count: equipTargets.length };
+        }
+
         let isMacroRunning = false; 
+        let isOcrRunning = false;
         let overlaySelectedIndex = 0;
 
         function executeMacroByItem(item, itemIndex) {
@@ -1423,9 +1988,6 @@
             overlaySelectedIndex = itemIndex;
             if(window.electronAPI && window.electronAPI.updateSelection) window.electronAPI.updateSelection(overlaySelectedIndex);
 
-            const seqDisplay = stratagem.seq.map(k => arrowDisplayMap[k]).join(' ');
-            showToast(`${i18n[currentLang].msgExec}: [ ${seqDisplay} ]`);
-            
             const keyMap = { 'W': gameSettings.upKey, 'S': gameSettings.downKey, 'A': gameSettings.leftKey, 'D': gameSettings.rightKey };
             
             const payload = { 
@@ -1455,9 +2017,51 @@
             }
         }
 
+        async function runOcrAutoEquip() {
+            const lang = i18n[currentLang];
+            if (isOcrRunning) return;
+            if (!gameSettings.ocrRegion) {
+                showToast(lang.msgOcrNoRegion, true);
+                return;
+            }
+            if (!window.electronAPI || !window.electronAPI.recognizeOcrRegion) {
+                showToast(lang.msgOcrFailed.replace('{error}', 'IPC unavailable'), true);
+                return;
+            }
+
+            isOcrRunning = true;
+            showToast(lang.msgOcrRunning);
+            try {
+                const result = await window.electronAPI.recognizeOcrRegion(gameSettings.ocrRegion);
+                if (!result || !result.ok) {
+                    throw new Error((result && result.error) || 'unknown');
+                }
+                if (!result.text) {
+                    showToast(lang.msgOcrNoText, true);
+                    return;
+                }
+                const matches = matchOcrStratagems(result.text);
+                if (matches.length === 0) {
+                    showToast(lang.msgOcrNoMatch, true);
+                    return;
+                }
+                const equipResult = applyOcrLoadout(matches);
+                if (!equipResult.ok && equipResult.reason === 'no-space') {
+                    showToast(lang.msgOcrNoSpace, true);
+                    return;
+                }
+                showToast(lang.msgOcrLoaded.replace('{count}', equipResult.count));
+            } catch (e) {
+                showToast(lang.msgOcrFailed.replace('{error}', e.message || String(e)), true);
+            } finally {
+                isOcrRunning = false;
+            }
+        }
+
         if (window.electronAPI) {
             if(window.electronAPI.onGlobalKeyDown) window.electronAPI.onGlobalKeyDown((keyName) => {
                 if (bindingTarget) return; 
+                if (gameSettings.ocrHotkey && keyName === gameSettings.ocrHotkey) { runOcrAutoEquip(); return; }
                 if (isOverlayVisible) {
                     if (keyName === (gameSettings.ovExec || 'MouseMiddle')) { executeSelection(); return; }
                     if (keyName === (gameSettings.ovUp || 'WheelUp')) { scrollOverlay(-1); return; }
@@ -1468,6 +2072,7 @@
 
             if(window.electronAPI.onGlobalMouseDown) window.electronAPI.onGlobalMouseDown((mouseKey) => {
                 if (bindingTarget) return; 
+                if (gameSettings.ocrHotkey && mouseKey === gameSettings.ocrHotkey) { runOcrAutoEquip(); return; }
                 if (isOverlayVisible) {
                     if (mouseKey === (gameSettings.ovExec || 'MouseMiddle')) { executeSelection(); return; }
                     if (mouseKey === (gameSettings.ovUp || 'WheelUp')) { scrollOverlay(-1); return; }
@@ -1479,6 +2084,7 @@
             if(window.electronAPI.onGlobalWheel) window.electronAPI.onGlobalWheel((dir) => {
                 const wheelKey = dir < 0 ? 'WheelUp' : 'WheelDown';
                 if (bindingTarget) { saveInput(wheelKey); return; } 
+                if (gameSettings.ocrHotkey && wheelKey === gameSettings.ocrHotkey) { runOcrAutoEquip(); return; }
                 
                 if (isOverlayVisible) {
                     if (wheelKey === (gameSettings.ovUp || 'WheelUp')) { scrollOverlay(-1); return; }
@@ -1539,7 +2145,8 @@
 
             const compactLoadout = activeLoadout.map(item => ({
                 stratId: item.strat ? item.strat.id : null,
-                hotkey: item.hotkey
+                hotkey: item.hotkey,
+                locked: !!item.locked
             }));
 
             savedPresets.push({ name: name, loadout: compactLoadout });
@@ -1601,11 +2208,13 @@
             activeLoadout = savedPresets[index].loadout.map(item => {
                 if (item.stratId !== undefined) {
                     const s = item.stratId ? stratagemDB.find(x => x.id === item.stratId) : null;
-                    return { strat: s || null, hotkey: item.hotkey };
+                    return { strat: s || null, hotkey: item.hotkey, locked: !!item.locked };
                 } else {
-                    return { strat: item.strat || null, hotkey: item.hotkey };
+                    return { strat: item.strat || null, hotkey: item.hotkey, locked: !!item.locked };
                 }
             });
+            while (activeLoadout.length < maxSlots) activeLoadout.push({ strat: null, hotkey: null });
+            activeLoadout = activeLoadout.slice(0, maxSlots);
             saveCurrentLoadoutToCache(); 
             overlaySelectedIndex = 0; 
             renderMainList(); 
@@ -1617,7 +2226,8 @@
             const preset = savedPresets[index];
             const compactLoadout = preset.loadout.map(item => ({
                 s: item.stratId || (item.strat ? item.strat.id : null),
-                h: item.hotkey
+                h: item.hotkey,
+                l: !!item.locked
             }));
             const dataObj = { n: preset.name, l: compactLoadout };
             const base64Code = btoa(encodeURIComponent(JSON.stringify(dataObj)));
@@ -1672,7 +2282,8 @@
                 if (dataObj.n && Array.isArray(dataObj.l)) {
                     const restoredLoadout = dataObj.l.map(item => ({
                         stratId: item.s,
-                        hotkey: item.h
+                        hotkey: item.h,
+                        locked: !!item.l
                     }));
                     
                     let finalName = dataObj.n;
@@ -1713,7 +2324,7 @@
                 
                 stratagemDB = [...defaultStratagemDB, ...customStratagems]; 
                 activeLoadout = activeLoadout.map(item => {
-                    if (item.strat && item.strat.id === idToRemove) return { ...item, strat: null };
+                    if (item.strat && item.strat.id === idToRemove) return { ...item, strat: null, locked: false };
                     return item;
                 });
                 saveCurrentLoadoutToCache(); 
@@ -1724,7 +2335,8 @@
                 const idx = pendingDelete.payload;
                 const compactLoadout = activeLoadout.map(item => ({
                     stratId: item.strat ? item.strat.id : null,
-                    hotkey: item.hotkey
+                    hotkey: item.hotkey,
+                    locked: !!item.locked
                 }));
                 savedPresets[idx].loadout = compactLoadout;
                 saveDataToLocal('presets.json', savedPresets, 'hd2_macro_presets');
@@ -1735,7 +2347,7 @@
         }
 
         let currentUploadBase64 = null;
-        window.openAddStratModal = () => { document.getElementById('add-strat-modal').classList.add('active'); document.getElementById('add-strat-name-zh').value = ''; document.getElementById('add-strat-name-en').value = ''; document.getElementById('add-strat-seq').value = ''; document.getElementById('add-strat-icon').value = ''; document.getElementById('add-strat-preview').style.display = 'none'; currentUploadBase64 = null; }
+        window.openAddStratModal = () => { document.getElementById('add-strat-modal').classList.add('active'); document.getElementById('add-strat-name-zh').value = ''; document.getElementById('add-strat-name-en').value = ''; document.getElementById('add-strat-seq').value = ''; document.getElementById('add-strat-ocr').value = ''; document.getElementById('add-strat-icon').value = ''; document.getElementById('add-strat-preview').style.display = 'none'; currentUploadBase64 = null; }
         window.closeAddStratModal = () => { document.getElementById('add-strat-modal').classList.remove('active'); }
         window.handleSvgUpload = (event) => {
             const file = event.target.files[0]; if (!file) return; const reader = new FileReader();
@@ -1745,9 +2357,10 @@
         
         window.saveCustomStratagem = () => {
             const lang = i18n[currentLang]; const nameZh = document.getElementById('add-strat-name-zh').value.trim(); const nameEn = document.getElementById('add-strat-name-en').value.trim(); const cat = document.getElementById('add-strat-cat').value; let rawSeq = document.getElementById('add-strat-seq').value.toUpperCase().replace(/\s/g, '');
+            const ocrTerms = document.getElementById('add-strat-ocr').value.split(',').map(term => term.trim()).filter(Boolean);
             if (!nameZh || !nameEn || !rawSeq) { showToast(lang.msgFillAll, true); return; }
             if (/[^WASD]/.test(rawSeq)) { showToast(lang.msgInvalidSeq, true); return; }
-            const newStrat = { id: `custom_${Date.now()}`, grp: cat, name: { zh: nameZh, en: nameEn }, aliases: [], seq: rawSeq.split(''), icon: currentUploadBase64 || 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=' };
+            const newStrat = { id: `custom_${Date.now()}`, grp: cat, name: { zh: nameZh, en: nameEn }, aliases: [], ocr: ocrTerms, seq: rawSeq.split(''), icon: currentUploadBase64 || 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=' };
             
             customStratagems.push(newStrat); 
             stratagemDB = [...defaultStratagemDB, ...customStratagems]; 
