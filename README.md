@@ -31,7 +31,7 @@ A Windows x64 rewrite of HD2 Macro Terminal. This edition keeps the existing HTM
 ## Development
 
 ```powershell
-cd rust
+cd HD2TriggerSnow
 npm install
 npm run check
 npm test
