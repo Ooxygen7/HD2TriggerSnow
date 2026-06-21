@@ -1,30 +1,75 @@
-<h1 align="center">Helldivers 2 Stratagem Keyboard Trigger</h1>
+# HD2 Macro Terminal — Rust Edition
 
-<p align="center">
-  <img src="https://github.com/Ooxygen7/HD2TriggerSnow/blob/main/icon.png" alt="logo" width="200">
-</p>
+A Windows x64 rewrite of HD2 Macro Terminal. This edition keeps the existing HTML/CSS interface while replacing the Electron backend with Rust and Tauri.
 
-<p align="center">
-  This is an open-source stratagem macro assistant terminal designed specifically for Helldivers 2. It not only helps you call in stratagems with a single keypress but also features an integrated transparent overlay and scroll wheel interaction system.
-</p>
+## What it does
 
----
+- Sends configurable Helldivers II stratagem macro sequences through the Windows `SendInput` API.
+- Listens for global keyboard, mouse, and wheel bindings through native Windows hooks.
+- Provides a tray-resident main window, a transparent overlay, toast notifications, OCR region selection, help, and sponsor windows.
+- Runs local PaddleOCR inference from bundled ONNX detection and recognition models; no cloud OCR service is required.
+- Supports OCR selection on multiple displays, including high-DPI displays. OCR regions are stored and captured in physical screen pixels.
+- Preserves existing settings by copying supported legacy configuration files into the Rust app-data directory on first launch; legacy files are never moved or deleted.
+- Builds a Windows x64 NSIS installer.
 
-# Core Features:
-* Integrated overlay window
-* Supports saving multiple different stratagem configuration profiles
-* Built-in comprehensive Chinese/English language switching
+## Technology
 
-To ensure that the macro can successfully input and display on the game screen, please be sure to configure the following settings:
-* **Display Mode:** Set the game to Borderless Windowed mode.
-* **Administrator Privileges:** Be sure to Run as Administrator, otherwise the system-wide hook will not function within the game window.
-* **Keybinding Conflicts:** Ensure that the shortcut keys bound in the software are not already occupied within the game.
+- Rust 2021
+- [Tauri 2](https://v2.tauri.app/)
+- Windows API bindings via `windows-rs`
+- ONNX Runtime via `ort`
+- Local PaddleOCR ONNX models
+- HTML, CSS, and JavaScript frontend served from `ui/`
 
-> **Please do not use mouse side buttons, the Caps Lock key, or certain function keys for any trigger keys or the in-game stratagem menu call-out button.**
+## Requirements
 
-# Disclaimer:
-This tool is intended for technical exchange and learning purposes only.
-* **Anti-Cheat Risk:** This tool simulates real physical keystrokes and is considered an external macro script. Please bear the risks associated with the GameGuard anti-cheat system yourself.
-* **Fair Play:** Please use macros responsibly and refrain from using them to disrupt the gaming experience of others.
+- Windows x64
+- Rust stable and Microsoft C++ Build Tools
+- Node.js and npm
+- Microsoft Edge WebView2 Runtime (included with supported Windows versions in most cases)
 
-**For Super Earth！**
+## Development
+
+```powershell
+cd rust
+npm install
+npm run check
+npm test
+npm run dev
+```
+
+Create a production installer with:
+
+```powershell
+npm run build
+```
+
+The resulting installer is written to:
+
+```text
+src-tauri\target\release\bundle\nsis\HD2 Macro Terminal Rust_0.1.0_x64-setup.exe
+```
+
+## Project layout
+
+```text
+ui/                         Existing application interface and assets
+scripts/                    JavaScript regression checks
+src-tauri/src/              Rust application backend
+src-tauri/resources/models/ Bundled PaddleOCR ONNX models and dictionary
+src-tauri/icons/            Windows application icon
+```
+
+## Checks
+
+`npm test` runs the OCR matcher regression script and the Rust test suite. The Rust tests cover configuration persistence, OCR preprocessing and decoding, region capture, high-DPI coordinate conversion, and native OCR model loading.
+
+## Notes
+
+- This repository intentionally includes the OCR models so the packaged application can recognize text offline.
+- Build artifacts, dependencies, local settings, logs, credentials, and database files are excluded by `.gitignore`.
+- The application is currently scoped to Windows x64.
+
+## License
+
+No license has been specified for this project.

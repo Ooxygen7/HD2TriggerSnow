@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCR Help</title>
+    <style>
+        :root {
+            --hd-yellow: #ffe80a;
+            --hd-bg: #050505;
+            --hd-panel: #101010;
+            --hd-border: rgba(255, 232, 10, 0.28);
+            --hd-text: #f5f2d0;
+            --hd-muted: rgba(245, 242, 208, 0.68);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: var(--hd-bg);
+            color: var(--hd-text);
+            font-family: "Microsoft YaHei", "Segoe UI", sans-serif;
+            border: 1px solid var(--hd-border);
+        }
+
+        #titlebar {
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 0 0 16px;
+            background: var(--hd-panel);
+            border-bottom: 1px solid var(--hd-border);
+            -webkit-app-region: drag;
+        }
+
+        #title {
+            color: var(--hd-yellow);
+            font-size: 15px;
+            font-weight: 800;
+            letter-spacing: 0;
+            white-space: nowrap;
+        }
+
+        #close-btn {
+            width: 46px;
+            height: 42px;
+            border: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            color: var(--hd-text);
+            cursor: pointer;
+            -webkit-app-region: no-drag;
+        }
+
+        #close-btn:hover {
+            background: #b91c1c;
+            color: #fff;
+        }
+
+        #close-btn svg {
+            width: 16px;
+            height: 16px;
+            stroke: currentColor;
+            stroke-width: 2.2;
+        }
+
+        #content {
+            height: calc(100vh - 42px);
+            padding: 20px 24px 28px;
+            overflow-y: auto;
+            line-height: 1.72;
+            font-size: 14px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 232, 10, 0.65) rgba(255, 255, 255, 0.06);
+        }
+
+        #content::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        #content::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.06);
+            border-left: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        #content::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, rgba(255, 232, 10, 0.85), rgba(255, 232, 10, 0.45));
+            border: 2px solid #050505;
+            border-radius: 999px;
+        }
+
+        #content::-webkit-scrollbar-thumb:hover {
+            background: var(--hd-yellow);
+        }
+
+        #content h1,
+        #content h2,
+        #content h3 {
+            color: var(--hd-yellow);
+            line-height: 1.3;
+            margin: 18px 0 10px;
+            letter-spacing: 0;
+        }
+
+        #content h1 { font-size: 22px; margin-top: 0; }
+        #content h2 { font-size: 18px; }
+        #content h3 { font-size: 16px; color: var(--hd-text); }
+        #content p { margin: 10px 0; }
+        #content strong { color: var(--hd-yellow); font-weight: 900; }
+
+        #content code {
+            background: rgba(255, 232, 10, 0.08);
+            border: 1px solid rgba(255, 232, 10, 0.18);
+            border-radius: 4px;
+            padding: 2px 5px;
+            color: var(--hd-yellow);
+            font-family: Consolas, "Cascadia Mono", monospace;
+        }
+
+        #content pre {
+            margin: 12px 0;
+            padding: 12px;
+            overflow-x: auto;
+            background: rgba(0, 0, 0, 0.45);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            color: var(--hd-muted);
+        }
+
+        #content pre code {
+            padding: 0;
+            border: 0;
+            background: transparent;
+            color: var(--hd-text);
+        }
+    </style>
+</head>
+<body>
+    <div id="titlebar" data-tauri-drag-region>
+        <div id="title">OCR 自动识别帮助</div>
+        <button id="close-btn" title="关闭" aria-label="关闭">
+            <svg viewBox="0 0 24 24" fill="none">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </button>
+    </div>
+    <main id="content"></main>
+
+    <script src="./bridge.js"></script>
+    <script>
+        const docs = {
+            zh: `# 1. OCR 战备识别自动装配（Beta）
+
+战备识别功能已作为测试功能加入触发器。你现在可以在 **“设置” - “OCR 自动识别”** 块内框选识别区域，并设定识别快捷键。
+
+### Q：如何使用 OCR 战备识别自动装配？
+
+**A：** 打开游戏，推荐先在单人对局内完成初次配置。
+
+选择你需要携带的战备落地后，展开你的战备栏并使其保持显示，随后点击 **“框选识别区域”** 按钮，框选覆盖你的战备栏。
+
+框选越精准，识别效果越好。
+
+该区域会持久化储存在本地。如果没有问题，后续无需再次框选。
+
+框选完毕后，即可进行正常使用。
+
+使用时，在每局落地后展开你的战备栏并使其保持显示，随后点击你设置的 OCR 识别快捷键。
+
+等待触发器完成识别后，即可收回你的战备栏。你会发现你游戏中携带的战备已经被自动装配在了触发器内。
+
+**需要注意的是，所有黄色战备不参与 OCR 识别，所以请手动配置好黄色战备。**
+
+## 2. 触发器主界面战备锁
+
+由于 OCR 战备识别在自动装配战备时，会直接用识别到的战备替换掉所有未锁定的已装配战备，同时黄色战备还无法识别，所以需要使用战备锁来锁定你的常用黄色战备。
+
+当你的鼠标浮动在战备条上时，战备图标右上角会出现锁定按钮，点击即可锁定。
+
+被锁定的战备不会被自动识别替换。
+
+## Beta 阶段说明
+
+由于 OCR 功能目前处于 Beta 阶段，尽管概率极小，但仍可能存在意料外的问题，例如：
+
+\`\`\`text
+某个战备识别不到
+某个战备被识别错误
+一个战备识别出两个战备
+\`\`\`
+
+如果出现这种问题，建议多尝试几次。
+
+如果某个战备完全无法被识别，请通过 B 站评论或私信向我反馈：
+
+**作者 B 站 UID：86682017**
+
+请记住，尽管作者可能会协助你解决你自己的使用问题，但她实际上并没有这种义务。`,
+            en: `# 1. OCR Stratagem Auto Equip (Beta)
+
+OCR stratagem recognition has been added as a beta feature. You can now open **Settings - OCR Auto Loadout** to select a recognition area and set an OCR hotkey.
+
+### Q: How do I use OCR stratagem auto equip?
+
+**A:** Open the game. It is recommended to complete the first setup in a solo mission.
+
+After landing with your selected stratagems, open your stratagem list and keep it visible. Then click **Select Region** and drag over your stratagem list.
+
+The more precise the selected area is, the better the recognition result will be.
+
+The selected area will be saved locally. If everything works, you do not need to select it again later.
+
+After setup, you can use the feature normally.
+
+Each time you land in a mission, open your stratagem list and keep it visible, then press your OCR recognition hotkey.
+
+After the trigger finishes recognition, you can close the stratagem list. The stratagems you brought in-game will be automatically equipped in the trigger.
+
+**Please note that all yellow stratagems are excluded from OCR recognition, so please configure yellow stratagems manually.**
+
+## 2. Stratagem Lock on Main Screen
+
+Because OCR auto equip replaces all unlocked equipped stratagems with recognized stratagems, and yellow stratagems cannot currently be recognized, you should use stratagem locks for your commonly used yellow stratagems.
+
+When your mouse hovers over a stratagem row, a lock button will appear in the upper-right corner of the stratagem icon. Click it to lock that stratagem.
+
+Locked stratagems will not be replaced by OCR auto equip.
+
+## Beta Notes
+
+OCR is currently in beta and may have unexpected issues, such as:
+
+\`\`\`text
+Some stratagems may not be recognized
+Some stratagems may be recognized incorrectly
+\`\`\`
+
+Please try multiple times if recognition fails.
+
+If a stratagem cannot be recognized at all, please report it through Bilibili comments or private messages:
+
+**Author Bilibili UID: 86682017**
+
+Other stratagems should generally work fine.`
+        };
+
+        function escapeHtml(value) {
+            return String(value || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function renderInlineMarkdown(value) {
+            return escapeHtml(value)
+                .replace(/`([^`]+)`/g, '<code>$1</code>')
+                .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+        }
+
+        function renderMarkdown(markdown) {
+            const lines = String(markdown || '').replace(/\r\n/g, '\n').split('\n');
+            const html = [];
+            let paragraph = [];
+            let inCode = false;
+            let codeLines = [];
+
+            const flushParagraph = () => {
+                if (!paragraph.length) return;
+                html.push(`<p>${paragraph.map(renderInlineMarkdown).join('<br>')}</p>`);
+                paragraph = [];
+            };
+
+            for (const line of lines) {
+                if (line.trim().startsWith('```')) {
+                    if (inCode) {
+                        html.push(`<pre><code>${escapeHtml(codeLines.join('\n'))}</code></pre>`);
+                        codeLines = [];
+                        inCode = false;
+                    } else {
+                        flushParagraph();
+                        inCode = true;
+                    }
+                    continue;
+                }
+
+                if (inCode) {
+                    codeLines.push(line);
+                    continue;
+                }
+
+                const heading = line.match(/^(#{1,3})\s+(.+)$/);
+                if (heading) {
+                    flushParagraph();
+                    const level = heading[1].length;
+                    html.push(`<h${level}>${renderInlineMarkdown(heading[2])}</h${level}>`);
+                    continue;
+                }
+
+                if (!line.trim()) {
+                    flushParagraph();
+                    continue;
+                }
+
+                paragraph.push(line);
+            }
+
+            if (inCode) html.push(`<pre><code>${escapeHtml(codeLines.join('\n'))}</code></pre>`);
+            flushParagraph();
+            return html.join('');
+        }
+
+        function render(lang) {
+            const currentLang = lang === 'en' ? 'en' : 'zh';
+            document.documentElement.lang = currentLang === 'en' ? 'en' : 'zh-CN';
+            document.getElementById('title').textContent = currentLang === 'en' ? 'OCR Auto Loadout Help' : 'OCR 自动识别帮助';
+            document.getElementById('close-btn').title = currentLang === 'en' ? 'Close' : '关闭';
+            document.getElementById('close-btn').setAttribute('aria-label', currentLang === 'en' ? 'Close' : '关闭');
+            document.getElementById('content').innerHTML = renderMarkdown(docs[currentLang]);
+        }
+
+        document.getElementById('close-btn').addEventListener('click', () => {
+            window.electronAPI.closeOcrHelpWindow();
+        });
+
+        window.electronAPI.onOcrHelpLang(render);
+        window.electronAPI.getOcrHelpLanguage().then(render).catch(() => render('zh'));
+        render('zh');
+    </script>
+</body>
+</html>

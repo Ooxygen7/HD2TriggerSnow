@@ -1,0 +1,8 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "main-capability",
+  "description": "Base capability for every local HD2 Macro Terminal Rust window.",
+  "windows": ["main", "overlay", "toast", "ocr-select", "ocr-help", "sponsor"],
+  "permissions": ["core:default"]
+}
+

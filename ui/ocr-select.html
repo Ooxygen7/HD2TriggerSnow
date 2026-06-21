@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body {
+            width: 100vw; height: 100vh; overflow: hidden;
+            cursor: crosshair; background: rgba(0, 0, 0, 0.32);
+            font-family: system-ui, "Segoe UI", Arial, sans-serif;
+        }
+        #hint {
+            position: fixed; left: 50%; top: 28px; transform: translateX(-50%);
+            padding: 10px 16px; border: 1px solid rgba(255, 232, 10, 0.45);
+            background: rgba(10, 10, 12, 0.92); color: #FFE80A;
+            border-radius: 8px; font-size: 13px; font-weight: 700;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+        }
+        #selection {
+            position: fixed; display: none;
+            border: 2px solid #FFE80A;
+            background: rgba(255, 232, 10, 0.12);
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.28), 0 0 18px rgba(255, 232, 10, 0.55);
+        }
+        #size {
+            position: absolute; right: 0; bottom: -28px;
+            padding: 4px 7px; background: #FFE80A; color: #000;
+            border-radius: 4px; font-size: 12px; font-weight: 800;
+        }
+    </style>
+</head>
+<body>
+    <div id="hint">Drag to select OCR area, Esc to cancel</div>
+    <div id="selection"><div id="size"></div></div>
+    <script src="./bridge.js"></script>
+    <script>
+        const selection = document.getElementById('selection');
+        const sizeLabel = document.getElementById('size');
+        let dragging = false;
+        let startX = 0;
+        let startY = 0;
+
+        function updateSelection(x, y) {
+            const left = Math.min(startX, x);
+            const top = Math.min(startY, y);
+            const width = Math.abs(x - startX);
+            const height = Math.abs(y - startY);
+            selection.style.display = 'block';
+            selection.style.left = `${left}px`;
+            selection.style.top = `${top}px`;
+            selection.style.width = `${width}px`;
+            selection.style.height = `${height}px`;
+            const scale = window.devicePixelRatio || 1;
+            sizeLabel.textContent = `${Math.round(width * scale)} x ${Math.round(height * scale)} px`;
+        }
+
+        window.addEventListener('mousedown', (event) => {
+            if (event.button !== 0) return;
+            dragging = true;
+            startX = event.clientX;
+            startY = event.clientY;
+            updateSelection(startX, startY);
+        });
+
+        window.addEventListener('mousemove', (event) => {
+            if (!dragging) return;
+            updateSelection(event.clientX, event.clientY);
+        });
+
+        window.addEventListener('mouseup', (event) => {
+            if (!dragging) return;
+            dragging = false;
+            const width = Math.abs(event.clientX - startX);
+            const height = Math.abs(event.clientY - startY);
+            if (width < 10 || height < 10) {
+                selection.style.display = 'none';
+                return;
+            }
+            window.electronAPI.sendOcrRegionSelected({
+                startX,
+                startY,
+                endX: event.clientX,
+                endY: event.clientY
+            });
+        });
+
+        window.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                window.electronAPI.cancelOcrRegionSelect();
+            }
+        });
+    </script>
+</body>
+</html>

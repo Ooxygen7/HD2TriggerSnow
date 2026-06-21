@@ -1,0 +1,15 @@
+<svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2">
+  <desc>Traced by Dogo314</desc>
+  <g transform="translate(-276 -306)">
+    <path style="fill:none" d="M276 306h256v256H276z"/>
+    <clipPath id="a">
+      <path d="M276 306h256v256H276z"/>
+    </clipPath>
+    <g clip-path="url(#a)">
+      <path style="fill:#011419;fill-opacity:.75" transform="translate(0 306)" d="M276 0h256v256H276z"/>
+      <path d="m-3.855 2381.913-7.071-4.368 8.485-5.241 22.627 13.976-8.485 5.241-7.071-4.367-15.556 9.608-8.486-5.241zm46.669-18.343-24.042 14.849-8.485-5.241 53.033-32.756c-2.594 7.133-4.243 13.102-20.506 23.148m-16.971-6.988-8.442 5.214c-13.68-8.996-15.284-14.671-17.721-21.374zm11.314 17.469 8.485-5.241 7.071 4.368-8.485 5.241zm29.698 7.862 15.557 9.608-8.486 5.241-15.556-9.608-7.071 4.367-8.485-5.241 22.627-13.976 8.485 5.241z" style="fill:#ffe" transform="matrix(1 0 0 1.61905 372.5 -3446.472)"/>
+      <path d="M303.957 2168c0-1 1.956-2 5.869-2H437v-1h5.87v1h32.282v-1h5.87v1h3.913c.978 0 1.956-2 2.935-4 3.913 3 13.695 5.175 17.608 6-3.913.825-13.695 3-17.608 6-.979-2-1.957-4-2.935-4h-5.87v2H482v78h-45v-78h1.957v-2H309.826c-3.913 0-5.869-1-5.869-2m173.152 2h-36.196v2h36.196z" style="fill:#53bcda" transform="matrix(1.02222 0 0 1 -9.711 -1716)"/>
+      <path d="M276 15V0h256v15zM518 .82H290v13.36h228z" style="fill:#5abeda" transform="matrix(1 0 0 17.06667 0 306)"/>
+    </g>
+  </g>
+</svg>

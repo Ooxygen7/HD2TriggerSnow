@@ -1,50 +1,16 @@
 {
-  "name": "HD2-Trigger",
-  "version": "1.4.0",
-  "author": "Huizhixin",
-  "main": "main.js",
+  "name": "hd2-macro-terminal-rust",
+  "version": "0.1.0",
+  "private": true,
   "scripts": {
-    "start": "electron .",
-    "build": "electron-builder --win --x64"
+    "tauri": "set \"PATH=%USERPROFILE%\\.cargo\\bin;%PATH%\" && tauri",
+    "dev": "npm run tauri -- dev",
+    "build": "npm run tauri -- build",
+    "check": "set \"PATH=%USERPROFILE%\\.cargo\\bin;%PATH%\" && cargo check --manifest-path src-tauri/Cargo.toml",
+    "test": "npm run test:ocr-matcher && set \"PATH=%USERPROFILE%\\.cargo\\bin;%PATH%\" && cargo test --manifest-path src-tauri/Cargo.toml",
+    "test:ocr-matcher": "node scripts/ocr-matcher-regression.mjs"
   },
   "devDependencies": {
-    "electron": "^40.8.0",
-    "electron-builder": "^26.8.1"
-  },
-  "dependencies": {
-    "@nut-tree/nut-js": "^3.1.2",
-    "electron-updater": "^6.8.3",
-    "jimp": "^1.6.0",
-    "onnxruntime-node": "^1.24.3",
-    "opencv-wasm": "^4.3.0-10",
-    "paddleocr": "^1.0.2",
-    "screenshot-desktop": "^1.15.3",
-    "uiohook-napi": "^1.5.4"
-  },
-  "build": {
-    "appId": "com.hd2.trigger",
-    "productName": "HD2 Macro Terminal",
-    "directories": {
-      "output": "dist",
-      "buildResources": "build"
-    },
-    "win": {
-      "target": [
-        "nsis"
-      ]
-    },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "allowElevation": true,
-      "multiLanguageInstaller": true,
-      "installerLanguages": [
-        "zh_CN",
-        "en_US"
-      ],
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true,
-      "shortcutName": "HD2战备触发器"
-    }
+    "@tauri-apps/cli": "^2.11.3"
   }
 }

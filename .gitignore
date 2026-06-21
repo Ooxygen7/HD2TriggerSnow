@@ -1,0 +1,35 @@
+# Dependencies and package-manager logs
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Rust and Tauri build output
+target/
+src-tauri/target/
+src-tauri/gen/
+
+# Local configuration, credentials, and user data
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.pfx
+*.p12
+*.crt
+*.cer
+*.db
+*.sqlite
+*.sqlite3
+*.log
+*.session
+*.cookie
+
+# Editor and operating-system files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+desktop.ini

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body {
+            width: 100vw; height: 100vh; overflow: hidden; background: transparent;
+            display: flex; align-items: center; justify-content: center;
+            font-family: system-ui, "Segoe UI", Arial, sans-serif;
+        }
+        #toast {
+            max-width: calc(100vw - 24px);
+            max-height: calc(100vh - 20px);
+            padding: 14px 26px;
+            border-radius: 24px;
+            background: rgba(255, 232, 10, 0.94);
+            color: #000;
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            box-shadow: 0 0 24px rgba(255, 232, 10, 0.22);
+            font-size: 16px;
+            font-weight: 800;
+            text-align: center;
+            line-height: 1.4;
+            white-space: normal;
+            overflow: auto;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+            opacity: 0;
+            transform: translateY(22px) scale(0.98);
+            transition: opacity 180ms ease, transform 180ms ease;
+        }
+        #toast.show { opacity: 1; transform: translateY(0) scale(1); }
+        #toast.error {
+            background: rgba(255, 69, 58, 0.94);
+            color: #fff;
+            box-shadow: 0 0 24px rgba(255, 69, 58, 0.28);
+        }
+    </style>
+</head>
+<body>
+    <div id="toast"></div>
+    <script src="./bridge.js"></script>
+    <script>
+        const toast = document.getElementById('toast');
+        let hideTimer = null;
+
+        function showToast(payload) {
+            const data = payload || {};
+            toast.textContent = data.message || '';
+            toast.className = data.isError ? 'error show' : 'show';
+            clearTimeout(hideTimer);
+            hideTimer = setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => window.electronAPI.hideToast(), 200);
+            }, data.duration || (data.isError ? 12000 : 2200));
+        }
+
+        window.electronAPI.onShowToast(showToast);
+        window.electronAPI.getLastToast().then((payload) => {
+            if (payload) showToast(payload);
+        }).catch(() => {});
+    </script>
+</body>
+</html>

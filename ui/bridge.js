@@ -1,0 +1,71 @@
+(() => {
+  const tauri = window.__TAURI__;
+  if (!tauri?.core?.invoke || !tauri?.event?.listen) {
+    throw new Error("Tauri runtime is unavailable");
+  }
+
+  const invoke = (command, argumentsObject) => tauri.core.invoke(command, argumentsObject);
+  const subscribe = (event, callback) => tauri.event.listen(event, ({ payload }) => callback(payload));
+
+  window.electronAPI = Object.freeze({
+    minimize: () => invoke("window_minimize"),
+    tray: () => invoke("window_tray"),
+    close: () => invoke("window_close"),
+    sendMacro: (payload) => invoke("execute_macro", { payload }),
+
+    onGlobalKeyDown: (callback) => subscribe("global-keydown", callback),
+    onGlobalMouseDown: (callback) => subscribe("global-mousedown", callback),
+    onGlobalWheel: (callback) => subscribe("global-wheel", callback),
+
+    toggleOverlay: () => invoke("toggle_overlay"),
+    lockOverlay: () => invoke("lock_overlay"),
+    unlockOverlay: () => invoke("unlock_overlay"),
+    resizeOverlay: (width, height) => invoke("resize_overlay", { width, height }),
+    updateOverlaySettings: (settings) => invoke("update_overlay_settings", { settings }),
+    updateOverlay: (data) => invoke("update_overlay", { data }),
+    highlightOverlay: (data) => invoke("highlight_overlay", { data }),
+    updateSelection: (index) => invoke("update_selection", { index }),
+    getOverlaySnapshot: () => invoke("get_overlay_snapshot"),
+
+    loadData: (filename) => invoke("load_data", { filename }),
+    saveData: (filename, data) => invoke("save_data", { filename, data }),
+
+    onOverlaySettings: (callback) => subscribe("overlay-settings", callback),
+    onSelectionChanged: (callback) => subscribe("selection-changed", callback),
+    onHighlightItem: (callback) => subscribe("highlight-item", callback),
+    onRenderOverlay: (callback) => subscribe("render-overlay", callback),
+    onOverlayLocked: (callback) => subscribe("overlay-locked", callback),
+    onOverlayUnlocked: (callback) => subscribe("overlay-unlocked", callback),
+
+    showToast: (payload) => invoke("show_toast", { payload }),
+    hideToast: () => invoke("hide_toast"),
+    getLastToast: () => invoke("get_last_toast"),
+    onShowToast: (callback) => subscribe("show-toast", callback),
+
+    openSponsor: (url) => invoke("open_sponsor", { url }),
+    closeSponsorWindow: () => invoke("close_sponsor_window"),
+    getSponsorUrl: () => invoke("get_sponsor_url"),
+    onSponsorUrl: (callback) => subscribe("sponsor-url", callback),
+
+    openOcrHelp: (language) => invoke("open_ocr_help", { language }),
+    closeOcrHelpWindow: () => invoke("close_ocr_help_window"),
+    getOcrHelpLanguage: () => invoke("get_ocr_help_language"),
+    onOcrHelpLang: (callback) => subscribe("ocr-help-lang", callback),
+
+    getAppVersion: () => invoke("get_app_version"),
+
+    getOcrDisplays: () => invoke("get_ocr_displays"),
+    startOcrRegionSelect: (displayId) => invoke("start_ocr_region_select", { displayId: displayId == null ? null : Number(displayId) }),
+    sendOcrRegionSelected: (region) => invoke("ocr_region_selected", { region }),
+    cancelOcrRegionSelect: () => invoke("cancel_ocr_region_select"),
+    recognizeOcrRegion: async (region) => {
+      try {
+        const result = await invoke("recognize_ocr_region", { region });
+        return { ok: true, ...result };
+      } catch (error) {
+        return { ok: false, text: "", confidence: 0, error: String(error) };
+      }
+    },
+    onOcrRegionSelected: (callback) => subscribe("ocr-region-selected", callback)
+  });
+})();
