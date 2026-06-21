@@ -1,6 +1,6 @@
 # HD2 Macro Terminal — Rust Edition
 
-A Windows x64 rewrite of HD2 Macro Terminal. This edition keeps the existing HTML/CSS interface while replacing the Electron backend with Rust and Tauri.
+A Windows x64 HD2 Macro Terminal based on Rust + Tauri + Webview2.
 
 ## What it does
 
