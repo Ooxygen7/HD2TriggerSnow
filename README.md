@@ -72,4 +72,6 @@ src-tauri/icons/            Windows application icon
 
 ## License
 
-No license has been specified for this project.
+This project is licensed under the GNU Affero General Public License v3.0.
+SPDX-License-Identifier: AGPL-3.0-only
+See the [LICENSE](LICENSE) file for details.
