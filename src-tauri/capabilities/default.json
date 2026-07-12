@@ -3,6 +3,10 @@
   "identifier": "main-capability",
   "description": "Base capability for every local HD2 Macro Terminal Rust window.",
   "windows": ["main", "overlay", "toast", "ocr-select", "ocr-help", "sponsor"],
-  "permissions": ["core:default"]
+  "permissions": [
+    "core:event:allow-listen",
+    "core:event:allow-unlisten",
+    "core:window:allow-start-dragging"
+  ]
 }
 
