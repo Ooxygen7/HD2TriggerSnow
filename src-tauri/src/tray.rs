@@ -24,7 +24,9 @@ pub fn create(app: &AppHandle) -> tauri::Result<()> {
                     let _ = window.set_focus();
                 }
             }
-            "quit" => app.exit(0),
+            "quit" => {
+                let _ = crate::request_exit_from_tray(app);
+            }
             _ => {}
         })
         .build(app)?;

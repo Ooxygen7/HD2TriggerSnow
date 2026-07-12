@@ -22,6 +22,8 @@
             --radius-md: 14px;
             --radius-lg: 20px;
             --radius-xl: 28px;
+            --window-radius: 12px;
+            --window-edge: rgba(255, 255, 255, 0.13);
             
             --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
@@ -30,6 +32,12 @@
             box-sizing: border-box; margin: 0; padding: 0; user-select: none;
             font-family: system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             -webkit-font-smoothing: antialiased;
+        }
+
+        html {
+            width: 100%;
+            height: 100%;
+            background: transparent;
         }
 
         ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -42,8 +50,11 @@
             background-image: radial-gradient(circle at 50% 0%, rgba(255,232,10,0.03) 0%, transparent 70%),
                               linear-gradient(to bottom, transparent, #000000);
             color: var(--hd-text-primary);
-            height: 100vh; display: flex; flex-direction: column; overflow: hidden;
-            border: 1px solid var(--glass-border);
+            width: 100vw; height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+            border: 1px solid var(--window-edge); border-radius: var(--window-radius);
+            background-clip: padding-box; isolation: isolate;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.06),
+                        inset 0 0 0 1px rgba(255,232,10,0.025);
         }
 
         #titlebar {
@@ -51,7 +62,7 @@
             backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
             display: flex; justify-content: space-between; align-items: center; 
             padding-left: 20px; -webkit-app-region: drag; 
-            border-bottom: 1px solid var(--glass-border); z-index: 100;
+            border-bottom: 1px solid var(--glass-border); z-index: 100; flex-shrink: 0;
         }
         .title-text { 
             color: var(--hd-text-primary); font-size: 13px; font-weight: 600; letter-spacing: 1px;
@@ -100,17 +111,16 @@
             display: flex; align-items: stretch; background-color: var(--glass-panel);
             border: 1px solid var(--glass-border); border-radius: var(--radius-lg);
             height: 76px; transition: var(--transition); position: relative; overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2); cursor: grab;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2); cursor: default;
         }
         .list-row:hover { border-color: rgba(255,255,255,0.2); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
-        .list-row:active { cursor: grabbing; }
         .list-row.dragging { opacity: 0.5; transform: scale(0.98); }
         .list-row.drag-over { border-color: var(--hd-yellow); box-shadow: 0 0 15px var(--hd-yellow-alpha); }
         body.is-dragging .list-row * { pointer-events: none; }
         
         .list-row.empty {
             justify-content: space-between; align-items: stretch; border: 1px dashed var(--glass-border);
-            background: transparent; box-shadow: none; cursor: grab;
+            background: transparent; box-shadow: none; cursor: default;
         }
         .list-row.empty:hover { background-color: transparent; border-color: var(--glass-border); transform: none; box-shadow: none; }
 
@@ -118,7 +128,9 @@
         .drag-handle {
             width: 24px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
             border-right: 1px solid var(--glass-border); background: rgba(0,0,0,0.2); transition: var(--transition);
+            cursor: grab; touch-action: none; -webkit-user-drag: element;
         }
+        .drag-handle:active { cursor: grabbing; }
         .drag-handle::after {
             content: '⋮⋮'; color: var(--hd-text-secondary); font-size: 14px; letter-spacing: -1px; margin-left: -1px;
         }
@@ -308,38 +320,6 @@
         .file-upload-btn:hover { background: var(--hd-yellow-alpha); color: var(--hd-yellow); border-color: var(--hd-yellow); }
         #add-strat-preview { width: 44px; height: 44px; object-fit: contain; border: 1px solid var(--glass-border); border-radius: var(--radius-sm); background: rgba(0,0,0,0.5); display: none; padding: 4px; }
         .hint-text { font-size: 12px; color: var(--hd-text-secondary); text-align: center; margin-top: 12px; line-height: 1.6; }
-        .announcement-box {
-            width: 560px; max-width: calc(100% - 32px); max-height: calc(100vh - 120px);
-            background: var(--glass-panel-hover); border: 1px solid var(--glass-border);
-            border-radius: var(--radius-xl); display: flex; flex-direction: column; overflow: hidden;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05) inset;
-            backdrop-filter: blur(20px); margin: auto;
-        }
-        .announcement-header {
-            padding: 18px 24px; background: rgba(255, 232, 10, 0.1); color: var(--hd-yellow);
-            border-bottom: 1px solid rgba(255, 232, 10, 0.2); font-size: 24px; font-weight: 900; line-height: 1.25;
-        }
-        .announcement-content {
-            padding: 24px; overflow-y: auto; color: var(--hd-text-primary);
-            font-size: 15px; line-height: 1.7; user-select: text;
-        }
-        .announcement-content h1, .announcement-content h2, .announcement-content h3 {
-            color: var(--hd-text-primary); margin: 12px 0 8px; line-height: 1.25;
-        }
-        .announcement-content h1 { font-size: 24px; }
-        .announcement-content h2 { font-size: 20px; }
-        .announcement-content h3 { font-size: 17px; }
-        .announcement-content p { margin: 8px 0; }
-        .announcement-content strong { color: var(--hd-yellow); font-weight: 900; }
-        .announcement-content code {
-            background: rgba(0,0,0,0.45); border: 1px solid var(--glass-border);
-            border-radius: 5px; padding: 2px 6px; font-family: Consolas, "Cascadia Mono", monospace; font-size: 13px;
-        }
-        .announcement-content pre {
-            background: rgba(0,0,0,0.55); border: 1px solid var(--glass-border);
-            border-radius: var(--radius-sm); padding: 14px; overflow-x: auto; margin: 12px 0;
-        }
-        .announcement-content pre code { background: transparent; border: none; padding: 0; color: var(--hd-text-primary); }
     </style>
 </head>
 <body>
@@ -348,9 +328,9 @@
         <div class="titlebar-controls">
             <button class="lang-btn" id="btn-title-sponsor" onclick="openSponsorModal()">赞助</button>
             <button class="lang-btn" id="btn-lang" onclick="toggleLanguage()">EN / 中文</button>
-            <button class="window-btn" onclick="window.electronAPI.tray()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
-            <button class="window-btn" onclick="window.electronAPI.minimize()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
-            <button class="window-btn close" onclick="window.electronAPI.close()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+            <button class="window-btn" onclick="handleWindowAction('tray')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
+            <button class="window-btn" onclick="handleWindowAction('minimize')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+            <button class="window-btn close" onclick="handleWindowAction('close')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
         </div>
     </div>
 
@@ -393,7 +373,7 @@
                         <span id="txt-set-overlayLabel">If overlay is locked, click here to make it draggable.</span>
                         <span class="set-desc" id="txt-desc-unlock">若悬浮窗处于锁定状态无法拖拽，请点击此处解锁。</span>
                     </div>
-                    <button class="set-btn" id="btn-set-unlock" style="color:var(--hd-text-primary); border-color: rgba(255,255,255,0.2);" onclick="window.electronAPI.unlockOverlay()">UNLOCK / 解锁</button>
+                    <button class="set-btn" id="btn-set-unlock" style="color:var(--hd-text-primary); border-color: rgba(255,255,255,0.2);" onclick="unlockOverlaySafely()">UNLOCK / 解锁</button>
                 </div>
                 <div class="set-row">
                     <div class="set-label">
@@ -637,21 +617,11 @@
         <div class="confirm-box" style="width: 440px; padding: 0;">
             <div class="confirm-header" id="txt-rename-title" style="background: rgba(255, 232, 10, 0.1); color: var(--hd-yellow); border-bottom: 1px solid rgba(255, 232, 10, 0.2);">RENAME PRESET</div>
             <div class="confirm-body" style="padding: 24px;">
-                <input type="text" id="rename-input" class="set-input set-input-wide" style="width: 100%; border-radius: 8px;" placeholder="Enter new name..." autocomplete="off">
+                <input type="text" id="rename-input" class="set-input set-input-wide" style="width: 100%; border-radius: 8px;" placeholder="Enter new name..." maxlength="40" autocomplete="off">
             </div>
             <div class="confirm-footer">
                 <button class="btn-square" id="btn-rename-cancel" onclick="closeRenameModal()">CANCEL</button>
                 <button class="btn-square primary" id="btn-rename-ok" onclick="executeRename()">CONFIRM</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="announcement-modal" class="modal-overlay" style="z-index: 80;">
-        <div class="announcement-box">
-            <div class="announcement-header" id="announcement-title">Notice</div>
-            <div class="announcement-content" id="announcement-content"></div>
-            <div class="confirm-footer">
-                <button class="btn-square primary" id="btn-announcement-ok" onclick="closeAnnouncementModal()">OK</button>
             </div>
         </div>
     </div>
@@ -788,7 +758,7 @@
                 ocrHelp: "帮助",
                 ocrTitle: "OCR 自动识别", ocrRegion: "识别区域", ocrSelectRegion: "框选识别区域", ocrDisplay: "识别屏幕", ocrPrimaryDisplay: "主屏幕", ocrHotkey: "识别快捷键", toastEnabled: "提示气泡", toastOn: "开启", toastOff: "关闭", ocrRegionUnset: "未设置", ocrRegionSet: "已设置: {width} x {height} @ {x},{y}",
                 descOcrRegion: "在屏幕叠加层上拖动鼠标框选游戏左上角战备栏文字区域，保存后 OCR 只识别此区域。", descOcrDisplay: "选择游戏所在的显示器，框选窗口只会出现在这块屏幕上。", descOcrHotkey: "按下该快捷键后自动识别区域内文字，并和中英文战备库名称比对后装备识别结果。", descToastEnabled: "在玩家屏幕底部稍微靠上的位置显示提示气泡。",
-                msgOcrSelectStarted: "请在屏幕上拖动框选 OCR 识别区域", msgOcrRegionSaved: "OCR 识别区域已保存", msgOcrNoRegion: "请先在设置中框选 OCR 识别区域", msgOcrRunning: "OCR 识别中...", msgOcrNoText: "OCR 未识别到文字", msgOcrNoMatch: "未匹配到战备", msgOcrLoaded: "已成功装备 {count} 个战备", msgOcrNoSpace: "剩余战备空位不足", msgOcrFailed: "OCR 识别失败: {error}", announcementOk: "我知道了"
+                msgOcrSelectStarted: "请在屏幕上拖动框选 OCR 识别区域", msgOcrRegionSaved: "OCR 识别区域已保存", msgOcrNoRegion: "请先在设置中框选 OCR 识别区域", msgOcrRunning: "OCR 识别中...", msgOcrNoText: "OCR 未识别到文字", msgOcrNoMatch: "未匹配到战备", msgOcrLoaded: "已成功装备 {count} 个战备", msgOcrNoSpace: "剩余战备空位不足", msgOcrFailed: "OCR 识别失败: {error}", msgMacroFailed: "按键发送失败: {error}", msgOverlayFailed: "悬浮窗操作失败: {error}", msgUnlockFailed: "悬浮窗解锁失败: {error}", announcementOk: "我知道了"
             },
             en: {
                 // UI
@@ -844,7 +814,7 @@
                 ocrHelp: "Help",
                 ocrTitle: "OCR AUTO LOADOUT", ocrRegion: "OCR REGION", ocrSelectRegion: "SELECT REGION", ocrDisplay: "OCR SCREEN", ocrPrimaryDisplay: "PRIMARY SCREEN", ocrHotkey: "OCR HOTKEY", toastEnabled: "TOAST NOTIFICATIONS", toastOn: "ON", toastOff: "OFF", ocrRegionUnset: "NOT SET", ocrRegionSet: "SET: {width} x {height} @ {x},{y}",
                 descOcrRegion: "Drag a rectangle over the in-game stratagem text area. OCR will only read this saved region until you replace it.", descOcrDisplay: "Select the monitor where the game is running. The region selector will only appear on that screen.", descOcrHotkey: "Press this hotkey to recognize the selected region and equip stratagems matched against the English and Chinese library names.", descToastEnabled: "Show notification bubbles slightly above the bottom of the player screen.",
-                msgOcrSelectStarted: "Drag on screen to select the OCR region", msgOcrRegionSaved: "OCR region saved", msgOcrNoRegion: "Select an OCR region in settings first", msgOcrRunning: "OCR recognizing...", msgOcrNoText: "OCR did not read any text", msgOcrNoMatch: "No stratagems matched", msgOcrLoaded: "Successfully equipped {count} stratagems", msgOcrNoSpace: "Not enough remaining stratagem slots", msgOcrFailed: "OCR failed: {error}", announcementOk: "Got it"
+                msgOcrSelectStarted: "Drag on screen to select the OCR region", msgOcrRegionSaved: "OCR region saved", msgOcrNoRegion: "Select an OCR region in settings first", msgOcrRunning: "OCR recognizing...", msgOcrNoText: "OCR did not read any text", msgOcrNoMatch: "No stratagems matched", msgOcrLoaded: "Successfully equipped {count} stratagems", msgOcrNoSpace: "Not enough remaining stratagem slots", msgOcrFailed: "OCR failed: {error}", msgMacroFailed: "Input failed: {error}", msgOverlayFailed: "Overlay operation failed: {error}", msgUnlockFailed: "Could not unlock overlay: {error}", announcementOk: "Got it"
             }
         };
 
@@ -962,24 +932,147 @@
         let customStratagems = [];
         let activeLoadout = [];
         let savedPresets = [];
-        let announcementState = { lastSeenId: null };
-        let pendingAnnouncementId = null;
-        let sponsorPayUrl = 'https://www.yifut.com/paypage/?merchant=a0ccz04gJj%2BJNsdjP9cTbIj2MrN958lGiZ7Ub2SdvLGZ';
         const DEFAULT_SLOT_COUNT = 10;
         const MAX_SLOT_COUNT = 14;
+        const MAX_PRESET_NAME_LENGTH = 40;
+        const MAX_CUSTOM_NAME_LENGTH = 64;
+        const MAX_CUSTOM_SEQUENCE_LENGTH = 32;
+        const MAX_ICON_FILE_BYTES = 1024 * 1024;
+        const EMPTY_IMAGE_SOURCE = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
         let maxSlots = DEFAULT_SLOT_COUNT;
         let bindingTarget = null;
+        let bindingFilterTransition = false;
         let isOverlayVisible = false; 
         let ocrDisplays = [];
         
         let gameSettings = { 
-            menuKey: 'ControlLeft', menuMode: 'hold', upKey: 'W', downKey: 'S', leftKey: 'A', rightKey: 'D',
+            menuKey: 'ControlLeft', menuMode: 'hold', upKey: 'KeyW', downKey: 'KeyS', leftKey: 'KeyA', rightKey: 'KeyD',
             menuOpenDelay: 100, pressDelay: 10, intervalDelay: 10, 
             ovOpacity: 100, ovWidth: 300, ovHeight: 550, ovStyle: 'text',
             ovUp: 'WheelUp', ovDown: 'WheelDown', ovExec: 'MouseMiddle',
             ocrHotkey: 'F8', ocrRegion: null, ocrRegionCoordinateSpace: null, ocrDisplayId: null, showToasts: true,
-            slotCount: DEFAULT_SLOT_COUNT
+            slotCount: DEFAULT_SLOT_COUNT,
+            overlayPosition: null
         };
+
+        const CANONICAL_GLOBAL_KEYS = new Set([
+            ...Array.from({ length: 26 }, (_, index) => `Key${String.fromCharCode(65 + index)}`),
+            ...Array.from({ length: 10 }, (_, index) => `Digit${index}`),
+            ...Array.from({ length: 10 }, (_, index) => `Numpad${index}`),
+            ...Array.from({ length: 24 }, (_, index) => `F${index + 1}`),
+            'ControlLeft', 'ControlRight', 'ShiftLeft', 'ShiftRight', 'AltLeft', 'AltRight',
+            'MetaLeft', 'MetaRight', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+            'NumpadAdd', 'NumpadSubtract', 'NumpadMultiply', 'NumpadDivide', 'NumpadDecimal',
+            'NumpadEnter', 'Enter', 'Escape', 'Backspace', 'Space', 'Tab', 'CapsLock',
+            'PageUp', 'PageDown', 'Home', 'End', 'Insert', 'Delete', 'Minus', 'Equal',
+            'BracketLeft', 'BracketRight', 'Semicolon', 'Quote', 'Backquote', 'Backslash',
+            'Comma', 'Period', 'Slash', 'ContextMenu',
+            'MouseMiddle', 'MouseSide1', 'MouseSide2', 'WheelUp', 'WheelDown'
+        ]);
+
+        function canonicalGlobalKeyName(value) {
+            if (typeof value !== 'string') return null;
+            const name = value.trim();
+            if (/^[a-z]$/i.test(name)) return `Key${name.toUpperCase()}`;
+            if (/^[0-9]$/.test(name)) return `Digit${name}`;
+            const alias = {
+                Up: 'ArrowUp', Down: 'ArrowDown', Left: 'ArrowLeft', Right: 'ArrowRight',
+                OSLeft: 'MetaLeft', OSRight: 'MetaRight'
+            }[name];
+            const canonical = alias || name;
+            return CANONICAL_GLOBAL_KEYS.has(canonical) ? canonical : null;
+        }
+
+        let pendingGlobalInputFilter = null;
+        let globalInputFilterDrain = null;
+
+        function syncGlobalInputFilter() {
+            if (!window.electronAPI || !window.electronAPI.setGlobalInputFilter) {
+                return Promise.resolve();
+            }
+            const keys = new Set(
+                activeLoadout
+                    .filter(item => item && item.strat && item.hotkey)
+                    .map(item => item.hotkey)
+            );
+            if (gameSettings.ocrHotkey) keys.add(gameSettings.ocrHotkey);
+            if (isOverlayVisible) {
+                if (gameSettings.ovExec) keys.add(gameSettings.ovExec);
+                if (gameSettings.ovUp) keys.add(gameSettings.ovUp);
+                if (gameSettings.ovDown) keys.add(gameSettings.ovDown);
+            }
+            pendingGlobalInputFilter = { keys: [...keys], captureAll: Boolean(bindingTarget) };
+            if (globalInputFilterDrain) return globalInputFilterDrain;
+
+            const run = (async () => {
+                while (pendingGlobalInputFilter) {
+                    const next = pendingGlobalInputFilter;
+                    pendingGlobalInputFilter = null;
+                    try {
+                        await window.electronAPI.setGlobalInputFilter(next.keys, next.captureAll);
+                    } catch (error) {
+                        console.error('Failed to update global input filter:', error);
+                    }
+                }
+            })();
+            globalInputFilterDrain = run.finally(() => {
+                globalInputFilterDrain = null;
+                return pendingGlobalInputFilter ? syncGlobalInputFilter() : undefined;
+            });
+            return globalInputFilterDrain;
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#39;');
+        }
+
+        function safeImageSource(value) {
+            const source = typeof value === 'string' ? value.trim() : '';
+            if (!source) return EMPTY_IMAGE_SOURCE;
+            if (/^data:image\/(?:png|jpe?g|gif|webp|svg\+xml);base64,[a-z0-9+/=]+$/i.test(source)) {
+                return source;
+            }
+            // Bundled icons use relative paths. Reject explicit protocols and
+            // protocol-relative URLs so imported/local data cannot load code or
+            // silently beacon to a third-party server.
+            if (!/^[a-z][a-z0-9+.-]*:/i.test(source) && !source.startsWith('//') && !source.includes('\\')) {
+                return source;
+            }
+            return EMPTY_IMAGE_SOURCE;
+        }
+
+        function normalizeImportedPreset(dataObj) {
+            if (!dataObj || typeof dataObj !== 'object' || Array.isArray(dataObj)) return null;
+            if (typeof dataObj.n !== 'string' || !Array.isArray(dataObj.l)) return null;
+            const name = dataObj.n.trim();
+            if (!name || name.length > MAX_PRESET_NAME_LENGTH) return null;
+            if (dataObj.l.length < 1 || dataObj.l.length > MAX_SLOT_COUNT) return null;
+
+            const loadout = [];
+            for (const item of dataObj.l) {
+                if (!item || typeof item !== 'object' || Array.isArray(item)) return null;
+                const stratId = item.s == null ? null : item.s;
+                const hotkey = item.h == null ? null : canonicalGlobalKeyName(item.h);
+                if (stratId !== null && (typeof stratId !== 'string' || !/^[A-Za-z0-9_.-]{1,100}$/.test(stratId))) return null;
+                if (item.h != null && hotkey === null) return null;
+                loadout.push({ stratId, hotkey, locked: item.l === true });
+            }
+            return { name, loadout };
+        }
+
+        function normalizeOverlayPosition(position) {
+            if (!position || typeof position !== 'object') return null;
+            const x = Number(position.x);
+            const y = Number(position.y);
+            if (!Number.isInteger(x) || !Number.isInteger(y)) return null;
+            if (Math.abs(x) > 100000 || Math.abs(y) > 100000) return null;
+            return { x, y };
+        }
 
         ensureOcrFields(defaultStratagemDB);
         
@@ -999,22 +1092,24 @@
         function restoreLoadoutItem(item) {
             if (!item || typeof item !== 'object') return createEmptyLoadoutSlot();
 
+            const normalizeHotkey = value => canonicalGlobalKeyName(value) || null;
+
             if (item.stratId !== undefined) {
                 const s = item.stratId ? stratagemDB.find(x => x.id === item.stratId) : null;
-                return { strat: s || null, hotkey: item.hotkey || null, locked: !!item.locked };
+                return { strat: s || null, hotkey: normalizeHotkey(item.hotkey), locked: !!item.locked };
             }
 
             if (item.s !== undefined) {
                 const s = item.s ? stratagemDB.find(x => x.id === item.s) : null;
-                return { strat: s || null, hotkey: item.h || null, locked: !!item.l };
+                return { strat: s || null, hotkey: normalizeHotkey(item.h), locked: !!item.l };
             }
 
             if (item.strat !== undefined) {
-                return { strat: item.strat || null, hotkey: item.hotkey || null, locked: !!item.locked };
+                return { strat: item.strat || null, hotkey: normalizeHotkey(item.hotkey), locked: !!item.locked };
             }
 
             const legacyItem = { ...item };
-            const hotkey = legacyItem.hotkey || null;
+            const hotkey = normalizeHotkey(legacyItem.hotkey);
             const locked = !!legacyItem.locked;
             delete legacyItem.hotkey;
             delete legacyItem.locked;
@@ -1065,6 +1160,79 @@
         }
 
         let dragSrcIndex = null;
+        let mouseDrag = null;
+
+        function moveLoadoutSlot(sourceIndex, dropIndex) {
+            if (sourceIndex === null || sourceIndex === dropIndex || activeLoadout[dropIndex].locked) return false;
+            const unlockedIndexes = activeLoadout
+                .map((slot, index) => slot.locked ? null : index)
+                .filter(index => index !== null);
+            const from = unlockedIndexes.indexOf(sourceIndex);
+            const to = unlockedIndexes.indexOf(dropIndex);
+            if (from === -1 || to === -1) return false;
+
+            const strats = unlockedIndexes.map(index => activeLoadout[index].strat);
+            const [movedStrat] = strats.splice(from, 1);
+            strats.splice(to, 0, movedStrat);
+            unlockedIndexes.forEach((slotIndex, index) => {
+                activeLoadout[slotIndex].strat = strats[index];
+            });
+            commitLoadoutChange();
+            return true;
+        }
+
+        function dropIndexAt(clientX, clientY) {
+            const target = document.elementFromPoint(clientX, clientY);
+            const row = target && target.closest('.list-row');
+            return row ? parseInt(row.dataset.index, 10) : null;
+        }
+
+        function updateDragTarget(clientX, clientY) {
+            document.querySelectorAll('.list-row.drag-over').forEach(row => row.classList.remove('drag-over'));
+            const dropIndex = dropIndexAt(clientX, clientY);
+            if (dropIndex !== null && dropIndex !== dragSrcIndex && !activeLoadout[dropIndex].locked) {
+                document.querySelector(`.list-row[data-index="${dropIndex}"]`)?.classList.add('drag-over');
+            }
+            return dropIndex;
+        }
+
+        function finishLoadoutDrag() {
+            document.body.classList.remove('is-dragging');
+            document.querySelectorAll('.list-row').forEach(row => {
+                row.classList.remove('drag-over');
+                row.classList.remove('dragging');
+            });
+            dragSrcIndex = null;
+            mouseDrag = null;
+            window.removeEventListener('mousemove', handleDragMouseMove);
+            window.removeEventListener('mouseup', handleDragMouseUp);
+        }
+
+        function handleDragMouseMove(e) {
+            if (!mouseDrag) return;
+            updateDragTarget(e.clientX, e.clientY);
+        }
+
+        function handleDragMouseUp(e) {
+            if (!mouseDrag) return;
+            const dropIndex = updateDragTarget(e.clientX, e.clientY);
+            if (dropIndex !== null) moveLoadoutSlot(dragSrcIndex, dropIndex);
+            finishLoadoutDrag();
+        }
+
+        window.handleDragMouseDown = function(e) {
+            if (e.button !== 0) return;
+            const sourceIndex = parseInt(e.currentTarget.dataset.index, 10);
+            if (activeLoadout[sourceIndex] && activeLoadout[sourceIndex].locked) return;
+
+            e.preventDefault();
+            dragSrcIndex = sourceIndex;
+            mouseDrag = true;
+            document.querySelector(`.list-row[data-index="${sourceIndex}"]`)?.classList.add('dragging');
+            document.body.classList.add('is-dragging');
+            window.addEventListener('mousemove', handleDragMouseMove);
+            window.addEventListener('mouseup', handleDragMouseUp);
+        }
 
         window.handleDragStart = function(e) {
             if (e.target.closest('button') && !e.target.closest('.drag-handle')) {
@@ -1101,43 +1269,136 @@
         window.handleDrop = function(e) {
             if (e.stopPropagation) e.stopPropagation();
             const dropIndex = parseInt(e.currentTarget.dataset.index);
-            if (dragSrcIndex !== null && dragSrcIndex !== dropIndex && !activeLoadout[dropIndex].locked) {
-                const unlockedIndexes = activeLoadout.map((slot, index) => slot.locked ? null : index).filter(index => index !== null);
-                const from = unlockedIndexes.indexOf(dragSrcIndex);
-                const to = unlockedIndexes.indexOf(dropIndex);
-                if (from !== -1 && to !== -1) {
-                    let strats = unlockedIndexes.map(index => activeLoadout[index].strat);
-                    const [movedStrat] = strats.splice(from, 1);
-                    strats.splice(to, 0, movedStrat);
-                    
-                    unlockedIndexes.forEach((slotIndex, index) => {
-                        activeLoadout[slotIndex].strat = strats[index];
-                    });
-                }
-                commitLoadoutChange();
-            }
+            moveLoadoutSlot(dragSrcIndex, dropIndex);
             return false;
         }
 
         window.handleDragEnd = function(e) {
-            document.body.classList.remove('is-dragging');
-            document.querySelectorAll('.list-row').forEach(row => {
-                row.classList.remove('drag-over');
-                row.classList.remove('dragging');
+            finishLoadoutDrag();
+        }
+
+        const pendingDataSaves = new Map();
+        const nativeSaveFallbackKey = filename => `hd2_native_save_pending:${filename}`;
+
+        async function saveNativeRevision(filename, data) {
+            let lastError = null;
+            for (const retryDelay of [0, 50, 150]) {
+                if (retryDelay) {
+                    await new Promise(resolve => setTimeout(resolve, retryDelay));
+                }
+                try {
+                    await window.electronAPI.saveData(filename, data);
+                    return;
+                } catch (error) {
+                    lastError = error;
+                }
+            }
+            throw lastError || new Error(`Failed to save ${filename}`);
+        }
+
+        async function drainDataSaves(filename, state) {
+            while (state.queued) {
+                const entry = state.queued;
+                state.queued = null;
+                try {
+                    await saveNativeRevision(filename, entry.data);
+                } catch (error) {
+                    console.error(`Failed to save ${filename}:`, error);
+                    // Keep native-save failures separate from the legacy
+                    // Electron migration key. Presence of this key means the
+                    // payload is newer than the native file and must win on
+                    // the next startup.
+                    try {
+                        localStorage.setItem(
+                            nativeSaveFallbackKey(filename),
+                            JSON.stringify(entry.data)
+                        );
+                    } catch (fallbackError) {
+                        console.error(`Failed to preserve ${filename} fallback:`, fallbackError);
+                        state.failure = new Error(
+                            `Failed to save ${filename} to native storage or local fallback`
+                        );
+                    }
+                    continue;
+                }
+                state.failure = null;
+                try {
+                    localStorage.removeItem(nativeSaveFallbackKey(filename));
+                } catch (error) {
+                    console.error(`Failed to clear ${filename} save fallback:`, error);
+                }
+            }
+        }
+
+        function startDataSaveDrain(filename, state) {
+            if (state.inFlight) return state.inFlight;
+            state.inFlight = drainDataSaves(filename, state).finally(() => {
+                state.inFlight = null;
+                // A save can be queued by another promise reaction after the
+                // drain observes an empty queue but before this finalizer runs.
+                // Chain a new drain so that revision cannot be stranded.
+                if (state.queued) return startDataSaveDrain(filename, state);
+                if (!state.failure) pendingDataSaves.delete(filename);
             });
-            dragSrcIndex = null;
+            return state.inFlight;
         }
 
         function saveDataToLocal(filename, data, lsKey) {
-            if (window.electronAPI && window.electronAPI.saveData) {
-                window.electronAPI.saveData(filename, data);
-            } else {
-                localStorage.setItem(lsKey, JSON.stringify(data)); 
+            if (!window.electronAPI || !window.electronAPI.saveData) {
+                localStorage.setItem(lsKey, JSON.stringify(data));
+                return Promise.resolve();
             }
+
+            let state = pendingDataSaves.get(filename);
+            if (!state) {
+                state = { queued: null, inFlight: null, failure: null };
+                pendingDataSaves.set(filename, state);
+            }
+            state.failure = null;
+            state.queued = {
+                data: typeof structuredClone === 'function'
+                    ? structuredClone(data)
+                    : JSON.parse(JSON.stringify(data))
+            };
+            return startDataSaveDrain(filename, state);
+        }
+
+        window.flushPendingDataSaves = async () => {
+            while (pendingDataSaves.size > 0) {
+                const states = [...pendingDataSaves.values()];
+                const inFlight = states.map(state => state.inFlight).filter(Boolean);
+                if (inFlight.length) await Promise.all(inFlight);
+                const failed = states.find(state => state.failure);
+                if (failed) throw failed.failure;
+            }
+        };
+
+        if (window.electronAPI && window.electronAPI.onQuitRequested) {
+            window.electronAPI.onQuitRequested(() => {
+                window.electronAPI.close().catch(error => {
+                    console.error('Failed to complete orderly shutdown:', error);
+                });
+            });
         }
 
         async function loadWithMigration(filename, lsKey) {
             let data = null;
+            const pendingKey = nativeSaveFallbackKey(filename);
+            const pendingNativeSave = localStorage.getItem(pendingKey);
+            if (pendingNativeSave) {
+                try {
+                    data = JSON.parse(pendingNativeSave);
+                } catch (error) {
+                    console.error(`Discarding invalid ${filename} save fallback:`, error);
+                    localStorage.removeItem(pendingKey);
+                }
+                if (data) {
+                    if (window.electronAPI && window.electronAPI.saveData) {
+                        saveDataToLocal(filename, data, lsKey);
+                    }
+                    return data;
+                }
+            }
             if (window.electronAPI && window.electronAPI.loadData) {
                 data = await window.electronAPI.loadData(filename);
             }
@@ -1146,186 +1407,11 @@
                 if (lsData) {
                     try { data = JSON.parse(lsData); } catch(e) {}
                     if (data && window.electronAPI && window.electronAPI.saveData) {
-                        window.electronAPI.saveData(filename, data);
+                        saveDataToLocal(filename, data, lsKey);
                     }
                 }
             }
             return data;
-        }
-
-        const ANNOUNCEMENT_URL = 'https://ooxygen7.github.io/HD2TriggerAnnouncement_Snow/announcement.json';
-        const PAYURL_URL = 'https://ooxygen7.github.io/HD2TriggerAnnouncement_Snow/payurl.json';
-
-        function pickLocalized(value) {
-            if (value && typeof value === 'object') {
-                return value[currentLang] || value.en || value.zh || '';
-            }
-            return String(value || '');
-        }
-
-        function escapeHtml(value) {
-            return String(value || '')
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#39;');
-        }
-
-        function renderInlineMarkdown(value) {
-            return escapeHtml(value)
-                .replace(/`([^`]+)`/g, '<code>$1</code>')
-                .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-        }
-
-        function renderAnnouncementMarkdown(markdown) {
-            const lines = String(markdown || '').replace(/\r\n/g, '\n').split('\n');
-            const html = [];
-            let paragraph = [];
-            let inCode = false;
-            let codeLines = [];
-
-            const flushParagraph = () => {
-                if (paragraph.length === 0) return;
-                html.push(`<p>${paragraph.map(renderInlineMarkdown).join('<br>')}</p>`);
-                paragraph = [];
-            };
-
-            for (const line of lines) {
-                if (line.trim().startsWith('```')) {
-                    if (inCode) {
-                        html.push(`<pre><code>${escapeHtml(codeLines.join('\n'))}</code></pre>`);
-                        codeLines = [];
-                        inCode = false;
-                    } else {
-                        flushParagraph();
-                        inCode = true;
-                    }
-                    continue;
-                }
-
-                if (inCode) {
-                    codeLines.push(line);
-                    continue;
-                }
-
-                const heading = line.match(/^(#{1,3})\s+(.+)$/);
-                if (heading) {
-                    flushParagraph();
-                    const level = heading[1].length;
-                    html.push(`<h${level}>${renderInlineMarkdown(heading[2])}</h${level}>`);
-                    continue;
-                }
-
-                if (!line.trim()) {
-                    flushParagraph();
-                    continue;
-                }
-
-                paragraph.push(line);
-            }
-
-            if (inCode) html.push(`<pre><code>${escapeHtml(codeLines.join('\n'))}</code></pre>`);
-            flushParagraph();
-            return html.join('');
-        }
-
-        function compareVersions(a, b) {
-            const pa = String(a || '0').split('.').map(n => parseInt(n, 10) || 0);
-            const pb = String(b || '0').split('.').map(n => parseInt(n, 10) || 0);
-            const len = Math.max(pa.length, pb.length);
-            for (let i = 0; i < len; i++) {
-                if ((pa[i] || 0) > (pb[i] || 0)) return 1;
-                if ((pa[i] || 0) < (pb[i] || 0)) return -1;
-            }
-            return 0;
-        }
-
-        async function shouldShowAnnouncement(announcement) {
-            if (!announcement || announcement.enabled !== true || !announcement.id) return false;
-            const id = String(announcement.id);
-            if (!/^\d+$/.test(id)) return false;
-            if (String(announcementState.lastSeenId || '') === id) return false;
-
-            const now = Date.now();
-            if (announcement.startAt && Date.parse(announcement.startAt) > now) return false;
-            if (announcement.endAt && Date.parse(announcement.endAt) < now) return false;
-
-            const version = window.electronAPI && window.electronAPI.getAppVersion ? await window.electronAPI.getAppVersion() : '0.0.0';
-            if (announcement.minVersion && compareVersions(version, announcement.minVersion) < 0) return false;
-            if (announcement.maxVersion && compareVersions(version, announcement.maxVersion) > 0) return false;
-            return true;
-        }
-
-        async function checkRemoteAnnouncement() {
-            try {
-                const controller = new AbortController();
-                const timer = setTimeout(() => controller.abort(), 3000);
-                const response = await fetch(ANNOUNCEMENT_URL, { cache: 'no-store', signal: controller.signal });
-                clearTimeout(timer);
-                if (!response.ok) return;
-                const announcement = await response.json();
-                if (!(await shouldShowAnnouncement(announcement))) return;
-
-                pendingAnnouncementId = String(announcement.id);
-                document.getElementById('announcement-title').textContent = pickLocalized(announcement.title) || 'Notice';
-                document.getElementById('announcement-content').innerHTML = renderAnnouncementMarkdown(pickLocalized(announcement.content));
-                document.getElementById('announcement-modal').classList.add('active');
-            } catch (e) {
-            }
-        }
-
-        function isValidPayUrlConfig(config) {
-            if (!config || config.enabled !== true || !config.id || !config.url) return false;
-            if (!/^\d{3}$/.test(String(config.id))) return false;
-            try {
-                const parsed = new URL(config.url);
-                return parsed.protocol === 'https:' || parsed.protocol === 'http:';
-            } catch (e) {
-                return false;
-            }
-        }
-
-        async function shouldUsePayUrlConfig(config) {
-            if (!isValidPayUrlConfig(config)) return false;
-
-            const now = Date.now();
-            if (config.startAt && Date.parse(config.startAt) > now) return false;
-            if (config.endAt && Date.parse(config.endAt) < now) return false;
-
-            const version = window.electronAPI && window.electronAPI.getAppVersion ? await window.electronAPI.getAppVersion() : '0.0.0';
-            if (config.minVersion && compareVersions(version, config.minVersion) < 0) return false;
-            if (config.maxVersion && compareVersions(version, config.maxVersion) > 0) return false;
-            return true;
-        }
-
-        async function checkRemotePayUrl() {
-            try {
-                const controller = new AbortController();
-                const timer = setTimeout(() => controller.abort(), 3000);
-                const response = await fetch(PAYURL_URL, { cache: 'no-store', signal: controller.signal });
-                clearTimeout(timer);
-                if (!response.ok) return;
-
-                const payUrlConfig = await response.json();
-                if (!(await shouldUsePayUrlConfig(payUrlConfig))) return;
-
-                sponsorPayUrl = payUrlConfig.url;
-                saveDataToLocal('payurl.json', {
-                    id: String(payUrlConfig.id),
-                    url: sponsorPayUrl
-                }, 'hd2_payurl_state');
-            } catch (e) {
-            }
-        }
-
-        window.closeAnnouncementModal = () => {
-            if (pendingAnnouncementId) {
-                announcementState.lastSeenId = pendingAnnouncementId;
-                saveDataToLocal('announcement.json', announcementState, 'hd2_announcement_state');
-            }
-            pendingAnnouncementId = null;
-            document.getElementById('announcement-modal').classList.remove('active');
         }
 
         async function initData() {
@@ -1345,36 +1431,52 @@
                 maxSlots = gameSettings.slotCount;
             }
 
-            if (window.electronAPI && window.electronAPI.getOcrDisplays) {
-                try {
-                    ocrDisplays = await window.electronAPI.getOcrDisplays() || [];
-                    if (gameSettings.ocrDisplayId != null && !ocrDisplays.some(display => display.id === Number(gameSettings.ocrDisplayId))) {
-                        gameSettings.ocrDisplayId = null;
-                        gameSettings.ocrRegion = null;
-                        gameSettings.ocrRegionCoordinateSpace = null;
-                        settingsChanged = true;
-                    }
-                    settingsChanged = migrateOcrRegionToPhysicalPixels() || settingsChanged;
-                } catch (e) {
-                    ocrDisplays = [];
+            const requiredInputDefaults = {
+                menuKey: 'ControlLeft', upKey: 'KeyW', downKey: 'KeyS', leftKey: 'KeyA', rightKey: 'KeyD'
+            };
+            for (const [key, fallback] of Object.entries(requiredInputDefaults)) {
+                const canonical = canonicalGlobalKeyName(gameSettings[key]) || fallback;
+                if (canonical !== gameSettings[key]) {
+                    gameSettings[key] = canonical;
+                    settingsChanged = true;
+                }
+            }
+            for (const key of ['ovUp', 'ovDown', 'ovExec', 'ocrHotkey']) {
+                if (!gameSettings[key]) continue;
+                const canonical = canonicalGlobalKeyName(gameSettings[key]) || '';
+                if (canonical !== gameSettings[key]) {
+                    gameSettings[key] = canonical;
+                    settingsChanged = true;
                 }
             }
 
+            const [displayResult, cacheCustom, cacheLoadout, cachePresets] = await Promise.all([
+                window.electronAPI && window.electronAPI.getOcrDisplays
+                    ? window.electronAPI.getOcrDisplays()
+                        .then(displays => ({ ok: true, displays: displays || [] }))
+                        .catch(error => {
+                            console.error('Failed to enumerate OCR displays:', error);
+                            return { ok: false, displays: [] };
+                        })
+                    : Promise.resolve({ ok: false, displays: [] }),
+                loadWithMigration('custom_strats.json', 'hd2_custom_stratagems'),
+                loadWithMigration('loadout.json', 'hd2_macro_current_loadout'),
+                loadWithMigration('presets.json', 'hd2_macro_presets')
+            ]);
+
+            ocrDisplays = displayResult.displays;
+            if (displayResult.ok && gameSettings.ocrDisplayId != null && !ocrDisplays.some(display => display.id === Number(gameSettings.ocrDisplayId))) {
+                gameSettings.ocrDisplayId = null;
+                gameSettings.ocrRegion = null;
+                gameSettings.ocrRegionCoordinateSpace = null;
+                settingsChanged = true;
+            }
+            settingsChanged = migrateOcrRegionToPhysicalPixels() || settingsChanged;
+
             if (settingsChanged) {
-                saveDataToLocal('settings.json', gameSettings, 'hd2_macro_settings');
+                await saveDataToLocal('settings.json', gameSettings, 'hd2_macro_settings');
             }
 
-            const cacheAnnouncement = await loadWithMigration('announcement.json', 'hd2_announcement_state');
-            if (cacheAnnouncement && typeof cacheAnnouncement === 'object') {
-                announcementState = { ...announcementState, ...cacheAnnouncement };
-            }
-
-            const cachePayUrl = await loadWithMigration('payurl.json', 'hd2_payurl_state');
-            if (cachePayUrl && cachePayUrl.url && isValidPayUrlConfig({ enabled: true, id: cachePayUrl.id || '001', url: cachePayUrl.url })) {
-                sponsorPayUrl = cachePayUrl.url;
-            }
-            
-            const cacheCustom = await loadWithMigration('custom_strats.json', 'hd2_custom_stratagems');
             if (cacheCustom && Array.isArray(cacheCustom)) {
                 customStratagems = cacheCustom;
                 ensureOcrFields(customStratagems);
@@ -1384,32 +1486,46 @@
                 stratagemDB = [...defaultStratagemDB];
             }
 
-            const cacheLoadout = await loadWithMigration('loadout.json', 'hd2_macro_current_loadout');
             activeLoadout = restoreLoadout(cacheLoadout, maxSlots);
 
-            const cachePresets = await loadWithMigration('presets.json', 'hd2_macro_presets');
             if (cachePresets && Array.isArray(cachePresets)) {
                 savedPresets = cachePresets;
             }
-            
+
+            await syncGlobalInputFilter();
+
             if(window.electronAPI && window.electronAPI.updateOverlaySettings) {
                 window.electronAPI.updateOverlaySettings({ opacity: gameSettings.ovOpacity, style: gameSettings.ovStyle });
             }
             
             updateI18n();
             renderMainList({ syncOverlay: true });
-            setTimeout(checkRemotePayUrl, 500);
-            setTimeout(checkRemoteAnnouncement, 800);
         }
 
         window.handleToggleOverlay = async () => {
             if (!window.electronAPI) return;
-            isOverlayVisible = await window.electronAPI.toggleOverlay();
-            if (isOverlayVisible) {
-                await window.electronAPI.resizeOverlay(gameSettings.ovWidth, gameSettings.ovHeight);
-                window.electronAPI.updateOverlaySettings({ opacity: gameSettings.ovOpacity, style: gameSettings.ovStyle });
-                window.electronAPI.updateOverlay(activeLoadout);
-                window.electronAPI.updateSelection(overlaySelectedIndex);
+            try {
+                isOverlayVisible = await window.electronAPI.toggleOverlay();
+                await syncGlobalInputFilter();
+                if (isOverlayVisible) {
+                    await window.electronAPI.resizeOverlay(gameSettings.ovWidth, gameSettings.ovHeight);
+                    await window.electronAPI.updateOverlaySettings({ opacity: gameSettings.ovOpacity, style: gameSettings.ovStyle });
+                    await window.electronAPI.updateOverlay(activeLoadout);
+                    await window.electronAPI.updateSelection(overlaySelectedIndex);
+                }
+            } catch (error) {
+                isOverlayVisible = false;
+                syncGlobalInputFilter();
+                showToast(i18n[currentLang].msgOverlayFailed.replace('{error}', String(error)), true);
+            }
+        };
+
+        window.unlockOverlaySafely = async () => {
+            try {
+                await window.electronAPI.unlockOverlay();
+                showToast(currentLang === 'zh' ? '悬浮窗已解锁，可拖动' : 'Overlay unlocked and draggable');
+            } catch (error) {
+                showToast(i18n[currentLang].msgUnlockFailed.replace('{error}', String(error)), true);
             }
         };
 
@@ -1419,6 +1535,7 @@
 
         function commitLoadoutChange() {
             saveCurrentLoadoutToCache();
+            syncGlobalInputFilter();
             renderMainList({ syncOverlay: true });
         }
 
@@ -1569,22 +1686,39 @@
             document.getElementById('opt-cat-mission').textContent = lang.cat_mission;
 
             document.getElementById('lib-search-input').placeholder = lang.searchPh;
-            document.getElementById('btn-announcement-ok').textContent = lang.announcementOk;
-            
             updateSettingsUI();
         }
 
         function showToast(msg, isError = false) {
             if (!gameSettings.showToasts) return;
             if (window.electronAPI && window.electronAPI.showToast) {
-                window.electronAPI.showToast({ message: msg, isError, duration: isError ? 4000 : 2200 });
+                window.electronAPI.showToast({ message: msg, isError, duration: isError ? 4000 : 2200 }).catch(() => {
+                    showInlineStatus(msg, isError);
+                });
                 return;
             }
+            showInlineStatus(msg, isError);
+        }
+
+        function showInlineStatus(msg, isError = false) {
             const toast = document.getElementById('global-status');
             toast.textContent = msg;
             toast.className = isError ? 'error show' : 'show';
             setTimeout(() => toast.classList.remove('show'), 2000);
         }
+
+        window.handleWindowAction = async (action) => {
+            const handler = window.electronAPI && window.electronAPI[action];
+            if (typeof handler !== 'function') return;
+            try {
+                if ((action === 'minimize' || action === 'tray') && bindingTarget) {
+                    await cancelBinding();
+                }
+                await handler();
+            } catch (error) {
+                showInlineStatus(currentLang === 'zh' ? `窗口操作失败: ${error}` : `Window operation failed: ${error}`, true);
+            }
+        };
 
         function formatDisplayKey(key) {
             if(!key) return '';
@@ -1612,14 +1746,12 @@
                 const row = document.createElement('div');
                 
 
-                row.draggable = true;
+                row.draggable = false;
                 row.dataset.index = i;
-                row.ondragstart = window.handleDragStart;
                 row.ondragover = window.handleDragOver;
                 row.ondragenter = window.handleDragEnter;
                 row.ondragleave = window.handleDragLeave;
                 row.ondrop = window.handleDrop;
-                row.ondragend = window.handleDragEnd;
 
                 let btnClass = 'bind-btn';
                 let btnText = lang.clickToBind;
@@ -1629,13 +1761,14 @@
                 } else if (slot.hotkey) {
                     btnClass += ' bound'; btnText = `[ ${formatDisplayKey(slot.hotkey)} ]`; subText = lang.boundSub;
                 }
-                const bindBoxHtml = `<div class="row-bind-box"><button class="${btnClass}" onclick="startMacroBind(${i}, event)" oncontextmenu="clearMacroBind(${i}, event)">${btnText}<div class="bind-subtext">${subText}</div></button></div>`;
-                const dragHandleHtml = `<div class="drag-handle" title="${lang.dragHint || ''}"></div>`;
+                const bindBoxHtml = `<div class="row-bind-box"><button class="${escapeHtml(btnClass)}" onclick="startMacroBind(${i}, event)" oncontextmenu="clearMacroBind(${i}, event)">${escapeHtml(btnText)}<div class="bind-subtext">${escapeHtml(subText)}</div></button></div>`;
+                const dragLabel = escapeHtml(lang.dragHint || '');
+                const dragHandleHtml = `<div class="drag-handle" title="${dragLabel}" aria-label="${dragLabel}" role="button"></div>`;
 
                 if (slot.strat) {
                     row.className = 'list-row';
                     const arrowsHtml = slot.strat.seq.map(k => `<img class="arrow-img" src="${arrowSVGMap[k]}">`).join('');
-                    const iconSrc = slot.strat.icon || 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
+                    const iconSrc = escapeHtml(safeImageSource(slot.strat.icon));
                     const lockIcon = slot.locked
                         ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>'
                         : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 9.9-1"></path></svg>';
@@ -1644,6 +1777,9 @@
                     row.className = 'list-row empty'; 
                     row.innerHTML = `${dragHandleHtml}<div class="empty-click-area" onclick="openLibrary()">${lang.emptySlot}</div>${bindBoxHtml}`;
                 }
+                const dragHandle = row.querySelector('.drag-handle');
+                dragHandle.dataset.index = i;
+                dragHandle.onmousedown = window.handleDragMouseDown;
                 container.appendChild(row);
             }
             if (syncOverlay && window.electronAPI && window.electronAPI.updateOverlay) {
@@ -1668,9 +1804,13 @@
         }
 
         window.goSponsor = async () => {
-            const ok = await window.electronAPI.openSponsor(sponsorPayUrl);
-            if (ok) closeSponsorModal();
-            if (!ok) showToast(i18n[currentLang].msgSponsorFail, true);
+            try {
+                const ok = await window.electronAPI.openSponsor();
+                if (ok) closeSponsorModal();
+                if (!ok) showToast(i18n[currentLang].msgSponsorFail, true);
+            } catch (error) {
+                showToast(`${i18n[currentLang].msgSponsorFail}: ${error}`, true);
+            }
         }
         
         window.handleSearch = () => {
@@ -1738,8 +1878,9 @@
             card.className = `lib-card ${isSelected ? 'selected' : ''}`;
             card.onclick = () => { toggleStratagem(strat.id); };
             card.oncontextmenu = (e) => { e.preventDefault(); if (isCustom) confirmDeleteCustom(strat.id); };
-            const iconSrc = strat.icon || 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
-            card.innerHTML = `<img class="lib-icon" src="${iconSrc}"><div class="lib-name">${strat.name[currentLang]}</div><div class="lib-check">✓</div>`;
+            const iconSrc = escapeHtml(safeImageSource(strat.icon));
+            const displayName = escapeHtml(strat.name && strat.name[currentLang]);
+            card.innerHTML = `<img class="lib-icon" src="${iconSrc}"><div class="lib-name">${displayName}</div><div class="lib-check">✓</div>`;
             return card;
         }
 
@@ -1823,10 +1964,14 @@
             }
         }
 
-        window.startOcrRegionSelect = () => {
+        window.startOcrRegionSelect = async () => {
             if (!window.electronAPI || !window.electronAPI.startOcrRegionSelect) return;
-            showToast(i18n[currentLang].msgOcrSelectStarted);
-            window.electronAPI.startOcrRegionSelect(gameSettings.ocrDisplayId);
+            try {
+                await window.electronAPI.startOcrRegionSelect(gameSettings.ocrDisplayId);
+                showToast(i18n[currentLang].msgOcrSelectStarted);
+            } catch (error) {
+                showToast(i18n[currentLang].msgOcrFailed.replace('{error}', String(error)), true);
+            }
         }
 
         function renderOcrDisplayOptions() {
@@ -1890,7 +2035,11 @@
 
         window.openOcrHelp = async () => {
             if (!window.electronAPI || !window.electronAPI.openOcrHelp) return;
-            window.electronAPI.openOcrHelp(currentLang);
+            try {
+                await window.electronAPI.openOcrHelp(currentLang);
+            } catch (error) {
+                showToast(i18n[currentLang].msgOcrFailed.replace('{error}', String(error)), true);
+            }
         }
 
         if (window.electronAPI && window.electronAPI.onOcrRegionSelected) {
@@ -1943,9 +2092,9 @@
             closeModals();
         }
 
-        window.startMacroBind = (index, e) => { e.stopPropagation(); cancelBinding(); bindingTarget = { type: 'macro', index: index }; renderMainList(); attachListeners(); }
+        window.startMacroBind = (index, e) => { e.stopPropagation(); cancelBinding({ syncFilter: false }); bindingTarget = { type: 'macro', index: index }; renderMainList(); attachListeners(); }
         window.startSettingBind = (settingKey, e) => {
-            e.stopPropagation(); cancelBinding(); bindingTarget = { type: 'setting', key: settingKey };
+            e.stopPropagation(); cancelBinding({ syncFilter: false }); bindingTarget = { type: 'setting', key: settingKey };
             updateSettingsUI();
             const btn = document.getElementById(`btn-set-${settingKey}`);
             btn.textContent = i18n[currentLang].waiting; btn.classList.add('listening');
@@ -1959,41 +2108,35 @@
         
         window.clearSettingBind = (key, e) => {
             e.preventDefault(); e.stopPropagation();
-            if(gameSettings[key]) { gameSettings[key] = ''; updateSettingsUI(); }
+            if(gameSettings[key]) {
+                gameSettings[key] = '';
+                syncGlobalInputFilter();
+                updateSettingsUI();
+            }
         }
 
         function attachListeners() { 
             window.addEventListener('keydown', handleKeyInput); 
             window.addEventListener('mousedown', handleMouseInput); 
+            syncGlobalInputFilter();
         }
         
         function handleKeyInput(e) {
             e.preventDefault();
             e.stopPropagation();
-            if (e.code === 'Escape') { 
-                cancelBinding();
-                return;
-            }
-            saveInput(e.code);
+            if (e.code === 'Escape') settleBindingTransition(() => cancelBinding());
         }
 
         function handleMouseInput(e) {
             e.preventDefault();
             e.stopPropagation();
-            let mBtn = "";
             if (e.button === 0 || e.button === 2) { 
-                cancelBinding(); 
-                return; 
+                settleBindingTransition(() => cancelBinding());
             }
-            if (e.button === 1) mBtn = "MouseMiddle";
-            else if (e.button === 3) mBtn = "MouseSide1";
-            else if (e.button === 4) mBtn = "MouseSide2";
-            
-            if (mBtn) saveInput(mBtn);
         }
 
         function cancelBinding(options = {}) {
-            const { render = true } = options;
+            const { render = true, syncFilter = true } = options;
             let needsRender = false;
             if (bindingTarget) {
                 if (bindingTarget.type === 'setting') {
@@ -2007,7 +2150,39 @@
             window.removeEventListener('mousedown', handleMouseInput);
             if (needsRender && render) renderMainList(); 
             updateSettingsUI();
+            return syncFilter ? syncGlobalInputFilter() : Promise.resolve();
         }
+
+        function settleBindingTransition(action) {
+            if (bindingFilterTransition) return;
+            bindingFilterTransition = true;
+            let result;
+            try {
+                result = action();
+            } catch (error) {
+                bindingFilterTransition = false;
+                throw error;
+            }
+            Promise.resolve(result)
+                .then(() => syncGlobalInputFilter())
+                .finally(() => { bindingFilterTransition = false; });
+        }
+
+        function captureBindingInput(keyStr) {
+            if (!bindingTarget || bindingFilterTransition) return false;
+            if (bindingTarget.type === 'setting'
+                && ['menuKey', 'upKey', 'downKey', 'leftKey', 'rightKey'].includes(bindingTarget.key)
+                && (keyStr === 'WheelUp' || keyStr === 'WheelDown')) {
+                showToast(currentLang === 'zh' ? '战备输入键不能设为滚轮' : 'The mouse wheel cannot be used for macro input.', true);
+                return true;
+            }
+            settleBindingTransition(() => saveInput(keyStr));
+            return true;
+        }
+
+        window.addEventListener('blur', () => {
+            if (bindingTarget) settleBindingTransition(() => cancelBinding());
+        });
 
         function saveInput(keyStr) {
             if (!bindingTarget) return;
@@ -2213,7 +2388,7 @@
         let isOcrRunning = false;
         let overlaySelectedIndex = 0;
 
-        function executeMacroByItem(item, itemIndex) {
+        async function executeMacroByItem(item, itemIndex) {
             if (isMacroRunning || !item || !item.strat) return; 
             isMacroRunning = true; 
             const stratagem = item.strat;
@@ -2234,11 +2409,16 @@
             
             const estimatedTimeMs = payload.menuOpenDelay + (stratagem.seq.length * (payload.pressDelay + payload.intervalDelay)) + 100;
             
-            if(window.electronAPI) {
-                window.electronAPI.sendMacro(payload);
-                window.electronAPI.highlightOverlay({ index: itemIndex, duration: estimatedTimeMs });
+            try {
+                if(window.electronAPI) {
+                    window.electronAPI.highlightOverlay({ index: itemIndex, duration: estimatedTimeMs }).catch(() => {});
+                    await window.electronAPI.sendMacro(payload);
+                }
+            } catch (error) {
+                showToast(i18n[currentLang].msgMacroFailed.replace('{error}', String(error)), true);
+            } finally {
+                isMacroRunning = false;
             }
-            setTimeout(() => { isMacroRunning = false; }, estimatedTimeMs);
         }
 
         function triggerMacro(inputKey) {
@@ -2293,36 +2473,43 @@
 
         if (window.electronAPI) {
             if(window.electronAPI.onGlobalKeyDown) window.electronAPI.onGlobalKeyDown((keyName) => {
-                if (bindingTarget) return; 
+                if (bindingFilterTransition) return;
+                if (bindingTarget) {
+                    if (keyName === 'Escape') settleBindingTransition(() => cancelBinding());
+                    else captureBindingInput(keyName);
+                    return;
+                }
                 if (gameSettings.ocrHotkey && keyName === gameSettings.ocrHotkey) { runOcrAutoEquip(); return; }
                 if (isOverlayVisible) {
-                    if (keyName === (gameSettings.ovExec || 'MouseMiddle')) { executeSelection(); return; }
-                    if (keyName === (gameSettings.ovUp || 'WheelUp')) { scrollOverlay(-1); return; }
-                    if (keyName === (gameSettings.ovDown || 'WheelDown')) { scrollOverlay(1); return; }
+                    if (gameSettings.ovExec && keyName === gameSettings.ovExec) { executeSelection(); return; }
+                    if (gameSettings.ovUp && keyName === gameSettings.ovUp) { scrollOverlay(-1); return; }
+                    if (gameSettings.ovDown && keyName === gameSettings.ovDown) { scrollOverlay(1); return; }
                 }
                 triggerMacro(keyName);
             });
 
             if(window.electronAPI.onGlobalMouseDown) window.electronAPI.onGlobalMouseDown((mouseKey) => {
-                if (bindingTarget) return; 
+                if (bindingFilterTransition) return;
+                if (bindingTarget) { captureBindingInput(mouseKey); return; }
                 if (gameSettings.ocrHotkey && mouseKey === gameSettings.ocrHotkey) { runOcrAutoEquip(); return; }
                 if (isOverlayVisible) {
-                    if (mouseKey === (gameSettings.ovExec || 'MouseMiddle')) { executeSelection(); return; }
-                    if (mouseKey === (gameSettings.ovUp || 'WheelUp')) { scrollOverlay(-1); return; }
-                    if (mouseKey === (gameSettings.ovDown || 'WheelDown')) { scrollOverlay(1); return; }
+                    if (gameSettings.ovExec && mouseKey === gameSettings.ovExec) { executeSelection(); return; }
+                    if (gameSettings.ovUp && mouseKey === gameSettings.ovUp) { scrollOverlay(-1); return; }
+                    if (gameSettings.ovDown && mouseKey === gameSettings.ovDown) { scrollOverlay(1); return; }
                 }
                 triggerMacro(mouseKey);
             });
 
             if(window.electronAPI.onGlobalWheel) window.electronAPI.onGlobalWheel((dir) => {
                 const wheelKey = dir < 0 ? 'WheelUp' : 'WheelDown';
-                if (bindingTarget) { saveInput(wheelKey); return; } 
+                if (bindingFilterTransition) return;
+                if (bindingTarget) { captureBindingInput(wheelKey); return; }
                 if (gameSettings.ocrHotkey && wheelKey === gameSettings.ocrHotkey) { runOcrAutoEquip(); return; }
-                
+
                 if (isOverlayVisible) {
-                    if (wheelKey === (gameSettings.ovUp || 'WheelUp')) { scrollOverlay(-1); return; }
-                    if (wheelKey === (gameSettings.ovDown || 'WheelDown')) { scrollOverlay(1); return; }
-                    if (wheelKey === (gameSettings.ovExec || 'MouseMiddle')) { executeSelection(); return; }
+                    if (gameSettings.ovUp && wheelKey === gameSettings.ovUp) { scrollOverlay(-1); return; }
+                    if (gameSettings.ovDown && wheelKey === gameSettings.ovDown) { scrollOverlay(1); return; }
+                    if (gameSettings.ovExec && wheelKey === gameSettings.ovExec) { executeSelection(); return; }
                 }
                 triggerMacro(wheelKey);
             });
@@ -2354,16 +2541,17 @@
                 const previewLoadout = restoreLoadout(preset.loadout, Array.isArray(preset.loadout) ? preset.loadout.length : maxSlots);
                 const iconsHtml = previewLoadout
                     .filter(item => item.strat)
-                    .map(item => `<img class="preset-icon-mini" src="${item.strat.icon || 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='}">`)
+                    .map(item => `<img class="preset-icon-mini" src="${escapeHtml(safeImageSource(item.strat.icon))}">`)
                     .join('');
-                card.innerHTML = `<div class="preset-card-header"><div class="preset-name">${preset.name}</div><div class="preset-actions"><button class="btn-square primary" onclick="loadPreset(${index})">${lang.btnLoad}</button><button class="btn-square" onclick="updatePreset(${index})">${lang.btnUpdate}</button><button class="btn-square" onclick="renamePreset(${index})">${lang.btnRename}</button><button class="btn-square" onclick="exportPreset(${index})">${lang.btnExport}</button><button class="btn-square btn-danger" onclick="confirmDeletePreset(${index})">${lang.btnDel}</button></div></div><div class="preset-icons-preview">${iconsHtml}</div>`;
+                const presetName = escapeHtml(preset.name);
+                card.innerHTML = `<div class="preset-card-header"><div class="preset-name">${presetName}</div><div class="preset-actions"><button class="btn-square primary" onclick="loadPreset(${index})">${lang.btnLoad}</button><button class="btn-square" onclick="updatePreset(${index})">${lang.btnUpdate}</button><button class="btn-square" onclick="renamePreset(${index})">${lang.btnRename}</button><button class="btn-square" onclick="exportPreset(${index})">${lang.btnExport}</button><button class="btn-square btn-danger" onclick="confirmDeletePreset(${index})">${lang.btnDel}</button></div></div><div class="preset-icons-preview">${iconsHtml}</div>`;
                 container.appendChild(card);
             });
         }
 
         window.saveCurrentPreset = () => {
             const input = document.getElementById('preset-name-input'); const name = input.value.trim(); const lang = i18n[currentLang];
-            if (!name) { showToast(lang.msgEnterName, true); return; }
+            if (!name || name.length > MAX_PRESET_NAME_LENGTH) { showToast(lang.msgEnterName, true); return; }
             if (!activeLoadout.some(item => item.strat)) { showToast(lang.msgEmptyLoadout, true); return; }
             
             if (savedPresets.some(preset => preset.name === name)) {
@@ -2409,7 +2597,7 @@
             const newName = document.getElementById('rename-input').value.trim();
             const lang = i18n[currentLang];
             
-            if (!newName) { showToast(lang.msgEnterName, true); return; }
+            if (!newName || newName.length > MAX_PRESET_NAME_LENGTH) { showToast(lang.msgEnterName, true); return; }
             if (savedPresets.some((p, idx) => p.name === newName && idx !== pendingRenameIndex)) {
                 showToast(lang.msgPresetExists, true); return;
             }
@@ -2489,24 +2677,21 @@
             const code = match ? match[1] : input; 
             
             try {
+                if (code.length > 64000) throw new Error("Import code is too large");
                 const jsonStr = decodeURIComponent(atob(code));
                 const dataObj = JSON.parse(jsonStr);
-                
-                if (dataObj.n && Array.isArray(dataObj.l)) {
-                    const restoredLoadout = dataObj.l.map(item => ({
-                        stratId: item.s,
-                        hotkey: item.h,
-                        locked: !!item.l
-                    }));
-                    
-                    let finalName = dataObj.n;
+                const importedPreset = normalizeImportedPreset(dataObj);
+
+                if (importedPreset) {
+                    let finalName = importedPreset.name;
                     let counter = 1;
                     while(savedPresets.some(p => p.name === finalName)) {
-                        finalName = `${dataObj.n} (${counter})`;
+                        const suffix = ` (${counter})`;
+                        finalName = `${importedPreset.name.slice(0, MAX_PRESET_NAME_LENGTH - suffix.length)}${suffix}`;
                         counter++;
                     }
                     
-                    savedPresets.push({ name: finalName, loadout: restoredLoadout });
+                    savedPresets.push({ name: finalName, loadout: importedPreset.loadout });
                     saveDataToLocal('presets.json', savedPresets, 'hd2_macro_presets');
                     
                     showToast(lang.msgImportSuccess);
@@ -2557,8 +2742,30 @@
         window.openAddStratModal = () => { document.getElementById('add-strat-modal').classList.add('active'); document.getElementById('add-strat-name-zh').value = ''; document.getElementById('add-strat-name-en').value = ''; document.getElementById('add-strat-seq').value = ''; document.getElementById('add-strat-ocr').value = ''; document.getElementById('add-strat-icon').value = ''; document.getElementById('add-strat-preview').style.display = 'none'; currentUploadBase64 = null; }
         window.closeAddStratModal = () => { document.getElementById('add-strat-modal').classList.remove('active'); }
         window.handleSvgUpload = (event) => {
-            const file = event.target.files[0]; if (!file) return; const reader = new FileReader();
-            reader.onload = function(e) { currentUploadBase64 = e.target.result; const preview = document.getElementById('add-strat-preview'); preview.src = currentUploadBase64; preview.style.display = 'block'; };
+            const file = event.target.files[0];
+            if (!file) return;
+            const allowedMimeTypes = new Set(['image/svg+xml', 'image/png', 'image/jpeg']);
+            const allowedExtension = /\.(?:svg|png|jpe?g)$/i.test(file.name);
+            if (!allowedMimeTypes.has(file.type.toLowerCase()) || !allowedExtension || file.size > MAX_ICON_FILE_BYTES) {
+                event.target.value = '';
+                currentUploadBase64 = null;
+                showToast(currentLang === 'zh' ? '图标仅支持 1MB 以内的 SVG、PNG 或 JPG' : 'Icons must be SVG, PNG, or JPG files under 1 MB', true);
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const source = typeof e.target.result === 'string' ? e.target.result : '';
+                if (safeImageSource(source) !== source) {
+                    currentUploadBase64 = null;
+                    showToast(currentLang === 'zh' ? '无法读取该图标文件' : 'Unable to read this icon file', true);
+                    return;
+                }
+                currentUploadBase64 = source;
+                const preview = document.getElementById('add-strat-preview');
+                preview.src = currentUploadBase64;
+                preview.style.display = 'block';
+            };
+            reader.onerror = () => showToast(currentLang === 'zh' ? '无法读取该图标文件' : 'Unable to read this icon file', true);
             reader.readAsDataURL(file);
         }
         
@@ -2566,8 +2773,17 @@
             const lang = i18n[currentLang]; const nameZh = document.getElementById('add-strat-name-zh').value.trim(); const nameEn = document.getElementById('add-strat-name-en').value.trim(); const cat = document.getElementById('add-strat-cat').value; let rawSeq = document.getElementById('add-strat-seq').value.toUpperCase().replace(/\s/g, '');
             const ocrTerms = document.getElementById('add-strat-ocr').value.split(',').map(term => term.trim()).filter(Boolean);
             if (!nameZh || !nameEn || !rawSeq) { showToast(lang.msgFillAll, true); return; }
+            if (nameZh.length > MAX_CUSTOM_NAME_LENGTH || nameEn.length > MAX_CUSTOM_NAME_LENGTH || rawSeq.length > MAX_CUSTOM_SEQUENCE_LENGTH || ocrTerms.length > 20 || ocrTerms.some(term => term.length > MAX_CUSTOM_NAME_LENGTH)) {
+                showToast(currentLang === 'zh' ? '名称、指令序列或 OCR 关键词过长' : 'Name, command sequence, or OCR terms are too long', true);
+                return;
+            }
             if (/[^WASD]/.test(rawSeq)) { showToast(lang.msgInvalidSeq, true); return; }
-            const newStrat = { id: `custom_${Date.now()}`, grp: cat, name: { zh: nameZh, en: nameEn }, aliases: [], ocr: ocrTerms, seq: rawSeq.split(''), icon: currentUploadBase64 || 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=' };
+            if (!['support', 'orbital', 'eagle', 'emplacement', 'sentry', 'backpack', 'vehicle', 'mission'].includes(cat)) {
+                showToast(lang.msgFillAll, true);
+                return;
+            }
+            const uniqueSuffix = Math.random().toString(36).slice(2, 8);
+            const newStrat = { id: `custom_${Date.now()}_${uniqueSuffix}`, grp: cat, name: { zh: nameZh, en: nameEn }, aliases: [], ocr: ocrTerms, seq: rawSeq.split(''), icon: currentUploadBase64 || EMPTY_IMAGE_SOURCE };
             
             customStratagems.push(newStrat); 
             stratagemDB = [...defaultStratagemDB, ...customStratagems]; 

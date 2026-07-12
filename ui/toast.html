@@ -45,15 +45,25 @@
     <script>
         const toast = document.getElementById('toast');
         let hideTimer = null;
+        let fadeTimer = null;
+        let activeGeneration = 0;
 
         function showToast(payload) {
             const data = payload || {};
+            activeGeneration = Number(data.generation) || activeGeneration + 1;
+            const generation = activeGeneration;
             toast.textContent = data.message || '';
             toast.className = data.isError ? 'error show' : 'show';
             clearTimeout(hideTimer);
+            clearTimeout(fadeTimer);
             hideTimer = setTimeout(() => {
+                if (generation !== activeGeneration) return;
                 toast.classList.remove('show');
-                setTimeout(() => window.electronAPI.hideToast(), 200);
+                fadeTimer = setTimeout(() => {
+                    if (generation === activeGeneration) {
+                        window.electronAPI.hideToast(generation);
+                    }
+                }, 200);
             }, data.duration || (data.isError ? 12000 : 2200));
         }
 

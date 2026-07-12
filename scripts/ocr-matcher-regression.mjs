@@ -36,6 +36,31 @@ function evaluate(context, expression) {
   return vm.runInContext(expression, context, { filename: "ocr-matcher-regression" });
 }
 
+// Real Chinese labels from the in-game list must survive normalization and
+// match independently even when OCR returns several lines at once.
+{
+  const terms = [
+    "\u8f68\u9053380MM\u9ad8\u7206\u5f39\u706b\u529b\u7f51",
+    "\u5b9a\u5411\u62a4\u76fe",
+    "\u201c\u98de\u9e70\u201d500KG\u70b8\u5f39",
+    "\u8f68\u9053\u70ae\u653b\u51fb",
+    "\u673a\u67aa",
+  ];
+  const context = matcherContext({
+    maxSlots: terms.length,
+    stratagems: terms.map((term, index) => ({ id: `real-${index}`, grp: "support", ocr: [term] })),
+  });
+  assert.deepEqual(
+    JSON.parse(
+      evaluate(
+        context,
+        `JSON.stringify(matchOcrStratagems(${JSON.stringify(terms.join("\n"))}).map(item => item.id))`,
+      ),
+    ),
+    terms.map((_, index) => `real-${index}`),
+  );
+}
+
 // Intentional legacy rule 1: a partial term never falls through to fuzzy matching.
 {
   const context = matcherContext({

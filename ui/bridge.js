@@ -10,17 +10,28 @@
   window.electronAPI = Object.freeze({
     minimize: () => invoke("window_minimize"),
     tray: () => invoke("window_tray"),
-    close: () => invoke("window_close"),
+    close: async () => {
+      // Arm the native watchdog before awaiting renderer-side storage. A
+      // wedged WebView or file-system request must not make exit hang forever.
+      await invoke("begin_exit");
+      if (typeof window.flushPendingDataSaves === "function") {
+        await window.flushPendingDataSaves();
+      }
+      return invoke("window_close");
+    },
     sendMacro: (payload) => invoke("execute_macro", { payload }),
 
     onGlobalKeyDown: (callback) => subscribe("global-keydown", callback),
     onGlobalMouseDown: (callback) => subscribe("global-mousedown", callback),
     onGlobalWheel: (callback) => subscribe("global-wheel", callback),
+    onQuitRequested: (callback) => subscribe("quit-requested", callback),
+    setGlobalInputFilter: (keys, captureAll) => invoke("set_global_input_filter", { keys, captureAll }),
 
     toggleOverlay: () => invoke("toggle_overlay"),
     lockOverlay: () => invoke("lock_overlay"),
     unlockOverlay: () => invoke("unlock_overlay"),
     resizeOverlay: (width, height) => invoke("resize_overlay", { width, height }),
+    setOverlayPosition: (position) => invoke("set_overlay_position", { position }),
     updateOverlaySettings: (settings) => invoke("update_overlay_settings", { settings }),
     updateOverlay: (data) => invoke("update_overlay", { data }),
     highlightOverlay: (data) => invoke("highlight_overlay", { data }),
@@ -38,11 +49,11 @@
     onOverlayUnlocked: (callback) => subscribe("overlay-unlocked", callback),
 
     showToast: (payload) => invoke("show_toast", { payload }),
-    hideToast: () => invoke("hide_toast"),
+    hideToast: (generation) => invoke("hide_toast", { generation }),
     getLastToast: () => invoke("get_last_toast"),
     onShowToast: (callback) => subscribe("show-toast", callback),
 
-    openSponsor: (url) => invoke("open_sponsor", { url }),
+    openSponsor: () => invoke("open_sponsor"),
     closeSponsorWindow: () => invoke("close_sponsor_window"),
     getSponsorUrl: () => invoke("get_sponsor_url"),
     onSponsorUrl: (callback) => subscribe("sponsor-url", callback),

@@ -1,19 +1,32 @@
 [package]
 name = "hd2-macro-terminal-rust"
-version = "0.1.0"
+version = "0.1.2"
 description = "A lightweight Windows x64 rewrite of HD2 Macro Terminal"
 authors = ["Huizhixin"]
 edition = "2021"
+rust-version = "1.88"
 
 [build-dependencies]
-tauri-build = { version = "2", features = [] }
+tauri-build = { version = "2.6.3", default-features = false, features = ["config-json"] }
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-tauri = { version = "2", features = ["tray-icon", "devtools"] }
-thiserror = "2"
-windows = { version = "0.61", features = ["Win32_UI_Input_KeyboardAndMouse", "Win32_UI_WindowsAndMessaging"] }
-ort = "2.0.0-rc.12"
-image = "0.24.9"
-screenshots = "0.8.10"
+tauri = { version = "2.11.5", default-features = false, features = ["wry", "compression", "common-controls-v6", "tray-icon"] }
+tauri-plugin-single-instance = { version = "2.4.2", default-features = false }
+windows = { version = "0.61.3", features = ["Win32_Foundation", "Win32_Graphics_Gdi", "Win32_Storage_FileSystem", "Win32_System_Threading", "Win32_UI_HiDpi", "Win32_UI_Input_KeyboardAndMouse", "Win32_UI_WindowsAndMessaging"] }
+ort = { version = "=2.0.0-rc.12", default-features = false, features = ["std", "api-24", "load-dynamic"] }
+image = { version = "0.24.9", default-features = false }
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "unwind"
+incremental = false
+debug = "line-tables-only"
+split-debuginfo = "packed"
+strip = "debuginfo"
+
+[lints.rust]
+unsafe_op_in_unsafe_fn = "deny"
