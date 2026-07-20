@@ -80,6 +80,12 @@ npm run build
 
 安装包会生成在 `src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/`。
 
+
+
+## 相关资源 / Related
+
+- [Helldivers 2 Guides](https://hd2guides.com/) — Helldivers 2 stratagem tier lists, warbond guides, mission strategies, and loadout builds.
+
 ## 许可与声明
 
 本项目采用 [GNU Affero General Public License v3.0](LICENSE)（`AGPL-3.0-only`）许可。
