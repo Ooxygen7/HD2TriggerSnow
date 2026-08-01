@@ -323,9 +323,9 @@
     </style>
 </head>
 <body>
-    <div id="titlebar">
-        <div class="title-text" id="txt-app-title" data-tauri-drag-region>HD2 MACRO TERMINAL</div>
-        <div class="titlebar-controls">
+    <div id="titlebar" data-tauri-drag-region="deep">
+        <div class="title-text" id="txt-app-title">HD2 MACRO TERMINAL</div>
+        <div class="titlebar-controls" data-tauri-drag-region="false">
             <button class="lang-btn" id="btn-title-sponsor" onclick="openSponsorModal()">赞助</button>
             <button class="lang-btn" id="btn-lang" onclick="toggleLanguage()">EN / 中文</button>
             <button class="window-btn" onclick="handleWindowAction('tray')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>

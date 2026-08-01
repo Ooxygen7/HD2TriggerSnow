@@ -4,6 +4,7 @@ mod capture;
 mod config;
 mod hooks;
 mod input;
+mod legacy;
 mod ocr;
 mod tray;
 mod windows;
@@ -682,6 +683,10 @@ async fn cancel_ocr_region_select(
 }
 
 fn main() {
+    if !legacy::preflight_allows_startup() {
+        return;
+    }
+
     tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
             if let Some(window) = app.get_webview_window("main") {

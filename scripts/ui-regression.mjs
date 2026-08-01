@@ -27,7 +27,30 @@ checkInlineScripts("ocr-help.html");
 checkInlineScripts("ocr-select.html");
 
 const indexSource = readUiFile("index.html");
+const overlaySource = readUiFile("overlay.html");
+const sponsorSource = readUiFile("sponsor.html");
+const ocrHelpSource = readUiFile("ocr-help.html");
 const mainSource = fs.readFileSync(path.join(root, "src-tauri", "src", "main.rs"), "utf8");
+
+assert.match(indexSource, /<div id="titlebar" data-tauri-drag-region="deep">/);
+assert.match(indexSource, /<div class="titlebar-controls" data-tauri-drag-region="false">/);
+assert.match(overlaySource, /<div id="drag-bar" data-tauri-drag-region="deep">/);
+assert.match(overlaySource, /<button class="lock-btn" data-tauri-drag-region="false"/);
+assert.match(sponsorSource, /<div id="titlebar" data-tauri-drag-region="deep">/);
+assert.match(sponsorSource, /<button id="close-btn" data-tauri-drag-region="false"/);
+assert.match(ocrHelpSource, /<div id="titlebar" data-tauri-drag-region="deep">/);
+assert.match(ocrHelpSource, /<button id="close-btn" data-tauri-drag-region="false"/);
+
+const tauriConfig = JSON.parse(
+  fs.readFileSync(path.join(root, "src-tauri", "tauri.conf.json"), "utf8"),
+);
+const installerHooks = tauriConfig.bundle?.windows?.nsis?.installerHooks;
+assert.equal(installerHooks, "windows/installer-hooks.nsh");
+const installerHookSource = fs.readFileSync(path.join(root, "src-tauri", installerHooks), "utf8");
+assert.match(installerHookSource, /CheckIfAppIsRunning "HD2 Macro Terminal\.exe"/);
+assert.match(installerHookSource, /CheckIfAppIsRunning "HD2-Trigger\.exe"/);
+assert.doesNotMatch(installerHookSource, /CheckIfAppIsRunning "electron\.exe"/i);
+
 for (const command of [
   "toggle_overlay",
   "show_toast",
