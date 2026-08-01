@@ -154,18 +154,18 @@
 
         function formatKeyName(key) {
             if(typeof key !== 'string' || !key) return '';
-            return key.replace(/Key|Digit|Numpad/g, '')
-                      .replace('ControlLeft', 'LCtrl')
-                      .replace('ControlRight', 'RCtrl')
-                      .replace('ShiftLeft', 'LShift')
-                      .replace('ShiftRight', 'RShift')
-                      .replace('AltLeft', 'LAlt')
-                      .replace('AltRight', 'RAlt')
-                      .replace('MouseMiddle', 'M-Mid')
-                      .replace('MouseSide1', 'M-S1')
-                      .replace('MouseSide2', 'M-S2')
-                      .replace('WheelUp', 'W-Up')
-                      .replace('WheelDown', 'W-Down');
+            return key.split('+').map(part => part.replace(/Key|Digit|Numpad/g, '')
+                          .replace('ControlLeft', 'LCtrl')
+                          .replace('ControlRight', 'RCtrl')
+                          .replace('ShiftLeft', 'LShift')
+                          .replace('ShiftRight', 'RShift')
+                          .replace('AltLeft', 'LAlt')
+                          .replace('AltRight', 'RAlt')
+                          .replace('MouseMiddle', 'M-Mid')
+                          .replace('MouseSide1', 'M-S1')
+                          .replace('MouseSide2', 'M-S2')
+                          .replace('WheelUp', 'W-Up')
+                          .replace('WheelDown', 'W-Down')).join(' + ');
         }
 
         function renderOverlay(loadout) {

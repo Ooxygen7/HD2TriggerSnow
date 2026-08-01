@@ -508,6 +508,16 @@
                 </div>
                 <div class="set-row">
                     <div class="set-label">
+                        <span id="txt-set-directionOnly">DIRECTION INPUT ONLY</span>
+                        <span class="set-desc" id="txt-desc-directionOnly">Only type the directional sequence without pressing or releasing the stratagem menu key.</span>
+                    </div>
+                    <div class="toggle-box">
+                        <div class="toggle-option" id="direction-only-on" onclick="setDirectionOnly(true)">ON</div>
+                        <div class="toggle-option active" id="direction-only-off" onclick="setDirectionOnly(false)">OFF</div>
+                    </div>
+                </div>
+                <div class="set-row">
+                    <div class="set-label">
                         <span id="txt-set-menuDelay">MENU OPEN DELAY / 菜单展开等待 (ms)</span>
                         <span class="set-desc" id="txt-desc-menuDelay">按下呼出键后，等待多少毫秒再开始输入指令。</span>
                     </div>
@@ -709,10 +719,10 @@
                 btnOverlay: "悬浮窗", setOverlayTitle: "悬浮窗外观", setOverlayLabel: "如果悬浮窗已锁定，点击此处恢复可拖拽状态。",
                 btnUnlock: "解锁", appTitle: "绝地潜兵2 战备触发器", btnSettings: "游戏设置", btnPresets: "预设管理", btnSponsor: "赞助", btnOpenLib: "打开战备库",
                 emptySlot: "空置槽位 (点击前往战备库添加)", clickToBind: "点击绑定", waiting: "等待输入...",
-                unboundSub: "未绑定触发键", bindSub: "请按下按键 (ESC取消)", boundSub: "右键点击清除绑定",
+                unboundSub: "未绑定触发键", bindSub: "按下组合键，回车确认 (ESC取消)", boundSub: "右键点击清除绑定",
                 libTitle: "战备配置档案库", btnDone: "完成", dragHint: "按住拖动排序 (不改变键位)",
                 searchPh: "搜索战备名称或外号...", searchHint: "你要找的是不是：",
-                setLoadout: "战备栏位", slotCount: "栏位槽数量", setMenu: "战备菜单控制", setMenuKey: "呼出战备栏按键", setMenuMode: "呼出模式", modeHold: "按住", modeToggle: "切换",
+                setLoadout: "战备栏位", slotCount: "栏位槽数量", setMenu: "战备菜单控制", setMenuKey: "呼出战备栏按键", setMenuMode: "呼出模式", modeHold: "按住", modeToggle: "切换", directionOnly: "仅输入方向", directionOnlyOn: "开启", directionOnlyOff: "关闭",
                 setArrows: "战备指令输入键位", up: "上", down: "下", left: "左", right: "右", saveClose: "保存并关闭",
                 preTitle: "战备预设管理", btnSaveCurrent: "保存当前装配", phPresetName: "输入预设名称...", btnLoad: "加载", btnDel: "删除",
                 cat_support: "支援武器", cat_orbital: "轨道系", cat_eagle: "飞鹰系", cat_emplacement: "防御系", cat_sentry: "哨戒炮", cat_backpack: "背包", cat_vehicle: "载具", cat_mission: "任务通用",
@@ -747,7 +757,7 @@
                 descUnlock: "悬浮窗处于锁定状态时,请点击此处解锁", descOpacity: "调整悬浮窗背景的透明度", descSize: "自定义悬浮窗的宽高数值", descStyle: "自定义悬浮窗内显示的按键风格",
                 descSlotCount: "设置主界面显示的战备槽位数量，最多支持 14 个。",
                 descOvUp: "设置悬浮窗选中框向上移动的按键(留空为默认配置)", descOvDown: "设置悬浮窗选中框向下移动的按键(留空为默认配置)", descOvExec: "一键执行悬浮窗当前选中的战备指令。(留空为默认配置)",
-                descMenuKey: "在此设定你在游戏内用于呼出战备菜单的按键", descMenuMode: "在此选择你游戏内的设定", descMenuDelay: "按下呼出键后，等待多少毫秒再开始输入指令", descPressDelay: "模拟每次按下方向键的持续时间",
+                descMenuKey: "在此设定你在游戏内用于呼出战备菜单的按键", descMenuMode: "在此选择你游戏内的设定", descDirectionOnly: "开启后只输入战备方向序列，不再按下或松开呼出战备栏按键。", descMenuDelay: "按下呼出键后，等待多少毫秒再开始输入指令", descPressDelay: "模拟每次按下方向键的持续时间",
                 descIntervalDelay: "松开上一个按键与按下下一个按键之间的间隔时间", descUpKey: "游戏设定的“上”指令键", descDownKey: "游戏设定的“下”指令键", descLeftKey: "游戏设定的“左”指令键", descRightKey: "游戏设定的“右”指令键",
                 descAddCat: "该战备所属的分类", descAddIcon: "上传战备图标，推荐使用SVG或PNG", descAddZh: "战备在中文界面下的显示名称", descAddEn: "战备在英文界面下的显示名称", descAddSeq: "请使用 WASD 字母输入指令，忽略大小写", descAddOcr: "OCR 自动识别只会对比这里的字段，请使用英文逗号分隔多个可能识别到的写法。",
                 sponsorTitle: "赞助",
@@ -765,10 +775,10 @@
                 btnOverlay: "OVERLAY", setOverlayTitle: "OVERLAY APPEARANCE", setOverlayLabel: "If overlay is locked, click here to make it draggable again.",
                 btnUnlock: "UNLOCK OVERLAY", appTitle: "HD2 Trigger", btnSettings: "GAME SETTINGS", btnPresets: "PRESETS", btnSponsor: "SPONSOR", btnOpenLib: "OPEN LIBRARY",
                 emptySlot: "EMPTY SLOT (CLICK TO ADD)", clickToBind: "CLICK TO BIND", waiting: "WAITING...",
-                unboundSub: "NO HOTKEY BOUND", bindSub: "PRESS KEY (ESC CANCEL)", boundSub: "RIGHT CLICK TO CLEAR",
+                unboundSub: "NO HOTKEY BOUND", bindSub: "PRESS CHORD, ENTER TO CONFIRM (ESC CANCEL)", boundSub: "RIGHT CLICK TO CLEAR",
                 libTitle: "STRATAGEM LIBRARY", btnDone: "DONE", dragHint: "Hold and drag to reorder",
                 searchPh: "Search by name...", searchHint: "Did you mean:",
-                setLoadout: "STRATAGEM LOADOUT", slotCount: "LOADOUT SLOTS", setMenu: "STRATAGEM MENU CONTROL", setMenuKey: "MENU KEY", setMenuMode: "TRIGGER MODE (HOLD / TOGGLE)", modeHold: "HOLD", modeToggle: "TOGGLE",
+                setLoadout: "STRATAGEM LOADOUT", slotCount: "LOADOUT SLOTS", setMenu: "STRATAGEM MENU CONTROL", setMenuKey: "MENU KEY", setMenuMode: "TRIGGER MODE (HOLD / TOGGLE)", modeHold: "HOLD", modeToggle: "TOGGLE", directionOnly: "DIRECTION INPUT ONLY", directionOnlyOn: "ON", directionOnlyOff: "OFF",
                 setArrows: "STRATAGEM INPUT KEYS", up: "UP", down: "DOWN", left: "LEFT", right: "RIGHT", saveClose: "SAVE & CLOSE",
                 preTitle: "LOADOUT PRESETS", btnSaveCurrent: "SAVE CURRENT", phPresetName: "Enter preset name...", btnLoad: "LOAD", btnDel: "DELETE",
                 cat_support: "SUPPORT WEAPONS", cat_orbital: "ORBITAL STRIKES", cat_eagle: "EAGLE STRIKES", cat_emplacement: "EMPLACEMENTS", cat_sentry: "SENTRIES", cat_backpack: "BACKPACKS", cat_vehicle: "VEHICLES", cat_mission: "MISSION / GENERAL",
@@ -803,7 +813,7 @@
                 descUnlock: "Click if the overlay window cannot be dragged.", descOpacity: "Adjust the background transparency of the overlay.", descSize: "Set the width and height of the overlay on screen.", descStyle: "Display hotkeys as plain text or keycap style icons.",
                 descSlotCount: "Set how many loadout slots are shown. Max 14.",
                 descOvUp: "Scroll up the stratagem list in the overlay. (Leave empty for default)", descOvDown: "Scroll down the stratagem list in the overlay. (Leave empty for default)", descOvExec: "Execute the currently selected stratagem in the overlay. (Leave empty for default)",
-                descMenuKey: "The key used to open the stratagem menu in-game.", descMenuMode: "Hold the key to keep menu open, or press once to toggle.", descMenuDelay: "Time to wait after opening the menu before typing commands.", descPressDelay: "How long each directional key is held down.",
+                descMenuKey: "The key used to open the stratagem menu in-game.", descMenuMode: "Hold the key to keep menu open, or press once to toggle.", descDirectionOnly: "Only type the directional sequence without pressing or releasing the stratagem menu key.", descMenuDelay: "Time to wait after opening the menu before typing commands.", descPressDelay: "How long each directional key is held down.",
                 descIntervalDelay: "Time between releasing one key and pressing the next.", descUpKey: "In-game directional key mapped to UP.", descDownKey: "In-game directional key mapped to DOWN.", descLeftKey: "In-game directional key mapped to LEFT.", descRightKey: "In-game directional key mapped to RIGHT.",
                 descAddCat: "Select the library category for this stratagem.", descAddIcon: "Upload an icon, SVG or PNG with transparent background recommended.", descAddZh: "Display name in the Chinese interface.", descAddEn: "Display name in the English interface.", descAddSeq: "Use letters W A S D to input sequence, case-insensitive.", descAddOcr: "OCR auto equip only compares these terms. Separate multiple possible OCR spellings with English commas.",
                 sponsorTitle: "Sponsor",
@@ -946,7 +956,7 @@
         let ocrDisplays = [];
         
         let gameSettings = { 
-            menuKey: 'ControlLeft', menuMode: 'hold', upKey: 'KeyW', downKey: 'KeyS', leftKey: 'KeyA', rightKey: 'KeyD',
+            menuKey: 'ControlLeft', menuMode: 'hold', directionOnly: false, upKey: 'KeyW', downKey: 'KeyS', leftKey: 'KeyA', rightKey: 'KeyD',
             menuOpenDelay: 100, pressDelay: 10, intervalDelay: 10, 
             ovOpacity: 100, ovWidth: 300, ovHeight: 550, ovStyle: 'text',
             ovUp: 'WheelUp', ovDown: 'WheelDown', ovExec: 'MouseMiddle',
@@ -983,6 +993,101 @@
             return CANONICAL_GLOBAL_KEYS.has(canonical) ? canonical : null;
         }
 
+        const MAX_HOTKEY_CHORD_KEYS = 8;
+        const HOTKEY_MODIFIER_ORDER = new Map([
+            'ControlLeft', 'ControlRight', 'ShiftLeft', 'ShiftRight',
+            'AltLeft', 'AltRight', 'MetaLeft', 'MetaRight'
+        ].map((key, index) => [key, index]));
+
+        function normalizeHotkeyChord(value) {
+            const parts = Array.isArray(value)
+                ? value
+                : (typeof value === 'string' ? value.split('+') : []);
+            if (parts.length < 1 || parts.length > MAX_HOTKEY_CHORD_KEYS) return null;
+            const keys = [];
+            for (const part of parts) {
+                const key = canonicalGlobalKeyName(part);
+                if (!key || keys.includes(key)) return null;
+                keys.push(key);
+            }
+            // A wheel direction is an instantaneous edge, so it can trigger a
+            // chord but cannot be held while some later key is pressed.
+            if (keys.slice(0, -1).some(key => key === 'WheelUp' || key === 'WheelDown')) return null;
+            return keys.join('+');
+        }
+
+        function hotkeyChordKeys(value) {
+            const normalized = normalizeHotkeyChord(value);
+            return normalized ? normalized.split('+') : [];
+        }
+
+        function hotkeyTriggerKey(value) {
+            const keys = hotkeyChordKeys(value);
+            return keys.length ? keys[keys.length - 1] : null;
+        }
+
+        function normalizeGlobalInputEvent(value) {
+            let rawKey = value;
+            let rawPressedInputs = [];
+            if (typeof value === 'number') {
+                rawKey = value < 0 ? 'WheelUp' : 'WheelDown';
+            } else if (value && typeof value === 'object') {
+                rawKey = value.key;
+                rawPressedInputs = Array.isArray(value.pressedInputs) ? value.pressedInputs : [];
+            }
+            const key = canonicalGlobalKeyName(rawKey);
+            if (!key) return null;
+            const pressedInputs = [];
+            for (const input of rawPressedInputs) {
+                const canonical = canonicalGlobalKeyName(input);
+                if (canonical && canonical !== key && !pressedInputs.includes(canonical)) {
+                    pressedInputs.push(canonical);
+                }
+            }
+            pressedInputs.push(key);
+            return { key, pressedInputs };
+        }
+
+        function bindingChordFromInput(value) {
+            const input = normalizeGlobalInputEvent(value);
+            if (!input || input.key === 'Enter' || input.key === 'Escape') return null;
+            const requirements = input.pressedInputs
+                .filter(key => key !== input.key && key !== 'Enter' && key !== 'Escape');
+            requirements.sort((left, right) => {
+                const leftRank = HOTKEY_MODIFIER_ORDER.get(left);
+                const rightRank = HOTKEY_MODIFIER_ORDER.get(right);
+                if (leftRank !== undefined || rightRank !== undefined) {
+                    return (leftRank ?? Number.MAX_SAFE_INTEGER) - (rightRank ?? Number.MAX_SAFE_INTEGER);
+                }
+                return left.localeCompare(right);
+            });
+            const chord = [...requirements, input.key];
+            return chord.length <= MAX_HOTKEY_CHORD_KEYS ? chord : null;
+        }
+
+        function hotkeyChordMatches(value, inputValue) {
+            const keys = hotkeyChordKeys(value);
+            const input = normalizeGlobalInputEvent(inputValue);
+            if (!input || keys.length === 0 || keys[keys.length - 1] !== input.key) return false;
+            const held = new Set(input.pressedInputs);
+            return keys.every(key => held.has(key));
+        }
+
+        function findMatchingHotkeyIndex(loadout, inputValue, chordsOnly = false) {
+            let itemIndex = -1;
+            let bestChordSize = -1;
+            loadout.forEach((item, index) => {
+                if (!item || !item.strat || !item.hotkey) return;
+                const chordSize = hotkeyChordKeys(item.hotkey).length;
+                if (chordsOnly && chordSize < 2) return;
+                if (chordSize > bestChordSize && hotkeyChordMatches(item.hotkey, inputValue)) {
+                    itemIndex = index;
+                    bestChordSize = chordSize;
+                }
+            });
+            return itemIndex;
+        }
+
         let pendingGlobalInputFilter = null;
         let globalInputFilterDrain = null;
 
@@ -993,7 +1098,8 @@
             const keys = new Set(
                 activeLoadout
                     .filter(item => item && item.strat && item.hotkey)
-                    .map(item => item.hotkey)
+                    .map(item => hotkeyTriggerKey(item.hotkey))
+                    .filter(Boolean)
             );
             if (gameSettings.ocrHotkey) keys.add(gameSettings.ocrHotkey);
             if (isOverlayVisible) {
@@ -1057,7 +1163,7 @@
             for (const item of dataObj.l) {
                 if (!item || typeof item !== 'object' || Array.isArray(item)) return null;
                 const stratId = item.s == null ? null : item.s;
-                const hotkey = item.h == null ? null : canonicalGlobalKeyName(item.h);
+                const hotkey = item.h == null ? null : normalizeHotkeyChord(item.h);
                 if (stratId !== null && (typeof stratId !== 'string' || !/^[A-Za-z0-9_.-]{1,100}$/.test(stratId))) return null;
                 if (item.h != null && hotkey === null) return null;
                 loadout.push({ stratId, hotkey, locked: item.l === true });
@@ -1092,7 +1198,7 @@
         function restoreLoadoutItem(item) {
             if (!item || typeof item !== 'object') return createEmptyLoadoutSlot();
 
-            const normalizeHotkey = value => canonicalGlobalKeyName(value) || null;
+            const normalizeHotkey = value => normalizeHotkeyChord(value) || null;
 
             if (item.stratId !== undefined) {
                 const s = item.stratId ? stratagemDB.find(x => x.id === item.stratId) : null;
@@ -1424,6 +1530,11 @@
                     cacheSet.menuOpenDelay = 100;
                 }
                 gameSettings = { ...gameSettings, ...cacheSet };
+                const normalizedDirectionOnly = gameSettings.directionOnly === true;
+                if (normalizedDirectionOnly !== gameSettings.directionOnly) {
+                    gameSettings.directionOnly = normalizedDirectionOnly;
+                    settingsChanged = true;
+                }
                 if (gameSettings.language === 'zh' || gameSettings.language === 'en') {
                     currentLang = gameSettings.language;
                 }
@@ -1570,6 +1681,9 @@
             document.getElementById('txt-set-menuMode').textContent = lang.setMenuMode;
             document.getElementById('mode-hold').textContent = lang.modeHold;
             document.getElementById('mode-toggle').textContent = lang.modeToggle;
+            document.getElementById('txt-set-directionOnly').textContent = lang.directionOnly;
+            document.getElementById('direction-only-on').textContent = lang.directionOnlyOn;
+            document.getElementById('direction-only-off').textContent = lang.directionOnlyOff;
             
             document.getElementById('txt-set-menuDelay').textContent = lang.setMenuDelay;
             document.getElementById('txt-set-pressDelay').textContent = lang.setPressDelay;
@@ -1644,6 +1758,7 @@
             document.getElementById('txt-desc-toastEnabled').textContent = lang.descToastEnabled;
             document.getElementById('txt-desc-menuKey').textContent = lang.descMenuKey;
             document.getElementById('txt-desc-menuMode').textContent = lang.descMenuMode;
+            document.getElementById('txt-desc-directionOnly').textContent = lang.descDirectionOnly;
             document.getElementById('txt-desc-menuDelay').textContent = lang.descMenuDelay;
             document.getElementById('txt-desc-pressDelay').textContent = lang.descPressDelay;
             document.getElementById('txt-desc-intervalDelay').textContent = lang.descIntervalDelay;
@@ -1720,8 +1835,7 @@
             }
         };
 
-        function formatDisplayKey(key) {
-            if(!key) return '';
+        function formatSingleDisplayKey(key) {
             return key.replace(/Key|Digit|Numpad/g, '')
                       .replace('ControlLeft', 'LCtrl')
                       .replace('ControlRight', 'RCtrl')
@@ -1734,6 +1848,13 @@
                       .replace('MouseSide2', 'M-S2')
                       .replace('WheelUp', 'W-Up')
                       .replace('WheelDown', 'W-Down');
+        }
+
+        function formatDisplayKey(key) {
+            if (!key) return '';
+            const chord = normalizeHotkeyChord(key);
+            if (!chord) return '';
+            return chord.split('+').map(formatSingleDisplayKey).join(' + ');
         }
 
         function renderMainList(options = {}) {
@@ -1757,7 +1878,10 @@
                 let btnText = lang.clickToBind;
                 let subText = lang.unboundSub;
                 if (bindingTarget && bindingTarget.type === 'macro' && bindingTarget.index === i) {
-                    btnClass += ' listening'; btnText = lang.waiting; subText = lang.bindSub;
+                    const pendingChord = normalizeHotkeyChord(bindingTarget.chordKeys || []);
+                    btnClass += ' listening';
+                    btnText = pendingChord ? `[ ${formatDisplayKey(pendingChord)} ]` : lang.waiting;
+                    subText = lang.bindSub;
                 } else if (slot.hotkey) {
                     btnClass += ' bound'; btnText = `[ ${formatDisplayKey(slot.hotkey)} ]`; subText = lang.boundSub;
                 }
@@ -1920,6 +2044,7 @@
 
         window.setOverlayStyle = (mode) => { gameSettings.ovStyle = mode; updateSettingsUI(); }
         window.setMenuMode = (mode) => { gameSettings.menuMode = mode; updateSettingsUI(); }
+        window.setDirectionOnly = (enabled) => { gameSettings.directionOnly = !!enabled; updateSettingsUI(); }
         window.setToastEnabled = (enabled) => { gameSettings.showToasts = !!enabled; updateSettingsUI(); }
 
         function updateSettingsUI() {
@@ -1931,6 +2056,8 @@
             
             document.getElementById('mode-hold').className = `toggle-option ${gameSettings.menuMode === 'hold' ? 'active' : ''}`;
             document.getElementById('mode-toggle').className = `toggle-option ${gameSettings.menuMode === 'toggle' ? 'active' : ''}`;
+            document.getElementById('direction-only-on').className = `toggle-option ${gameSettings.directionOnly ? 'active' : ''}`;
+            document.getElementById('direction-only-off').className = `toggle-option ${gameSettings.directionOnly ? '' : 'active'}`;
             
             document.getElementById('input-set-menuDelay').value = gameSettings.menuOpenDelay || 100;
             document.getElementById('input-set-pressDelay').value = gameSettings.pressDelay || 10;
@@ -2092,7 +2219,13 @@
             closeModals();
         }
 
-        window.startMacroBind = (index, e) => { e.stopPropagation(); cancelBinding({ syncFilter: false }); bindingTarget = { type: 'macro', index: index }; renderMainList(); attachListeners(); }
+        window.startMacroBind = (index, e) => {
+            e.stopPropagation();
+            cancelBinding({ syncFilter: false });
+            bindingTarget = { type: 'macro', index, chordKeys: [] };
+            renderMainList();
+            attachListeners();
+        }
         window.startSettingBind = (settingKey, e) => {
             e.stopPropagation(); cancelBinding({ syncFilter: false }); bindingTarget = { type: 'setting', key: settingKey };
             updateSettingsUI();
@@ -2168,8 +2301,30 @@
                 .finally(() => { bindingFilterTransition = false; });
         }
 
-        function captureBindingInput(keyStr) {
+        function captureBindingInput(inputValue) {
             if (!bindingTarget || bindingFilterTransition) return false;
+            const input = normalizeGlobalInputEvent(inputValue);
+            if (!input) return false;
+            const keyStr = input.key;
+            if (keyStr === 'Escape') {
+                settleBindingTransition(() => cancelBinding());
+                return true;
+            }
+            if (bindingTarget.type === 'macro') {
+                if (keyStr === 'Enter') {
+                    const hotkey = normalizeHotkeyChord(bindingTarget.chordKeys || []);
+                    if (hotkey) settleBindingTransition(() => saveInput(hotkey));
+                    return true;
+                }
+                const chordKeys = bindingChordFromInput(input);
+                if (!chordKeys) {
+                    showToast(currentLang === 'zh' ? '组合键最多支持 8 个按键' : 'A chord can contain up to 8 keys.', true);
+                    return true;
+                }
+                bindingTarget.chordKeys = chordKeys;
+                renderMainList();
+                return true;
+            }
             if (bindingTarget.type === 'setting'
                 && ['menuKey', 'upKey', 'downKey', 'leftKey', 'rightKey'].includes(bindingTarget.key)
                 && (keyStr === 'WheelUp' || keyStr === 'WheelDown')) {
@@ -2189,19 +2344,21 @@
             const lang = i18n[currentLang];
             let loadoutChanged = false;
             if (bindingTarget.type === 'macro') {
-                if (gameSettings.ocrHotkey && keyStr === gameSettings.ocrHotkey) {
+                const hotkey = normalizeHotkeyChord(keyStr);
+                if (!hotkey) return;
+                if (gameSettings.ocrHotkey && hotkey === gameSettings.ocrHotkey) {
                     showToast(lang.msgOcrHotkeyConflict, true);
                     cancelBinding();
                     return;
                 }
-                const conflictIdx = activeLoadout.findIndex((s, idx) => s.hotkey === keyStr && idx !== bindingTarget.index);
+                const conflictIdx = activeLoadout.findIndex((s, idx) => s.hotkey === hotkey && idx !== bindingTarget.index);
                 if (conflictIdx !== -1) {
                     if(!confirm(lang.msgConfirm)) { cancelBinding(); return; }
                     activeLoadout[conflictIdx].hotkey = null;
                 }
-                activeLoadout[bindingTarget.index].hotkey = keyStr;
+                activeLoadout[bindingTarget.index].hotkey = hotkey;
                 loadoutChanged = true;
-                showToast(`${lang.msgMacro} ${formatDisplayKey(keyStr)}`);
+                showToast(`${lang.msgMacro} ${formatDisplayKey(hotkey)}`);
             } else if (bindingTarget.type === 'setting') {
                 gameSettings[bindingTarget.key] = keyStr;
             }
@@ -2401,13 +2558,15 @@
             const payload = { 
                 menuKey: gameSettings.menuKey, 
                 menuMode: gameSettings.menuMode, 
+                directionOnly: !!gameSettings.directionOnly,
                 sequence: stratagem.seq.map(k => keyMap[k]), 
                 menuOpenDelay: gameSettings.menuOpenDelay || 100,
                 pressDelay: gameSettings.pressDelay || 10,
                 intervalDelay: gameSettings.intervalDelay || 10
             };
             
-            const estimatedTimeMs = payload.menuOpenDelay + (stratagem.seq.length * (payload.pressDelay + payload.intervalDelay)) + 100;
+            const menuTimeMs = payload.directionOnly ? 0 : payload.menuOpenDelay + 100;
+            const estimatedTimeMs = menuTimeMs + (stratagem.seq.length * (payload.pressDelay + payload.intervalDelay));
             
             try {
                 if(window.electronAPI) {
@@ -2421,13 +2580,16 @@
             }
         }
 
-        function triggerMacro(inputKey) {
-            const itemIndex = activeLoadout.findIndex(item => item.hotkey === inputKey && item.strat);
+        function triggerMacro(inputValue, options = {}) {
+            const { chordsOnly = false } = options;
+            const itemIndex = findMatchingHotkeyIndex(activeLoadout, inputValue, chordsOnly);
             if (itemIndex !== -1) {
                 const validItems = activeLoadout.filter(item => item.strat);
                 const realOverlayIndex = validItems.findIndex(item => item.strat.id === activeLoadout[itemIndex].strat.id);
                 executeMacroByItem(activeLoadout[itemIndex], realOverlayIndex);
+                return true;
             }
+            return false;
         }
 
         async function runOcrAutoEquip() {
@@ -2471,48 +2633,30 @@
             }
         }
 
+        function handleGlobalInput(inputValue) {
+            if (bindingFilterTransition) return;
+            const input = normalizeGlobalInputEvent(inputValue);
+            if (!input) return;
+            if (bindingTarget) {
+                captureBindingInput(input);
+                return;
+            }
+            // A multi-key stratagem binding gets first chance at its trigger.
+            // This lets Ctrl+F8 coexist with plain F8 for OCR, for example.
+            if (triggerMacro(input, { chordsOnly: true })) return;
+            if (gameSettings.ocrHotkey && input.key === gameSettings.ocrHotkey) { runOcrAutoEquip(); return; }
+            if (isOverlayVisible) {
+                if (gameSettings.ovExec && input.key === gameSettings.ovExec) { executeSelection(); return; }
+                if (gameSettings.ovUp && input.key === gameSettings.ovUp) { scrollOverlay(-1); return; }
+                if (gameSettings.ovDown && input.key === gameSettings.ovDown) { scrollOverlay(1); return; }
+            }
+            triggerMacro(input);
+        }
+
         if (window.electronAPI) {
-            if(window.electronAPI.onGlobalKeyDown) window.electronAPI.onGlobalKeyDown((keyName) => {
-                if (bindingFilterTransition) return;
-                if (bindingTarget) {
-                    if (keyName === 'Escape') settleBindingTransition(() => cancelBinding());
-                    else captureBindingInput(keyName);
-                    return;
-                }
-                if (gameSettings.ocrHotkey && keyName === gameSettings.ocrHotkey) { runOcrAutoEquip(); return; }
-                if (isOverlayVisible) {
-                    if (gameSettings.ovExec && keyName === gameSettings.ovExec) { executeSelection(); return; }
-                    if (gameSettings.ovUp && keyName === gameSettings.ovUp) { scrollOverlay(-1); return; }
-                    if (gameSettings.ovDown && keyName === gameSettings.ovDown) { scrollOverlay(1); return; }
-                }
-                triggerMacro(keyName);
-            });
-
-            if(window.electronAPI.onGlobalMouseDown) window.electronAPI.onGlobalMouseDown((mouseKey) => {
-                if (bindingFilterTransition) return;
-                if (bindingTarget) { captureBindingInput(mouseKey); return; }
-                if (gameSettings.ocrHotkey && mouseKey === gameSettings.ocrHotkey) { runOcrAutoEquip(); return; }
-                if (isOverlayVisible) {
-                    if (gameSettings.ovExec && mouseKey === gameSettings.ovExec) { executeSelection(); return; }
-                    if (gameSettings.ovUp && mouseKey === gameSettings.ovUp) { scrollOverlay(-1); return; }
-                    if (gameSettings.ovDown && mouseKey === gameSettings.ovDown) { scrollOverlay(1); return; }
-                }
-                triggerMacro(mouseKey);
-            });
-
-            if(window.electronAPI.onGlobalWheel) window.electronAPI.onGlobalWheel((dir) => {
-                const wheelKey = dir < 0 ? 'WheelUp' : 'WheelDown';
-                if (bindingFilterTransition) return;
-                if (bindingTarget) { captureBindingInput(wheelKey); return; }
-                if (gameSettings.ocrHotkey && wheelKey === gameSettings.ocrHotkey) { runOcrAutoEquip(); return; }
-
-                if (isOverlayVisible) {
-                    if (gameSettings.ovUp && wheelKey === gameSettings.ovUp) { scrollOverlay(-1); return; }
-                    if (gameSettings.ovDown && wheelKey === gameSettings.ovDown) { scrollOverlay(1); return; }
-                    if (gameSettings.ovExec && wheelKey === gameSettings.ovExec) { executeSelection(); return; }
-                }
-                triggerMacro(wheelKey);
-            });
+            if (window.electronAPI.onGlobalKeyDown) window.electronAPI.onGlobalKeyDown(handleGlobalInput);
+            if (window.electronAPI.onGlobalMouseDown) window.electronAPI.onGlobalMouseDown(handleGlobalInput);
+            if (window.electronAPI.onGlobalWheel) window.electronAPI.onGlobalWheel(handleGlobalInput);
         }
         
         function scrollOverlay(direction) {

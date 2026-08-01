@@ -31,6 +31,7 @@ const overlaySource = readUiFile("overlay.html");
 const sponsorSource = readUiFile("sponsor.html");
 const ocrHelpSource = readUiFile("ocr-help.html");
 const mainSource = fs.readFileSync(path.join(root, "src-tauri", "src", "main.rs"), "utf8");
+const hooksSource = fs.readFileSync(path.join(root, "src-tauri", "src", "hooks.rs"), "utf8");
 
 assert.match(indexSource, /<div id="titlebar" data-tauri-drag-region="deep">/);
 assert.match(indexSource, /<div class="titlebar-controls" data-tauri-drag-region="false">/);
@@ -81,17 +82,76 @@ vm.runInContext(
     const MAX_SLOT_COUNT = 14;
     const EMPTY_IMAGE_SOURCE = "empty-image";
     ${indexSource.slice(helperStart, helperEnd)}
-    globalThis.helpers = { canonicalGlobalKeyName, escapeHtml, safeImageSource, normalizeImportedPreset };
+    globalThis.helpers = {
+      canonicalGlobalKeyName,
+      normalizeHotkeyChord,
+      hotkeyTriggerKey,
+      normalizeGlobalInputEvent,
+      bindingChordFromInput,
+      hotkeyChordMatches,
+      findMatchingHotkeyIndex,
+      escapeHtml,
+      safeImageSource,
+      normalizeImportedPreset
+    };
   `,
   context,
   { filename: "index.html:safety-helpers" },
 );
 
-const { canonicalGlobalKeyName, escapeHtml, safeImageSource, normalizeImportedPreset } = context.helpers;
+const {
+  canonicalGlobalKeyName,
+  normalizeHotkeyChord,
+  hotkeyTriggerKey,
+  normalizeGlobalInputEvent,
+  bindingChordFromInput,
+  hotkeyChordMatches,
+  findMatchingHotkeyIndex,
+  escapeHtml,
+  safeImageSource,
+  normalizeImportedPreset,
+} = context.helpers;
 assert.equal(canonicalGlobalKeyName("W"), "KeyW");
 assert.equal(canonicalGlobalKeyName("Up"), "ArrowUp");
 assert.equal(canonicalGlobalKeyName("F24"), "F24");
 assert.equal(canonicalGlobalKeyName("NotAKey"), null);
+assert.equal(normalizeHotkeyChord("F8"), "F8", "legacy single-key bindings must remain valid");
+assert.equal(normalizeHotkeyChord("ControlLeft+1"), "ControlLeft+Digit1");
+assert.equal(hotkeyTriggerKey("ControlLeft+Digit1"), "Digit1");
+assert.equal(normalizeHotkeyChord("ControlLeft+ControlLeft"), null);
+assert.equal(normalizeHotkeyChord("WheelUp+Digit1"), null, "a wheel edge cannot be held as a modifier");
+assert.equal(
+  normalizeHotkeyChord("ControlLeft+ShiftLeft+AltLeft+MetaLeft+KeyW+KeyA+KeyS+KeyD+Digit1"),
+  null,
+  "oversized chords must be rejected",
+);
+const extraHeldInput = normalizeGlobalInputEvent({
+  key: "Digit1",
+  pressedInputs: ["ShiftLeft", "KeyW", "ControlLeft", "Digit1"],
+});
+assert.equal(
+  hotkeyChordMatches("ControlLeft+Digit1", extraHeldInput),
+  true,
+  "unbound Shift/W keys must not prevent a required Ctrl+1 chord from matching",
+);
+assert.equal(hotkeyChordMatches("ControlLeft+Digit1", { key: "Digit1", pressedInputs: ["Digit1"] }), false);
+assert.equal(hotkeyChordMatches("ControlLeft+Digit1", { key: "ControlLeft", pressedInputs: ["Digit1", "ControlLeft"] }), false);
+assert.equal(
+  findMatchingHotkeyIndex(
+    [
+      { strat: {}, hotkey: "ControlLeft+Digit1" },
+      { strat: {}, hotkey: "ControlLeft+ShiftLeft+Digit1" },
+    ],
+    extraHeldInput,
+  ),
+  1,
+  "the most specific matching chord should win when bindings overlap",
+);
+assert.deepEqual(
+  JSON.parse(JSON.stringify(bindingChordFromInput(extraHeldInput))),
+  ["ControlLeft", "ShiftLeft", "KeyW", "Digit1"],
+  "binding should keep the newest input as the trigger and order held requirements consistently",
+);
 assert.equal(escapeHtml('<img src=x onerror="boom">'), "&lt;img src=x onerror=&quot;boom&quot;&gt;");
 assert.equal(safeImageSource("Machine_Gun_Stratagem_Icon.svg"), "Machine_Gun_Stratagem_Icon.svg");
 assert.equal(safeImageSource("javascript:alert(1)"), "empty-image");
@@ -116,6 +176,11 @@ const validPreset = normalizeImportedPreset({
 });
 assert.equal(validPreset.name, "Support");
 assert.equal(validPreset.loadout[0].hotkey, "F8");
+const chordPreset = normalizeImportedPreset({
+  n: "Chord",
+  l: [{ s: "wpn_mg", h: "ControlLeft+Digit1", l: false }],
+});
+assert.equal(chordPreset.loadout[0].hotkey, "ControlLeft+Digit1");
 assert.equal(
   normalizeImportedPreset({ n: "Bad", l: [{ s: "wpn_mg", h: '\"><img onerror=boom>', l: false }] }),
   null,
@@ -241,6 +306,10 @@ assert.match(indexSource, /window\.electronAPI\.onQuitRequested/);
 assert.match(bridgeSource, /setGlobalInputFilter:.*set_global_input_filter/);
 assert.match(indexSource, /pendingGlobalInputFilter/);
 assert.match(indexSource, /if \(isOverlayVisible\) \{[\s\S]*gameSettings\.ovExec/);
+assert.match(indexSource, /directionOnly:\s*false/, "direction-only mode must be opt-in");
+assert.match(indexSource, /directionOnly:\s*!!gameSettings\.directionOnly/);
+assert.match(indexSource, /id="direction-only-off"[^>]*onclick="setDirectionOnly\(false\)"/);
+assert.match(hooksSource, /pressed_inputs:\s*Vec</, "native events must include the held-input snapshot");
 
 const bridgeCalls = [];
 let releaseBlockedFlush;

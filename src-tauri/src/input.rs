@@ -56,6 +56,7 @@ fn is_extended_key(vk: u16) -> bool {
 pub struct MacroPayload {
     pub menu_key: Option<String>,
     pub menu_mode: Option<String>,
+    pub direction_only: Option<bool>,
     pub sequence: Vec<String>,
     pub menu_open_delay: Option<u64>,
     pub press_delay: Option<u64>,
@@ -134,35 +135,41 @@ fn build_macro_plan(payload: &MacroPayload) -> Result<Vec<MacroStep>, String> {
     if payload.sequence.len() > 64 {
         return Err("Macro sequence is too long".to_owned());
     }
-    let menu_key = match payload.menu_key.as_deref() {
-        None => InputKey::Keyboard(VK_LCONTROL),
-        Some(name) => input_key(name).ok_or_else(|| format!("Unsupported menu key: {name}"))?,
-    };
-    let menu_open_delay = validated_delay(payload.menu_open_delay, 150, "menu open")?;
     let press_delay = validated_delay(payload.press_delay, 15, "press")?;
     let interval_delay = validated_delay(payload.interval_delay, 15, "interval")?;
-    let hold_mode = match payload.menu_mode.as_deref() {
-        None | Some("toggle") => false,
-        Some("hold") => true,
-        Some(mode) => return Err(format!("Unsupported menu mode: {mode}")),
-    };
+    let direction_only = payload.direction_only.unwrap_or(false);
 
     // The complete plan is validated before the first input is sent, so a bad
     // setting can never leave a partially executed modifier/menu key behind.
     let mut plan = Vec::with_capacity(payload.sequence.len().saturating_mul(4) + 8);
-    plan.extend([MacroStep::Up(menu_key), MacroStep::Wait(10)]);
-
-    if hold_mode {
-        plan.push(MacroStep::Down(menu_key));
+    let menu_state = if direction_only {
+        None
     } else {
-        plan.extend([
-            MacroStep::Down(menu_key),
-            MacroStep::Wait(press_delay.saturating_add(20)),
-            MacroStep::Up(menu_key),
-        ]);
-    }
+        let menu_key = match payload.menu_key.as_deref() {
+            None => InputKey::Keyboard(VK_LCONTROL),
+            Some(name) => input_key(name).ok_or_else(|| format!("Unsupported menu key: {name}"))?,
+        };
+        let menu_open_delay = validated_delay(payload.menu_open_delay, 150, "menu open")?;
+        let hold_mode = match payload.menu_mode.as_deref() {
+            None | Some("toggle") => false,
+            Some("hold") => true,
+            Some(mode) => return Err(format!("Unsupported menu mode: {mode}")),
+        };
 
-    plan.push(MacroStep::Wait(menu_open_delay));
+        plan.extend([MacroStep::Up(menu_key), MacroStep::Wait(10)]);
+        if hold_mode {
+            plan.push(MacroStep::Down(menu_key));
+        } else {
+            plan.extend([
+                MacroStep::Down(menu_key),
+                MacroStep::Wait(press_delay.saturating_add(20)),
+                MacroStep::Up(menu_key),
+            ]);
+        }
+        plan.push(MacroStep::Wait(menu_open_delay));
+        Some((menu_key, hold_mode))
+    };
+
     for key_name in &payload.sequence {
         let key =
             input_key(key_name).ok_or_else(|| format!("Unsupported input key: {key_name}"))?;
@@ -174,7 +181,7 @@ fn build_macro_plan(payload: &MacroPayload) -> Result<Vec<MacroStep>, String> {
         ]);
     }
 
-    if hold_mode {
+    if let Some((menu_key, true)) = menu_state {
         plan.extend([MacroStep::Wait(50), MacroStep::Up(menu_key)]);
     }
     let total_duration = plan.iter().try_fold(0_u64, |total, step| match step {
@@ -758,6 +765,7 @@ mod tests {
         let payload = MacroPayload {
             menu_key: Some("AltLeft".to_owned()),
             menu_mode: Some("toggle".to_owned()),
+            direction_only: None,
             sequence: vec!["ArrowUp".to_owned(), "ArrowRight".to_owned()],
             menu_open_delay: Some(15),
             press_delay: Some(20),
@@ -790,6 +798,7 @@ mod tests {
         let payload = MacroPayload {
             menu_key: Some("ControlLeft".to_owned()),
             menu_mode: Some("hold".to_owned()),
+            direction_only: None,
             sequence: vec!["W".to_owned()],
             menu_open_delay: Some(100),
             press_delay: Some(10),
@@ -816,10 +825,40 @@ mod tests {
     }
 
     #[test]
+    fn direction_only_never_touches_or_waits_for_the_menu_key() {
+        let payload = MacroPayload {
+            // Direction-only mode deliberately ignores stale/invalid menu
+            // settings because none of those inputs will be emitted.
+            menu_key: Some("NotAKey".to_owned()),
+            menu_mode: Some("invalid".to_owned()),
+            direction_only: Some(true),
+            sequence: vec!["W".to_owned(), "D".to_owned()],
+            menu_open_delay: Some(MAX_DELAY_MS + 1),
+            press_delay: Some(10),
+            interval_delay: Some(15),
+        };
+
+        assert_eq!(
+            build_macro_plan(&payload).expect("menu settings are unused in direction-only mode"),
+            vec![
+                MacroStep::Down(InputKey::Keyboard(VIRTUAL_KEY(b'W' as u16))),
+                MacroStep::Wait(10),
+                MacroStep::Up(InputKey::Keyboard(VIRTUAL_KEY(b'W' as u16))),
+                MacroStep::Wait(15),
+                MacroStep::Down(InputKey::Keyboard(VIRTUAL_KEY(b'D' as u16))),
+                MacroStep::Wait(10),
+                MacroStep::Up(InputKey::Keyboard(VIRTUAL_KEY(b'D' as u16))),
+                MacroStep::Wait(15),
+            ]
+        );
+    }
+
+    #[test]
     fn rejects_unbounded_or_malformed_macro_settings_before_execution() {
         let base = MacroPayload {
             menu_key: Some("ControlLeft".to_owned()),
             menu_mode: Some("hold".to_owned()),
+            direction_only: None,
             sequence: vec!["W".to_owned()],
             menu_open_delay: Some(100),
             press_delay: Some(10),

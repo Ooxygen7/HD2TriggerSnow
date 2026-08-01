@@ -1,3 +1,4 @@
+use serde::Serialize;
 use std::{
     sync::{
         atomic::{AtomicBool, AtomicU32, AtomicU64, AtomicU8, Ordering},
@@ -13,8 +14,8 @@ use windows::Win32::{
     UI::WindowsAndMessaging::{
         CallNextHookEx, GetMessageW, PostThreadMessageW, SetWindowsHookExW, UnhookWindowsHookEx,
         HC_ACTION, KBDLLHOOKSTRUCT, MSG, MSLLHOOKSTRUCT, WH_KEYBOARD_LL, WH_MOUSE_LL, WM_KEYDOWN,
-        WM_KEYUP, WM_LBUTTONDOWN, WM_MBUTTONDOWN, WM_MOUSEWHEEL, WM_QUIT, WM_RBUTTONDOWN,
-        WM_SYSKEYDOWN, WM_SYSKEYUP, WM_XBUTTONDOWN,
+        WM_KEYUP, WM_LBUTTONDOWN, WM_MBUTTONDOWN, WM_MBUTTONUP, WM_MOUSEWHEEL, WM_QUIT,
+        WM_RBUTTONDOWN, WM_SYSKEYDOWN, WM_SYSKEYUP, WM_XBUTTONDOWN, WM_XBUTTONUP,
     },
 };
 
@@ -26,6 +27,7 @@ static FILTER_INITIALIZED: AtomicBool = AtomicBool::new(false);
 static CAPTURE_ALL_INPUTS: AtomicBool = AtomicBool::new(true);
 static KEY_FILTER: [AtomicU64; 4] = [const { AtomicU64::new(0) }; 4];
 static PRESSED_KEYS: [AtomicU64; 4] = [const { AtomicU64::new(0) }; 4];
+static PRESSED_MOUSE: AtomicU8 = AtomicU8::new(0);
 static MOUSE_FILTER: AtomicU8 = AtomicU8::new(0);
 static WHEEL_FILTER: AtomicBool = AtomicBool::new(false);
 static FILTER_UPDATE_LOCK: Mutex<()> = Mutex::new(());
@@ -35,6 +37,7 @@ const LLMHF_INJECTED_FLAG: u32 = 0x01;
 const FILTER_MOUSE_MIDDLE: u8 = 1 << 0;
 const FILTER_MOUSE_SIDE1: u8 = 1 << 1;
 const FILTER_MOUSE_SIDE2: u8 = 1 << 2;
+const PRESSED_NUMPAD_ENTER: u32 = 0xff;
 
 #[derive(Default)]
 struct InputFilter {
@@ -43,11 +46,24 @@ struct InputFilter {
     wheel: bool,
 }
 
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+struct PressedInputs {
+    keys: [u64; 4],
+    mouse: u8,
+}
+
+#[derive(Clone, Debug, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+struct GlobalInputPayload {
+    key: &'static str,
+    pressed_inputs: Vec<&'static str>,
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum InputEvent {
-    KeyDown(&'static str),
-    MouseDown(&'static str),
-    Wheel(i16),
+    KeyDown(&'static str, PressedInputs),
+    MouseDown(&'static str, PressedInputs),
+    Wheel(&'static str, PressedInputs),
     Shutdown,
 }
 
@@ -55,7 +71,7 @@ pub fn start(app: AppHandle) -> Result<(), String> {
     if LISTENER_STARTED.get().is_some() {
         return Ok(());
     }
-    reset_pressed_keys();
+    reset_pressed_inputs();
     let (event_sender, event_receiver) = mpsc::sync_channel(1024);
     EVENT_SENDER
         .set(event_sender)
@@ -172,10 +188,11 @@ fn wheel_is_relevant() -> bool {
     forwards_all_inputs() || WHEEL_FILTER.load(Ordering::Acquire)
 }
 
-fn reset_pressed_keys() {
+fn reset_pressed_inputs() {
     for word in &PRESSED_KEYS {
         word.store(0, Ordering::Release);
     }
+    PRESSED_MOUSE.store(0, Ordering::Release);
 }
 
 fn mark_key_pressed(virtual_key: u32) -> bool {
@@ -198,12 +215,90 @@ fn mark_key_released(virtual_key: u32) {
     }
 }
 
+fn mark_mouse_pressed(mask: u8) -> bool {
+    PRESSED_MOUSE.fetch_or(mask, Ordering::AcqRel) & mask == 0
+}
+
+fn mark_mouse_released(mask: u8) {
+    PRESSED_MOUSE.fetch_and(!mask, Ordering::AcqRel);
+}
+
+fn pressed_state_code(key: &str, fallback: u32) -> u32 {
+    if key == "NumpadEnter" {
+        // Main Enter and NumpadEnter share VK_RETURN. Reserve an otherwise
+        // unused bit so either key can participate in a chord independently.
+        PRESSED_NUMPAD_ENTER
+    } else {
+        crate::input::filter_virtual_key(key)
+            .map(u32::from)
+            .unwrap_or(fallback)
+    }
+}
+
+fn snapshot_pressed_inputs() -> PressedInputs {
+    let mut snapshot = PressedInputs::default();
+    for (destination, source) in snapshot.keys.iter_mut().zip(&PRESSED_KEYS) {
+        *destination = source.load(Ordering::Acquire);
+    }
+    snapshot.mouse = PRESSED_MOUSE.load(Ordering::Acquire);
+    snapshot
+}
+
+fn global_input_payload(key: &'static str, snapshot: PressedInputs) -> GlobalInputPayload {
+    let mut pressed_inputs = Vec::with_capacity(10);
+    for (word_index, word) in snapshot.keys.into_iter().enumerate() {
+        let mut remaining = word;
+        while remaining != 0 {
+            let bit = remaining.trailing_zeros() as usize;
+            let code = (word_index * 64 + bit) as u32;
+            let name = if code == PRESSED_NUMPAD_ENTER {
+                Some("NumpadEnter")
+            } else {
+                key_name(code, 0, 0)
+            };
+            if let Some(name) = name {
+                pressed_inputs.push(name);
+            }
+            remaining &= remaining - 1;
+        }
+    }
+    for (mask, name) in [
+        (FILTER_MOUSE_MIDDLE, "MouseMiddle"),
+        (FILTER_MOUSE_SIDE1, "MouseSide1"),
+        (FILTER_MOUSE_SIDE2, "MouseSide2"),
+    ] {
+        if snapshot.mouse & mask != 0 {
+            pressed_inputs.push(name);
+        }
+    }
+    // Keep the edge that caused this event last. The frontend treats that
+    // final key as the chord trigger while all preceding keys are requirements.
+    pressed_inputs.retain(|pressed| *pressed != key);
+    pressed_inputs.push(key);
+    GlobalInputPayload {
+        key,
+        pressed_inputs,
+    }
+}
+
 fn forward_events(app: AppHandle, receiver: mpsc::Receiver<InputEvent>) {
     while let Ok(event) = receiver.recv() {
         let _ = match event {
-            InputEvent::KeyDown(key) => app.emit_to("main", "global-keydown", key),
-            InputEvent::MouseDown(button) => app.emit_to("main", "global-mousedown", button),
-            InputEvent::Wheel(rotation) => app.emit_to("main", "global-wheel", rotation),
+            InputEvent::KeyDown(key, snapshot) => app.emit_to(
+                "main",
+                "global-keydown",
+                global_input_payload(key, snapshot),
+            ),
+            InputEvent::MouseDown(button, snapshot) => app.emit_to(
+                "main",
+                "global-mousedown",
+                global_input_payload(button, snapshot),
+            ),
+            InputEvent::Wheel(direction, snapshot) => app.emit_to(
+                "main",
+                "global-wheel",
+                global_input_payload(direction, snapshot),
+            ),
             InputEvent::Shutdown => break,
         };
     }
@@ -282,16 +377,17 @@ unsafe extern "system" fn keyboard_hook(code: i32, wparam: WPARAM, lparam: LPARA
         // valid for the duration of this callback; the null case was excluded.
         let event = unsafe { &*(lparam.0 as *const KBDLLHOOKSTRUCT) };
         if !is_injected_keyboard(event.flags.0) {
-            match wparam.0 as u32 {
-                WM_KEYUP | WM_SYSKEYUP => mark_key_released(event.vkCode),
-                WM_KEYDOWN | WM_SYSKEYDOWN
-                    if mark_key_pressed(event.vkCode) && key_is_relevant(event.vkCode) =>
-                {
-                    if let Some(key_name) = key_name(event.vkCode, event.scanCode, event.flags.0) {
-                        queue_event(InputEvent::KeyDown(key_name));
+            if let Some(key) = key_name(event.vkCode, event.scanCode, event.flags.0) {
+                let state_code = pressed_state_code(key, event.vkCode);
+                match wparam.0 as u32 {
+                    WM_KEYUP | WM_SYSKEYUP => mark_key_released(state_code),
+                    WM_KEYDOWN | WM_SYSKEYDOWN
+                        if mark_key_pressed(state_code) && key_is_relevant(event.vkCode) =>
+                    {
+                        queue_event(InputEvent::KeyDown(key, snapshot_pressed_inputs()));
                     }
+                    _ => {}
                 }
-                _ => {}
             }
         }
     }
@@ -312,9 +408,16 @@ unsafe extern "system" fn mouse_hook(code: i32, wparam: WPARAM, lparam: LPARAM) 
             return unsafe { CallNextHookEx(None, code, wparam, lparam) };
         }
         match wparam.0 as u32 {
-            WM_MBUTTONDOWN if mouse_is_relevant(FILTER_MOUSE_MIDDLE) => {
-                queue_event(InputEvent::MouseDown("MouseMiddle"));
+            WM_MBUTTONDOWN => {
+                let is_new = mark_mouse_pressed(FILTER_MOUSE_MIDDLE);
+                if is_new && mouse_is_relevant(FILTER_MOUSE_MIDDLE) {
+                    queue_event(InputEvent::MouseDown(
+                        "MouseMiddle",
+                        snapshot_pressed_inputs(),
+                    ));
+                }
             }
+            WM_MBUTTONUP => mark_mouse_released(FILTER_MOUSE_MIDDLE),
             WM_XBUTTONDOWN => {
                 if let Some(button) = side_button_name(event.mouseData) {
                     let mask = if button == "MouseSide1" {
@@ -322,18 +425,28 @@ unsafe extern "system" fn mouse_hook(code: i32, wparam: WPARAM, lparam: LPARAM) 
                     } else {
                         FILTER_MOUSE_SIDE2
                     };
-                    if mouse_is_relevant(mask) {
-                        queue_event(InputEvent::MouseDown(button));
+                    let is_new = mark_mouse_pressed(mask);
+                    if is_new && mouse_is_relevant(mask) {
+                        queue_event(InputEvent::MouseDown(button, snapshot_pressed_inputs()));
                     }
+                }
+            }
+            WM_XBUTTONUP => {
+                if let Some(button) = side_button_name(event.mouseData) {
+                    mark_mouse_released(if button == "MouseSide1" {
+                        FILTER_MOUSE_SIDE1
+                    } else {
+                        FILTER_MOUSE_SIDE2
+                    });
                 }
             }
             WM_MOUSEWHEEL if wheel_is_relevant() => {
                 let rotation = (event.mouseData >> 16) as i16;
                 if rotation != 0 {
-                    // uIOhook (used by the Electron version) reports wheel-up as
-                    // negative rotation. WM_MOUSEWHEEL reports wheel-up as positive.
-                    // Negate to match the legacy contract the frontend expects.
-                    queue_event(InputEvent::Wheel(if rotation > 0 { -1 } else { 1 }));
+                    queue_event(InputEvent::Wheel(
+                        if rotation > 0 { "WheelUp" } else { "WheelDown" },
+                        snapshot_pressed_inputs(),
+                    ));
                 }
             }
             WM_LBUTTONDOWN | WM_RBUTTONDOWN => {}
@@ -540,12 +653,46 @@ mod tests {
     fn rejects_unknown_filter_keys_and_suppresses_key_repeat() {
         assert!(build_filter(&["NotARealKey".to_owned()]).is_err());
 
-        reset_pressed_keys();
+        let _state_guard = FILTER_UPDATE_LOCK
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        reset_pressed_inputs();
         assert!(mark_key_pressed(0x57));
         assert!(!mark_key_pressed(0x57));
         mark_key_released(0x57);
         assert!(mark_key_pressed(0x57));
         mark_key_released(0x57);
+    }
+
+    #[test]
+    fn snapshots_held_inputs_and_keeps_the_trigger_last() {
+        let _state_guard = FILTER_UPDATE_LOCK
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        reset_pressed_inputs();
+        assert!(mark_key_pressed(pressed_state_code("ControlLeft", 0x11)));
+        assert!(mark_key_pressed(pressed_state_code("KeyW", 0x57)));
+        assert!(mark_mouse_pressed(FILTER_MOUSE_SIDE1));
+
+        let payload = global_input_payload("Digit1", snapshot_pressed_inputs());
+        assert_eq!(payload.key, "Digit1");
+        assert!(payload.pressed_inputs.contains(&"ControlLeft"));
+        assert!(payload.pressed_inputs.contains(&"KeyW"));
+        assert!(payload.pressed_inputs.contains(&"MouseSide1"));
+        assert_eq!(payload.pressed_inputs.last(), Some(&"Digit1"));
+
+        mark_key_released(pressed_state_code("ControlLeft", 0x11));
+        mark_key_released(pressed_state_code("KeyW", 0x57));
+        mark_mouse_released(FILTER_MOUSE_SIDE1);
+    }
+
+    #[test]
+    fn tracks_main_and_numpad_enter_as_distinct_chord_inputs() {
+        assert_eq!(pressed_state_code("Enter", 0x0d), 0x0d);
+        assert_eq!(
+            pressed_state_code("NumpadEnter", 0x0d),
+            PRESSED_NUMPAD_ENTER
+        );
     }
 
     #[test]
