@@ -32,6 +32,7 @@ const sponsorSource = readUiFile("sponsor.html");
 const ocrHelpSource = readUiFile("ocr-help.html");
 const mainSource = fs.readFileSync(path.join(root, "src-tauri", "src", "main.rs"), "utf8");
 const hooksSource = fs.readFileSync(path.join(root, "src-tauri", "src", "hooks.rs"), "utf8");
+const inputSource = fs.readFileSync(path.join(root, "src-tauri", "src", "input.rs"), "utf8");
 
 assert.match(indexSource, /<div id="titlebar" data-tauri-drag-region="deep">/);
 assert.match(indexSource, /<div class="titlebar-controls" data-tauri-drag-region="false">/);
@@ -85,11 +86,8 @@ vm.runInContext(
     globalThis.helpers = {
       canonicalGlobalKeyName,
       normalizeHotkeyChord,
-      hotkeyTriggerKey,
       normalizeGlobalInputEvent,
       bindingChordFromInput,
-      hotkeyChordMatches,
-      findMatchingHotkeyIndex,
       escapeHtml,
       safeImageSource,
       normalizeImportedPreset
@@ -102,11 +100,8 @@ vm.runInContext(
 const {
   canonicalGlobalKeyName,
   normalizeHotkeyChord,
-  hotkeyTriggerKey,
   normalizeGlobalInputEvent,
   bindingChordFromInput,
-  hotkeyChordMatches,
-  findMatchingHotkeyIndex,
   escapeHtml,
   safeImageSource,
   normalizeImportedPreset,
@@ -117,7 +112,6 @@ assert.equal(canonicalGlobalKeyName("F24"), "F24");
 assert.equal(canonicalGlobalKeyName("NotAKey"), null);
 assert.equal(normalizeHotkeyChord("F8"), "F8", "legacy single-key bindings must remain valid");
 assert.equal(normalizeHotkeyChord("ControlLeft+1"), "ControlLeft+Digit1");
-assert.equal(hotkeyTriggerKey("ControlLeft+Digit1"), "Digit1");
 assert.equal(normalizeHotkeyChord("ControlLeft+ControlLeft"), null);
 assert.equal(normalizeHotkeyChord("WheelUp+Digit1"), null, "a wheel edge cannot be held as a modifier");
 assert.equal(
@@ -129,24 +123,6 @@ const extraHeldInput = normalizeGlobalInputEvent({
   key: "Digit1",
   pressedInputs: ["ShiftLeft", "KeyW", "ControlLeft", "Digit1"],
 });
-assert.equal(
-  hotkeyChordMatches("ControlLeft+Digit1", extraHeldInput),
-  true,
-  "unbound Shift/W keys must not prevent a required Ctrl+1 chord from matching",
-);
-assert.equal(hotkeyChordMatches("ControlLeft+Digit1", { key: "Digit1", pressedInputs: ["Digit1"] }), false);
-assert.equal(hotkeyChordMatches("ControlLeft+Digit1", { key: "ControlLeft", pressedInputs: ["Digit1", "ControlLeft"] }), false);
-assert.equal(
-  findMatchingHotkeyIndex(
-    [
-      { strat: {}, hotkey: "ControlLeft+Digit1" },
-      { strat: {}, hotkey: "ControlLeft+ShiftLeft+Digit1" },
-    ],
-    extraHeldInput,
-  ),
-  1,
-  "the most specific matching chord should win when bindings overlap",
-);
 assert.deepEqual(
   JSON.parse(JSON.stringify(bindingChordFromInput(extraHeldInput))),
   ["ControlLeft", "ShiftLeft", "KeyW", "Digit1"],
@@ -303,8 +279,19 @@ assert.match(
 const bridgeSource = readUiFile("bridge.js");
 assert.match(bridgeSource, /subscribe\("quit-requested", callback\)/);
 assert.match(indexSource, /window\.electronAPI\.onQuitRequested/);
-assert.match(bridgeSource, /setGlobalInputFilter:.*set_global_input_filter/);
+assert.match(bridgeSource, /setGlobalInputFilter:\s*\(config, captureAll\).*set_global_input_filter/);
+assert.match(bridgeSource, /getInputDiagnostics:.*get_input_diagnostics/);
+assert.match(bridgeSource, /onNativeShortcut:.*native-shortcut/);
+assert.match(bridgeSource, /onNativeMacroStarted:.*native-macro-started/);
+assert.match(bridgeSource, /onNativeMacroFinished:.*native-macro-finished/);
 assert.match(indexSource, /pendingGlobalInputFilter/);
+assert.match(indexSource, /config:\s*buildNativeShortcutConfig\(\)/);
+assert.match(indexSource, /payload:\s*buildMacroPayload\(item\)/);
+assert.doesNotMatch(indexSource, /function\s+triggerMacro\s*\(/, "JavaScript must not match runtime macro shortcuts");
+assert.match(hooksSource, /impl\s+ShortcutState[\s\S]*fn\s+route\s*\(/);
+assert.match(hooksSource, /input::prepare_macro\(&binding\.payload\)/);
+assert.match(inputSource, /struct\s+PreparedMacro/);
+assert.match(mainSource, /fn\s+get_input_diagnostics\s*\(/);
 assert.match(indexSource, /if \(isOverlayVisible\) \{[\s\S]*gameSettings\.ovExec/);
 assert.match(indexSource, /directionOnly:\s*false/, "direction-only mode must be opt-in");
 assert.match(indexSource, /directionOnly:\s*!!gameSettings\.directionOnly/);

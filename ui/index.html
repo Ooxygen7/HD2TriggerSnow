@@ -1016,16 +1016,6 @@
             return keys.join('+');
         }
 
-        function hotkeyChordKeys(value) {
-            const normalized = normalizeHotkeyChord(value);
-            return normalized ? normalized.split('+') : [];
-        }
-
-        function hotkeyTriggerKey(value) {
-            const keys = hotkeyChordKeys(value);
-            return keys.length ? keys[keys.length - 1] : null;
-        }
-
         function normalizeGlobalInputEvent(value) {
             let rawKey = value;
             let rawPressedInputs = [];
@@ -1065,49 +1055,40 @@
             return chord.length <= MAX_HOTKEY_CHORD_KEYS ? chord : null;
         }
 
-        function hotkeyChordMatches(value, inputValue) {
-            const keys = hotkeyChordKeys(value);
-            const input = normalizeGlobalInputEvent(inputValue);
-            if (!input || keys.length === 0 || keys[keys.length - 1] !== input.key) return false;
-            const held = new Set(input.pressedInputs);
-            return keys.every(key => held.has(key));
-        }
-
-        function findMatchingHotkeyIndex(loadout, inputValue, chordsOnly = false) {
-            let itemIndex = -1;
-            let bestChordSize = -1;
-            loadout.forEach((item, index) => {
-                if (!item || !item.strat || !item.hotkey) return;
-                const chordSize = hotkeyChordKeys(item.hotkey).length;
-                if (chordsOnly && chordSize < 2) return;
-                if (chordSize > bestChordSize && hotkeyChordMatches(item.hotkey, inputValue)) {
-                    itemIndex = index;
-                    bestChordSize = chordSize;
-                }
-            });
-            return itemIndex;
-        }
-
         let pendingGlobalInputFilter = null;
         let globalInputFilterDrain = null;
+
+        function buildNativeShortcutConfig() {
+            const macros = [];
+            let overlayIndex = -1;
+            activeLoadout.forEach(item => {
+                if (!item || !item.strat) return;
+                overlayIndex += 1;
+                if (!item.hotkey) return;
+                macros.push({
+                    hotkey: item.hotkey,
+                    payload: buildMacroPayload(item),
+                    overlayIndex
+                });
+            });
+            return {
+                macros,
+                ocrHotkey: gameSettings.ocrHotkey || null,
+                overlayVisible: isOverlayVisible,
+                overlayUp: isOverlayVisible ? (gameSettings.ovUp || null) : null,
+                overlayDown: isOverlayVisible ? (gameSettings.ovDown || null) : null,
+                overlayExec: isOverlayVisible ? (gameSettings.ovExec || null) : null
+            };
+        }
 
         function syncGlobalInputFilter() {
             if (!window.electronAPI || !window.electronAPI.setGlobalInputFilter) {
                 return Promise.resolve();
             }
-            const keys = new Set(
-                activeLoadout
-                    .filter(item => item && item.strat && item.hotkey)
-                    .map(item => hotkeyTriggerKey(item.hotkey))
-                    .filter(Boolean)
-            );
-            if (gameSettings.ocrHotkey) keys.add(gameSettings.ocrHotkey);
-            if (isOverlayVisible) {
-                if (gameSettings.ovExec) keys.add(gameSettings.ovExec);
-                if (gameSettings.ovUp) keys.add(gameSettings.ovUp);
-                if (gameSettings.ovDown) keys.add(gameSettings.ovDown);
-            }
-            pendingGlobalInputFilter = { keys: [...keys], captureAll: Boolean(bindingTarget) };
+            pendingGlobalInputFilter = {
+                config: buildNativeShortcutConfig(),
+                captureAll: Boolean(bindingTarget)
+            };
             if (globalInputFilterDrain) return globalInputFilterDrain;
 
             const run = (async () => {
@@ -1115,7 +1096,7 @@
                     const next = pendingGlobalInputFilter;
                     pendingGlobalInputFilter = null;
                     try {
-                        await window.electronAPI.setGlobalInputFilter(next.keys, next.captureAll);
+                        await window.electronAPI.setGlobalInputFilter(next.config, next.captureAll);
                     } catch (error) {
                         console.error('Failed to update global input filter:', error);
                     }
@@ -2212,6 +2193,7 @@
             if (previousSlotCount !== maxSlots) {
                 commitLoadoutChange();
             } else {
+                syncGlobalInputFilter();
                 renderMainList({ syncOverlay: true });
             }
             
@@ -2545,28 +2527,33 @@
         let isOcrRunning = false;
         let overlaySelectedIndex = 0;
 
-        async function executeMacroByItem(item, itemIndex) {
-            if (isMacroRunning || !item || !item.strat) return; 
-            isMacroRunning = true; 
-            const stratagem = item.strat;
-
-            overlaySelectedIndex = itemIndex;
-            if(window.electronAPI && window.electronAPI.updateSelection) window.electronAPI.updateSelection(overlaySelectedIndex);
-
+        function buildMacroPayload(item) {
             const keyMap = { 'W': gameSettings.upKey, 'S': gameSettings.downKey, 'A': gameSettings.leftKey, 'D': gameSettings.rightKey };
-            
-            const payload = { 
-                menuKey: gameSettings.menuKey, 
-                menuMode: gameSettings.menuMode, 
+            return {
+                menuKey: gameSettings.menuKey,
+                menuMode: gameSettings.menuMode,
                 directionOnly: !!gameSettings.directionOnly,
-                sequence: stratagem.seq.map(k => keyMap[k]), 
+                sequence: item.strat.seq.map(key => keyMap[key]),
                 menuOpenDelay: gameSettings.menuOpenDelay || 100,
                 pressDelay: gameSettings.pressDelay || 10,
                 intervalDelay: gameSettings.intervalDelay || 10
             };
-            
+        }
+
+        function estimateMacroDuration(payload) {
             const menuTimeMs = payload.directionOnly ? 0 : payload.menuOpenDelay + 100;
-            const estimatedTimeMs = menuTimeMs + (stratagem.seq.length * (payload.pressDelay + payload.intervalDelay));
+            return menuTimeMs + (payload.sequence.length * (payload.pressDelay + payload.intervalDelay));
+        }
+
+        async function executeMacroByItem(item, itemIndex) {
+            if (isMacroRunning || !item || !item.strat) return;
+            isMacroRunning = true;
+
+            overlaySelectedIndex = itemIndex;
+            if(window.electronAPI && window.electronAPI.updateSelection) window.electronAPI.updateSelection(overlaySelectedIndex);
+
+            const payload = buildMacroPayload(item);
+            const estimatedTimeMs = estimateMacroDuration(payload);
             
             try {
                 if(window.electronAPI) {
@@ -2578,18 +2565,6 @@
             } finally {
                 isMacroRunning = false;
             }
-        }
-
-        function triggerMacro(inputValue, options = {}) {
-            const { chordsOnly = false } = options;
-            const itemIndex = findMatchingHotkeyIndex(activeLoadout, inputValue, chordsOnly);
-            if (itemIndex !== -1) {
-                const validItems = activeLoadout.filter(item => item.strat);
-                const realOverlayIndex = validItems.findIndex(item => item.strat.id === activeLoadout[itemIndex].strat.id);
-                executeMacroByItem(activeLoadout[itemIndex], realOverlayIndex);
-                return true;
-            }
-            return false;
         }
 
         async function runOcrAutoEquip() {
@@ -2635,28 +2610,35 @@
 
         function handleGlobalInput(inputValue) {
             if (bindingFilterTransition) return;
-            const input = normalizeGlobalInputEvent(inputValue);
-            if (!input) return;
-            if (bindingTarget) {
-                captureBindingInput(input);
-                return;
-            }
-            // A multi-key stratagem binding gets first chance at its trigger.
-            // This lets Ctrl+F8 coexist with plain F8 for OCR, for example.
-            if (triggerMacro(input, { chordsOnly: true })) return;
-            if (gameSettings.ocrHotkey && input.key === gameSettings.ocrHotkey) { runOcrAutoEquip(); return; }
-            if (isOverlayVisible) {
-                if (gameSettings.ovExec && input.key === gameSettings.ovExec) { executeSelection(); return; }
-                if (gameSettings.ovUp && input.key === gameSettings.ovUp) { scrollOverlay(-1); return; }
-                if (gameSettings.ovDown && input.key === gameSettings.ovDown) { scrollOverlay(1); return; }
-            }
-            triggerMacro(input);
+            if (bindingTarget) captureBindingInput(inputValue);
         }
 
         if (window.electronAPI) {
             if (window.electronAPI.onGlobalKeyDown) window.electronAPI.onGlobalKeyDown(handleGlobalInput);
             if (window.electronAPI.onGlobalMouseDown) window.electronAPI.onGlobalMouseDown(handleGlobalInput);
             if (window.electronAPI.onGlobalWheel) window.electronAPI.onGlobalWheel(handleGlobalInput);
+            if (window.electronAPI.onNativeShortcut) window.electronAPI.onNativeShortcut(({ action } = {}) => {
+                if (bindingTarget || bindingFilterTransition) return;
+                if (action === 'ocr') runOcrAutoEquip();
+                else if (action === 'overlay-exec') executeSelection();
+                else if (action === 'overlay-up') scrollOverlay(-1);
+                else if (action === 'overlay-down') scrollOverlay(1);
+            });
+            if (window.electronAPI.onNativeMacroStarted) window.electronAPI.onNativeMacroStarted((event = {}) => {
+                isMacroRunning = true;
+                const index = Number(event.overlayIndex);
+                if (Number.isInteger(index) && index >= 0) {
+                    overlaySelectedIndex = index;
+                    window.electronAPI.updateSelection(index).catch(() => {});
+                    window.electronAPI.highlightOverlay({ index, duration: Number(event.duration) || 0 }).catch(() => {});
+                }
+            });
+            if (window.electronAPI.onNativeMacroFinished) window.electronAPI.onNativeMacroFinished((event = {}) => {
+                isMacroRunning = false;
+                if (event.error) {
+                    showToast(i18n[currentLang].msgMacroFailed.replace('{error}', String(event.error)), true);
+                }
+            });
         }
         
         function scrollOverlay(direction) {

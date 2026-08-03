@@ -73,7 +73,38 @@ pub fn execute_reserved(payload: MacroPayload, _guard: MacroRunGuard) -> Result<
     if payload.sequence.is_empty() {
         return Ok(());
     }
-    run_macro(payload)
+    let prepared = prepare_macro(&payload)?;
+    execute_macro_plan(&prepared.steps)
+}
+
+#[derive(Clone, Debug)]
+pub(crate) struct PreparedMacro {
+    steps: Vec<MacroStep>,
+    duration_ms: u64,
+}
+
+impl PreparedMacro {
+    pub(crate) fn duration_ms(&self) -> u64 {
+        self.duration_ms
+    }
+}
+
+pub(crate) fn prepare_macro(payload: &MacroPayload) -> Result<PreparedMacro, String> {
+    let steps = build_macro_plan(payload)?;
+    let duration_ms = macro_plan_duration(&steps).ok_or_else(|| {
+        format!(
+            "Macro duration exceeds the {} second safety limit",
+            MAX_MACRO_DURATION_MS / 1000
+        )
+    })?;
+    Ok(PreparedMacro { steps, duration_ms })
+}
+
+pub(crate) fn execute_prepared_macro(
+    prepared: &PreparedMacro,
+    _guard: MacroRunGuard,
+) -> Result<(), String> {
+    execute_macro_plan(&prepared.steps)
 }
 
 impl MacroRunGuard {
@@ -117,11 +148,6 @@ pub fn cancel_and_wait(timeout: Duration) -> bool {
 
 fn macro_signal() -> &'static (Mutex<()>, Condvar) {
     MACRO_SIGNAL.get_or_init(|| (Mutex::new(()), Condvar::new()))
-}
-
-fn run_macro(payload: MacroPayload) -> Result<(), String> {
-    let plan = build_macro_plan(&payload)?;
-    execute_macro_plan(&plan)
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -184,17 +210,22 @@ fn build_macro_plan(payload: &MacroPayload) -> Result<Vec<MacroStep>, String> {
     if let Some((menu_key, true)) = menu_state {
         plan.extend([MacroStep::Wait(50), MacroStep::Up(menu_key)]);
     }
-    let total_duration = plan.iter().try_fold(0_u64, |total, step| match step {
-        MacroStep::Wait(delay) => total.checked_add(*delay),
-        MacroStep::Down(_) | MacroStep::Up(_) => Some(total),
-    });
-    if total_duration.is_none_or(|duration| duration > MAX_MACRO_DURATION_MS) {
+    let total_duration = macro_plan_duration(&plan);
+    if total_duration.is_none() {
         return Err(format!(
             "Macro duration exceeds the {} second safety limit",
             MAX_MACRO_DURATION_MS / 1000
         ));
     }
     Ok(plan)
+}
+
+fn macro_plan_duration(plan: &[MacroStep]) -> Option<u64> {
+    let total_duration = plan.iter().try_fold(0_u64, |total, step| match step {
+        MacroStep::Wait(delay) => total.checked_add(*delay),
+        MacroStep::Down(_) | MacroStep::Up(_) => Some(total),
+    });
+    total_duration.filter(|duration| *duration <= MAX_MACRO_DURATION_MS)
 }
 
 fn execute_macro_plan(plan: &[MacroStep]) -> Result<(), String> {

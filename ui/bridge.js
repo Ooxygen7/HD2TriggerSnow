@@ -25,7 +25,11 @@
     onGlobalMouseDown: (callback) => subscribe("global-mousedown", callback),
     onGlobalWheel: (callback) => subscribe("global-wheel", callback),
     onQuitRequested: (callback) => subscribe("quit-requested", callback),
-    setGlobalInputFilter: (keys, captureAll) => invoke("set_global_input_filter", { keys, captureAll }),
+    setGlobalInputFilter: (config, captureAll) => invoke("set_global_input_filter", { config, captureAll }),
+    getInputDiagnostics: () => invoke("get_input_diagnostics"),
+    onNativeShortcut: (callback) => subscribe("native-shortcut", callback),
+    onNativeMacroStarted: (callback) => subscribe("native-macro-started", callback),
+    onNativeMacroFinished: (callback) => subscribe("native-macro-finished", callback),
 
     toggleOverlay: () => invoke("toggle_overlay"),
     lockOverlay: () => invoke("lock_overlay"),

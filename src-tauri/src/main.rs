@@ -225,8 +225,13 @@ fn migration_status(state: State<'_, AppState>) -> Result<MigrationReport, Strin
 }
 
 #[tauri::command]
-fn set_global_input_filter(keys: Vec<String>, capture_all: bool) -> Result<(), String> {
-    hooks::update_filter(&keys, capture_all)
+fn set_global_input_filter(config: hooks::ShortcutConfig, capture_all: bool) -> Result<(), String> {
+    hooks::configure(config, capture_all)
+}
+
+#[tauri::command]
+fn get_input_diagnostics() -> hooks::InputDiagnostics {
+    hooks::diagnostics()
 }
 
 #[tauri::command]
@@ -742,6 +747,7 @@ fn main() {
             save_data,
             migration_status,
             set_global_input_filter,
+            get_input_diagnostics,
             toggle_overlay,
             window_minimize,
             window_tray,
