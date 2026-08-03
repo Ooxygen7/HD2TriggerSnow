@@ -7,6 +7,7 @@ mod input;
 mod legacy;
 mod ocr;
 mod tray;
+mod updates;
 mod windows;
 
 use config::MigrationReport;
@@ -541,6 +542,28 @@ fn get_app_version() -> &'static str {
 }
 
 #[tauri::command]
+async fn check_for_updates() -> Option<updates::UpdateInfo> {
+    match tauri::async_runtime::spawn_blocking(updates::check_for_update).await {
+        Ok(Ok(update)) => update,
+        Ok(Err(_error)) => {
+            #[cfg(debug_assertions)]
+            eprintln!("Update check skipped: {_error}");
+            None
+        }
+        Err(_error) => {
+            #[cfg(debug_assertions)]
+            eprintln!("Update check task failed: {_error}");
+            None
+        }
+    }
+}
+
+#[tauri::command]
+fn open_release_download() -> Result<(), String> {
+    updates::open_releases_page()
+}
+
+#[tauri::command]
 async fn ocr_model_status(app: AppHandle) -> Result<ocr::ModelStatus, String> {
     let guard = OcrRunGuard::acquire(app.clone())?;
     tauri::async_runtime::spawn_blocking(move || {
@@ -773,6 +796,8 @@ fn main() {
             close_ocr_help_window,
             get_ocr_help_language,
             get_app_version,
+            check_for_updates,
+            open_release_download,
             ocr_model_status,
             recognize_ocr_region,
             get_ocr_displays,

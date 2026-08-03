@@ -308,6 +308,7 @@
         .confirm-body { padding: 30px 24px; text-align: center; font-size: 15px; color: var(--hd-text-primary); font-weight: 500; line-height: 1.5;}
         .confirm-footer { display: flex; gap: 12px; padding: 16px 24px; background: rgba(0,0,0,0.2); border-top: 1px solid var(--glass-border); }
         .confirm-footer .btn-square { flex: 1; border-radius: var(--radius-md); padding: 10px; }
+        .update-header { background: rgba(255, 232, 10, 0.1); color: var(--hd-yellow); border-bottom-color: rgba(255, 232, 10, 0.25); }
         
         .btn-danger { background-color: var(--hd-red); color: white; border-color: var(--hd-red); box-shadow: 0 4px 10px rgba(255,69,58,0.3); }
         .btn-danger:hover { background-color: #ff5b52; border-color: #ff5b52; transform: translateY(-1px); }
@@ -599,6 +600,17 @@
         </div>
     </div>
 
+    <div id="update-modal" class="modal-overlay" style="z-index: 90;" role="dialog" aria-modal="true" aria-labelledby="txt-update-title">
+        <div class="confirm-box" style="width: 430px; max-width: calc(100% - 32px);">
+            <div class="confirm-header update-header" id="txt-update-title">检测到新版本</div>
+            <div class="confirm-body" id="txt-update-msg">发现了可用的新版本。</div>
+            <div class="confirm-footer">
+                <button class="btn-square primary" id="btn-update-download" onclick="goToUpdateDownload()">前往下载</button>
+                <button class="btn-square" id="btn-update-later" onclick="closeUpdateModal()">暂不</button>
+            </div>
+        </div>
+    </div>
+
     <div id="sponsor-modal" class="modal-overlay" style="z-index: 70;">
         <div class="confirm-box" style="width: 500px; max-width: calc(100% - 32px);">
             <div class="confirm-header" id="txt-sponsor-title" style="background: rgba(255, 232, 10, 0.1); color: var(--hd-yellow); border-bottom: 1px solid rgba(255, 232, 10, 0.2);">赞助</div>
@@ -765,6 +777,11 @@
                 sponsorGo: "前往赞助",
                 sponsorClose: "明白了",
                 msgSponsorFail: "打开赞助链接失败",
+                updateTitle: "检测到新版本",
+                updateMessage: "当前版本 {current}，最新版本 {latest}。是否前往 GitHub Release 下载？",
+                updateDownload: "前往下载",
+                updateLater: "暂不",
+                msgUpdateOpenFailed: "打开下载页面失败",
                 ocrHelp: "帮助",
                 ocrTitle: "OCR 自动识别", ocrRegion: "识别区域", ocrSelectRegion: "框选识别区域", ocrDisplay: "识别屏幕", ocrPrimaryDisplay: "主屏幕", ocrHotkey: "识别快捷键", toastEnabled: "提示气泡", toastOn: "开启", toastOff: "关闭", ocrRegionUnset: "未设置", ocrRegionSet: "已设置: {width} x {height} @ {x},{y}",
                 descOcrRegion: "在屏幕叠加层上拖动鼠标框选游戏左上角战备栏文字区域，保存后 OCR 只识别此区域。", descOcrDisplay: "选择游戏所在的显示器，框选窗口只会出现在这块屏幕上。", descOcrHotkey: "按下该快捷键后自动识别区域内文字，并和中英文战备库名称比对后装备识别结果。", descToastEnabled: "在玩家屏幕底部稍微靠上的位置显示提示气泡。",
@@ -821,6 +838,11 @@
                 sponsorGo: "Sponsor Now",
                 sponsorClose: "Got it",
                 msgSponsorFail: "Failed to open sponsor link",
+                updateTitle: "NEW VERSION AVAILABLE",
+                updateMessage: "Version {latest} is available. You are currently using {current}.",
+                updateDownload: "GO TO DOWNLOAD",
+                updateLater: "NOT NOW",
+                msgUpdateOpenFailed: "Failed to open the download page",
                 ocrHelp: "Help",
                 ocrTitle: "OCR AUTO LOADOUT", ocrRegion: "OCR REGION", ocrSelectRegion: "SELECT REGION", ocrDisplay: "OCR SCREEN", ocrPrimaryDisplay: "PRIMARY SCREEN", ocrHotkey: "OCR HOTKEY", toastEnabled: "TOAST NOTIFICATIONS", toastOn: "ON", toastOff: "OFF", ocrRegionUnset: "NOT SET", ocrRegionSet: "SET: {width} x {height} @ {x},{y}",
                 descOcrRegion: "Drag a rectangle over the in-game stratagem text area. OCR will only read this saved region until you replace it.", descOcrDisplay: "Select the monitor where the game is running. The region selector will only appear on that screen.", descOcrHotkey: "Press this hotkey to recognize the selected region and equip stratagems matched against the English and Chinese library names.", descToastEnabled: "Show notification bubbles slightly above the bottom of the player screen.",
@@ -954,6 +976,7 @@
         let bindingFilterTransition = false;
         let isOverlayVisible = false; 
         let ocrDisplays = [];
+        let pendingUpdateInfo = null;
         
         let gameSettings = { 
             menuKey: 'ControlLeft', menuMode: 'hold', directionOnly: false, upKey: 'KeyW', downKey: 'KeyS', leftKey: 'KeyA', rightKey: 'KeyD',
@@ -1592,6 +1615,7 @@
             
             updateI18n();
             renderMainList({ syncOverlay: true });
+            void checkForStartupUpdate();
         }
 
         window.handleToggleOverlay = async () => {
@@ -1683,6 +1707,7 @@
             document.getElementById('txt-sponsor-msg').textContent = lang.sponsorMsg;
             document.getElementById('btn-sponsor-go').textContent = lang.sponsorGo;
             document.getElementById('btn-sponsor-close').textContent = lang.sponsorClose;
+            if (pendingUpdateInfo) updateUpdateModalText();
             document.getElementById('txt-pre-title').textContent = lang.preTitle;
             document.getElementById('btn-pre-done').textContent = lang.btnDone;
             document.getElementById('preset-name-input').placeholder = lang.phPresetName;
@@ -1906,6 +1931,47 @@
 
         window.closeSponsorModal = () => {
             document.getElementById('sponsor-modal').classList.remove('active');
+        }
+
+        function updateUpdateModalText() {
+            if (!pendingUpdateInfo) return;
+            const lang = i18n[currentLang];
+            document.getElementById('txt-update-title').textContent = lang.updateTitle;
+            const message = lang.updateMessage
+                .replace('{current}', pendingUpdateInfo.currentVersion)
+                .replace('{latest}', pendingUpdateInfo.version);
+            const messageElement = document.getElementById('txt-update-msg');
+            messageElement.textContent = message;
+            document.getElementById('btn-update-download').textContent = lang.updateDownload;
+            document.getElementById('btn-update-later').textContent = lang.updateLater;
+        }
+
+        async function checkForStartupUpdate() {
+            if (!window.electronAPI || typeof window.electronAPI.checkForUpdates !== 'function') return;
+            try {
+                const update = await window.electronAPI.checkForUpdates();
+                if (!update || typeof update.currentVersion !== 'string' || typeof update.version !== 'string') return;
+                pendingUpdateInfo = update;
+                updateUpdateModalText();
+                document.getElementById('update-modal').classList.add('active');
+                document.getElementById('btn-update-download').focus();
+            } catch (error) {
+                console.debug('Update check skipped:', error);
+            }
+        }
+
+        window.closeUpdateModal = () => {
+            pendingUpdateInfo = null;
+            document.getElementById('update-modal').classList.remove('active');
+        }
+
+        window.goToUpdateDownload = async () => {
+            try {
+                await window.electronAPI.openReleaseDownload();
+                window.closeUpdateModal();
+            } catch (error) {
+                showInlineStatus(`${i18n[currentLang].msgUpdateOpenFailed}: ${error}`, true);
+            }
         }
 
         window.goSponsor = async () => {

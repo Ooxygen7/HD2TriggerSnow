@@ -33,6 +33,7 @@ const ocrHelpSource = readUiFile("ocr-help.html");
 const mainSource = fs.readFileSync(path.join(root, "src-tauri", "src", "main.rs"), "utf8");
 const hooksSource = fs.readFileSync(path.join(root, "src-tauri", "src", "hooks.rs"), "utf8");
 const inputSource = fs.readFileSync(path.join(root, "src-tauri", "src", "input.rs"), "utf8");
+const updatesSource = fs.readFileSync(path.join(root, "src-tauri", "src", "updates.rs"), "utf8");
 
 assert.match(indexSource, /<div id="titlebar" data-tauri-drag-region="deep">/);
 assert.match(indexSource, /<div class="titlebar-controls" data-tauri-drag-region="false">/);
@@ -48,6 +49,12 @@ const tauriConfig = JSON.parse(
 );
 const installerHooks = tauriConfig.bundle?.windows?.nsis?.installerHooks;
 assert.equal(installerHooks, "windows/installer-hooks.nsh");
+assert.equal(tauriConfig.version, "2.0.1", "the bundled version must match the GitHub Release version");
+const packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
+const packageLock = JSON.parse(fs.readFileSync(path.join(root, "package-lock.json"), "utf8"));
+assert.equal(packageJson.version, "2.0.1");
+assert.equal(packageLock.version, "2.0.1");
+assert.equal(packageLock.packages[""].version, "2.0.1");
 const installerHookSource = fs.readFileSync(path.join(root, "src-tauri", installerHooks), "utf8");
 assert.match(installerHookSource, /CheckIfAppIsRunning "HD2 Macro Terminal\.exe"/);
 assert.match(installerHookSource, /CheckIfAppIsRunning "HD2-Trigger\.exe"/);
@@ -284,6 +291,8 @@ assert.match(bridgeSource, /getInputDiagnostics:.*get_input_diagnostics/);
 assert.match(bridgeSource, /onNativeShortcut:.*native-shortcut/);
 assert.match(bridgeSource, /onNativeMacroStarted:.*native-macro-started/);
 assert.match(bridgeSource, /onNativeMacroFinished:.*native-macro-finished/);
+assert.match(bridgeSource, /checkForUpdates:.*check_for_updates/);
+assert.match(bridgeSource, /openReleaseDownload:.*open_release_download/);
 assert.match(indexSource, /pendingGlobalInputFilter/);
 assert.match(indexSource, /config:\s*buildNativeShortcutConfig\(\)/);
 assert.match(indexSource, /payload:\s*buildMacroPayload\(item\)/);
@@ -297,6 +306,85 @@ assert.match(indexSource, /directionOnly:\s*false/, "direction-only mode must be
 assert.match(indexSource, /directionOnly:\s*!!gameSettings\.directionOnly/);
 assert.match(indexSource, /id="direction-only-off"[^>]*onclick="setDirectionOnly\(false\)"/);
 assert.match(hooksSource, /pressed_inputs:\s*Vec</, "native events must include the held-input snapshot");
+assert.match(indexSource, /id="txt-update-title">检测到新版本</);
+assert.match(indexSource, /id="btn-update-download"[^>]*>前往下载</);
+assert.match(indexSource, /id="btn-update-later"[^>]*>暂不</);
+assert.match(indexSource, /void checkForStartupUpdate\(\)/, "startup must trigger a non-blocking update check");
+assert.match(indexSource, /messageElement\.textContent = message/, "server text must never be injected as HTML");
+assert.match(updatesSource, /update\.unsnow\.online/);
+assert.match(updatesSource, /QuickStratagemTool\/releases\/latest/);
+assert.match(updatesSource, /WinHttpSetTimeouts/);
+assert.match(updatesSource, /latest_version <= current_version/);
+
+const updateHelperStart = indexSource.indexOf("function updateUpdateModalText");
+const updateHelperEnd = indexSource.indexOf("window.goSponsor", updateHelperStart);
+assert.notEqual(updateHelperStart, -1, "could not find update modal helpers");
+assert.notEqual(updateHelperEnd, -1, "could not find update modal helper end marker");
+const updateElements = new Map();
+for (const id of [
+  "txt-update-title",
+  "txt-update-msg",
+  "btn-update-download",
+  "btn-update-later",
+  "update-modal",
+]) {
+  const classes = new Set();
+  updateElements.set(id, {
+    textContent: "",
+    focused: false,
+    focus() { this.focused = true; },
+    classList: {
+      add(value) { classes.add(value); },
+      remove(value) { classes.delete(value); },
+      contains(value) { return classes.has(value); },
+    },
+  });
+}
+let updateResponse = null;
+let openedReleasePage = 0;
+const updateContext = vm.createContext({
+  console: { debug() {} },
+  document: { getElementById: (id) => updateElements.get(id) },
+  showInlineStatus() {},
+  window: {
+    electronAPI: {
+      async checkForUpdates() { return updateResponse; },
+      async openReleaseDownload() { openedReleasePage += 1; },
+    },
+  },
+});
+vm.runInContext(
+  `
+    let currentLang = "zh";
+    const i18n = { zh: {
+      updateTitle: "检测到新版本",
+      updateMessage: "当前版本 {current}，最新版本 {latest}。是否前往 GitHub Release 下载？",
+      updateDownload: "前往下载",
+      updateLater: "暂不",
+      msgUpdateOpenFailed: "打开下载页面失败"
+    } };
+    let pendingUpdateInfo = null;
+    ${indexSource.slice(updateHelperStart, updateHelperEnd)}
+    globalThis.updateHarness = {
+      checkForStartupUpdate,
+      closeUpdateModal: window.closeUpdateModal,
+      goToUpdateDownload: window.goToUpdateDownload
+    };
+  `,
+  updateContext,
+  { filename: "index.html:update-modal" },
+);
+await updateContext.updateHarness.checkForStartupUpdate();
+assert.equal(updateElements.get("update-modal").classList.contains("active"), false);
+updateResponse = { currentVersion: "2.0.1", version: "2.0.2" };
+await updateContext.updateHarness.checkForStartupUpdate();
+assert.equal(updateElements.get("txt-update-title").textContent, "检测到新版本");
+assert.match(updateElements.get("txt-update-msg").textContent, /2\.0\.1.*2\.0\.2/);
+assert.equal(updateElements.get("update-modal").classList.contains("active"), true);
+assert.equal(updateElements.get("btn-update-download").focused, true);
+await updateContext.updateHarness.goToUpdateDownload();
+assert.equal(openedReleasePage, 1);
+assert.equal(updateElements.get("update-modal").classList.contains("active"), false);
 
 const bridgeCalls = [];
 let releaseBlockedFlush;
@@ -321,5 +409,8 @@ assert.deepEqual(bridgeCalls, ["begin_exit"], "native exit watchdog must start b
 releaseBlockedFlush();
 await blockedClose;
 assert.deepEqual(bridgeCalls, ["begin_exit", "window_close"]);
+await bridgeContext.window.electronAPI.checkForUpdates();
+await bridgeContext.window.electronAPI.openReleaseDownload();
+assert.deepEqual(bridgeCalls.slice(-2), ["check_for_updates", "open_release_download"]);
 
 console.log(`UI, native-window, and ${new Set(bundledIcons).size} icon regression tests passed.`);
