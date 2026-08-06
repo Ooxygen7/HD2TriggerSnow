@@ -411,11 +411,21 @@
                 <div class="set-row">
                     <div class="set-label">
                         <span id="txt-set-autoOpenOverlay">启动时自动打开悬浮窗</span>
-                        <span class="set-desc" id="txt-desc-autoOpenOverlay">程序启动并加载完成后，是否自动显示悬浮窗（默认锁定）。</span>
+                        <span class="set-desc" id="txt-desc-autoOpenOverlay">程序启动并加载完成后，是否自动显示悬浮窗。</span>
                     </div>
                     <div class="toggle-box">
                         <div class="toggle-option active" id="auto-open-overlay-on" onclick="setAutoOpenOverlay(true)">ON</div>
                         <div class="toggle-option" id="auto-open-overlay-off" onclick="setAutoOpenOverlay(false)">OFF</div>
+                    </div>
+                </div>
+                <div class="set-row">
+                    <div class="set-label">
+                        <span id="txt-set-autoLockOverlay">打开悬浮窗时自动锁定</span>
+                        <span class="set-desc" id="txt-desc-autoLockOverlay">显示悬浮窗后是否自动锁定（不可拖动、点击穿透）。默认关闭。</span>
+                    </div>
+                    <div class="toggle-box">
+                        <div class="toggle-option" id="auto-lock-overlay-on" onclick="setAutoLockOverlay(true)">ON</div>
+                        <div class="toggle-option active" id="auto-lock-overlay-off" onclick="setAutoLockOverlay(false)">OFF</div>
                     </div>
                 </div>
             </div>
@@ -775,6 +785,7 @@
                 // 悬浮窗
                 ovOpacity: "透明度", ovSize: "宽高尺寸", ovStyle: "按键样式", ovText: "文本", ovIcon: "图标",
                 autoOpenOverlay: "启动时自动打开悬浮窗", autoOpenOverlayOn: "开启", autoOpenOverlayOff: "关闭",
+                autoLockOverlay: "打开悬浮窗时自动锁定", autoLockOverlayOn: "开启", autoLockOverlayOff: "关闭",
                 ovCtrlTitle: "悬浮窗控制", ovCtrlUp: "向上选择", ovCtrlDown: "向下选择", ovCtrlExec: "执行选定战备",
                 btnUpdateStrats: "更新战备",
                 msgStratsUpdating: "正在从 GitHub 更新战备…",
@@ -783,7 +794,8 @@
                 
                 // 设置说明
                 descUnlock: "悬浮窗处于锁定状态时,请点击此处解锁", descOpacity: "调整悬浮窗背景的透明度", descSize: "自定义悬浮窗的宽高数值", descStyle: "自定义悬浮窗内显示的按键风格",
-                descAutoOpenOverlay: "程序启动并加载完成后，是否自动显示悬浮窗（默认锁定）。",
+                descAutoOpenOverlay: "程序启动并加载完成后，是否自动显示悬浮窗。",
+                descAutoLockOverlay: "显示悬浮窗后是否自动锁定（不可拖动、点击穿透）。默认关闭。",
                 descSlotCount: "设置主界面显示的战备槽位数量，最多支持 14 个。",
                 descOvUp: "设置悬浮窗选中框向上移动的按键(留空为默认配置)", descOvDown: "设置悬浮窗选中框向下移动的按键(留空为默认配置)", descOvExec: "一键执行悬浮窗当前选中的战备指令。(留空为默认配置)",
                 descMenuKey: "在此设定你在游戏内用于呼出战备菜单的按键", descMenuMode: "在此选择你游戏内的设定", descDirectionOnly: "开启后只输入战备方向序列，不再按下或松开呼出战备栏按键。", descMenuDelay: "按下呼出键后，等待多少毫秒再开始输入指令", descPressDelay: "模拟每次按下方向键的持续时间",
@@ -842,6 +854,7 @@
                 // 悬浮窗
                 ovOpacity: "OPACITY", ovSize: "SIZE (W x H)", ovStyle: "HOTKEY STYLE", ovText: "TEXT", ovIcon: "ICON",
                 autoOpenOverlay: "AUTO-OPEN OVERLAY ON STARTUP", autoOpenOverlayOn: "ON", autoOpenOverlayOff: "OFF",
+                autoLockOverlay: "AUTO-LOCK OVERLAY WHEN SHOWN", autoLockOverlayOn: "ON", autoLockOverlayOff: "OFF",
                 ovCtrlTitle: "OVERLAY CONTROLS", ovCtrlUp: "SCROLL UP", ovCtrlDown: "SCROLL DOWN", ovCtrlExec: "EXECUTE SELECTION",
                 btnUpdateStrats: "UPDATE STRATS",
                 msgStratsUpdating: "Updating stratagems from GitHub…",
@@ -850,7 +863,8 @@
                 
                 // 设置说明
                 descUnlock: "Click if the overlay window cannot be dragged.", descOpacity: "Adjust the background transparency of the overlay.", descSize: "Set the width and height of the overlay on screen.", descStyle: "Display hotkeys as plain text or keycap style icons.",
-                descAutoOpenOverlay: "Automatically show the overlay after the app finishes loading (locked by default).",
+                descAutoOpenOverlay: "Automatically show the overlay after the app finishes loading.",
+                descAutoLockOverlay: "Automatically lock the overlay when it is shown (click-through, not draggable). Off by default.",
                 descSlotCount: "Set how many loadout slots are shown. Max 14.",
                 descOvUp: "Scroll up the stratagem list in the overlay. (Leave empty for default)", descOvDown: "Scroll down the stratagem list in the overlay. (Leave empty for default)", descOvExec: "Execute the currently selected stratagem in the overlay. (Leave empty for default)",
                 descMenuKey: "The key used to open the stratagem menu in-game.", descMenuMode: "Hold the key to keep menu open, or press once to toggle.", descDirectionOnly: "Only type the directional sequence without pressing or releasing the stratagem menu key.", descMenuDelay: "Time to wait after opening the menu before typing commands.", descPressDelay: "How long each directional key is held down.",
@@ -1010,6 +1024,7 @@
             ovOpacity: 100, ovWidth: 300, ovHeight: 550, ovStyle: 'text',
             ovUp: 'WheelUp', ovDown: 'WheelDown', ovExec: 'MouseMiddle',
             autoOpenOverlay: true,
+            autoLockOverlay: false,
             ocrHotkey: 'F8', ocrRegion: null, ocrRegionCoordinateSpace: null, ocrDisplayId: null, showToasts: true,
             slotCount: DEFAULT_SLOT_COUNT,
             overlayPosition: null
@@ -1672,7 +1687,7 @@
                     await window.electronAPI.updateOverlaySettings({ opacity: gameSettings.ovOpacity, style: gameSettings.ovStyle });
                     await window.electronAPI.updateOverlay(activeLoadout);
                     await window.electronAPI.updateSelection(overlaySelectedIndex);
-                    if (window.electronAPI.lockOverlay) {
+                    if (gameSettings.autoLockOverlay === true && window.electronAPI.lockOverlay) {
                         await window.electronAPI.lockOverlay();
                     }
                 }
@@ -1827,6 +1842,9 @@
             document.getElementById('txt-set-autoOpenOverlay').textContent = lang.autoOpenOverlay;
             document.getElementById('auto-open-overlay-on').textContent = lang.autoOpenOverlayOn;
             document.getElementById('auto-open-overlay-off').textContent = lang.autoOpenOverlayOff;
+            document.getElementById('txt-set-autoLockOverlay').textContent = lang.autoLockOverlay;
+            document.getElementById('auto-lock-overlay-on').textContent = lang.autoLockOverlayOn;
+            document.getElementById('auto-lock-overlay-off').textContent = lang.autoLockOverlayOff;
             document.getElementById('txt-set-overlayCtrlTitle').textContent = lang.ovCtrlTitle;
             document.getElementById('txt-set-ctrlUp').textContent = lang.ovCtrlUp;
             document.getElementById('txt-set-ctrlDown').textContent = lang.ovCtrlDown;
@@ -1847,6 +1865,7 @@
             document.getElementById('txt-desc-size').textContent = lang.descSize;
             document.getElementById('txt-desc-style').textContent = lang.descStyle;
             document.getElementById('txt-desc-autoOpenOverlay').textContent = lang.descAutoOpenOverlay;
+            document.getElementById('txt-desc-autoLockOverlay').textContent = lang.descAutoLockOverlay;
             document.getElementById('txt-desc-slotCount').textContent = lang.descSlotCount;
             document.getElementById('txt-desc-ovUp').textContent = lang.descOvUp;
             document.getElementById('txt-desc-ovDown').textContent = lang.descOvDown;
@@ -2187,6 +2206,7 @@
         window.setDirectionOnly = (enabled) => { gameSettings.directionOnly = !!enabled; updateSettingsUI(); }
         window.setToastEnabled = (enabled) => { gameSettings.showToasts = !!enabled; updateSettingsUI(); }
         window.setAutoOpenOverlay = (enabled) => { gameSettings.autoOpenOverlay = !!enabled; updateSettingsUI(); }
+        window.setAutoLockOverlay = (enabled) => { gameSettings.autoLockOverlay = !!enabled; updateSettingsUI(); }
 
         function updateSettingsUI() {
             document.getElementById('btn-set-menuKey').textContent = formatDisplayKey(gameSettings.menuKey);
@@ -2215,6 +2235,9 @@
             const autoOpen = gameSettings.autoOpenOverlay !== false;
             document.getElementById('auto-open-overlay-on').className = `toggle-option ${autoOpen ? 'active' : ''}`;
             document.getElementById('auto-open-overlay-off').className = `toggle-option ${autoOpen ? '' : 'active'}`;
+            const autoLock = gameSettings.autoLockOverlay === true;
+            document.getElementById('auto-lock-overlay-on').className = `toggle-option ${autoLock ? 'active' : ''}`;
+            document.getElementById('auto-lock-overlay-off').className = `toggle-option ${autoLock ? '' : 'active'}`;
 
             document.getElementById('btn-set-ovUp').textContent = formatDisplayKey(gameSettings.ovUp) || '';
             document.getElementById('btn-set-ovDown').textContent = formatDisplayKey(gameSettings.ovDown) || '';
