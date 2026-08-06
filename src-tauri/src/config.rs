@@ -14,6 +14,16 @@ use windows::{
     },
 };
 
+/// All JSON files the app may load or save under the app-data directory.
+pub const DATA_FILES: [&str; 5] = [
+    "settings.json",
+    "loadout.json",
+    "presets.json",
+    "custom_strats.json",
+    "remote_builtin_strats.json",
+];
+
+/// Files migrated from the previous Electron app data directory.
 pub const LEGACY_FILES: [&str; 4] = [
     "settings.json",
     "loadout.json",
@@ -245,7 +255,7 @@ fn wide_path(path: &Path) -> Vec<u16> {
 }
 
 fn data_file_path(data_dir: &Path, filename: &str) -> Result<PathBuf, String> {
-    if !LEGACY_FILES.contains(&filename) {
+    if !DATA_FILES.contains(&filename) {
         return Err(format!("Unsupported data file: {filename}"));
     }
     Ok(data_dir.join(filename))

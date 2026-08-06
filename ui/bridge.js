@@ -70,6 +70,7 @@
     getAppVersion: () => invoke("get_app_version"),
     checkForUpdates: () => invoke("check_for_updates"),
     openReleaseDownload: () => invoke("open_release_download"),
+    fetchRemoteBuiltinStrats: () => invoke("fetch_remote_builtin_strats"),
 
     getOcrDisplays: () => invoke("get_ocr_displays"),
     startOcrRegionSelect: (displayId) => invoke("start_ocr_region_select", { displayId: displayId == null ? null : Number(displayId) }),
