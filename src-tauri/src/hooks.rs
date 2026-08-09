@@ -40,6 +40,8 @@ static NATIVE_MACROS_STARTED: AtomicU64 = AtomicU64::new(0);
 static NATIVE_MACROS_SUPPRESSED: AtomicU64 = AtomicU64::new(0);
 static NATIVE_ACTIONS_ROUTED: AtomicU64 = AtomicU64::new(0);
 static BINDING_EVENTS_FORWARDED: AtomicU64 = AtomicU64::new(0);
+static OWN_SYNTHETIC_EVENTS_IGNORED: AtomicU64 = AtomicU64::new(0);
+static EXTERNAL_INJECTED_EVENTS_ACCEPTED: AtomicU64 = AtomicU64::new(0);
 static FILTER_INITIALIZED: AtomicBool = AtomicBool::new(false);
 static CAPTURE_ALL_INPUTS: AtomicBool = AtomicBool::new(true);
 static KEY_FILTER: [AtomicU64; 4] = [const { AtomicU64::new(0) }; 4];
@@ -205,6 +207,8 @@ pub struct InputDiagnostics {
     native_macros_suppressed: u64,
     native_actions_routed: u64,
     binding_events_forwarded: u64,
+    own_synthetic_events_ignored: u64,
+    external_injected_events_accepted: u64,
 }
 
 pub fn start(app: AppHandle) -> Result<(), String> {
@@ -316,6 +320,9 @@ pub fn diagnostics() -> InputDiagnostics {
         native_macros_suppressed: NATIVE_MACROS_SUPPRESSED.load(Ordering::Relaxed),
         native_actions_routed: NATIVE_ACTIONS_ROUTED.load(Ordering::Relaxed),
         binding_events_forwarded: BINDING_EVENTS_FORWARDED.load(Ordering::Relaxed),
+        own_synthetic_events_ignored: OWN_SYNTHETIC_EVENTS_IGNORED.load(Ordering::Relaxed),
+        external_injected_events_accepted: EXTERNAL_INJECTED_EVENTS_ACCEPTED
+            .load(Ordering::Relaxed),
     }
 }
 
@@ -993,7 +1000,12 @@ unsafe extern "system" fn keyboard_hook(code: i32, wparam: WPARAM, lparam: LPARA
         // specifies that `lparam` points to a `KBDLLHOOKSTRUCT` which remains
         // valid for the duration of this callback; the null case was excluded.
         let event = unsafe { &*(lparam.0 as *const KBDLLHOOKSTRUCT) };
-        if !is_injected_keyboard(event.flags.0) {
+        if should_ignore_keyboard_event(event.flags.0, event.dwExtraInfo) {
+            OWN_SYNTHETIC_EVENTS_IGNORED.fetch_add(1, Ordering::Relaxed);
+        } else {
+            if event.flags.0 & LLKHF_INJECTED_FLAG != 0 {
+                EXTERNAL_INJECTED_EVENTS_ACCEPTED.fetch_add(1, Ordering::Relaxed);
+            }
             if let Some(key) = key_name(event.vkCode, event.scanCode, event.flags.0) {
                 let state_code = pressed_state_code(key, event.vkCode);
                 match wparam.0 as u32 {
@@ -1036,10 +1048,14 @@ unsafe extern "system" fn mouse_hook(code: i32, wparam: WPARAM, lparam: LPARAM) 
         // that `lparam` points to an `MSLLHOOKSTRUCT` valid until this callback
         // returns; the null case was explicitly excluded above.
         let event = unsafe { &*(lparam.0 as *const MSLLHOOKSTRUCT) };
-        if is_injected_mouse(event.flags) {
+        if should_ignore_mouse_event(event.flags, event.dwExtraInfo) {
+            OWN_SYNTHETIC_EVENTS_IGNORED.fetch_add(1, Ordering::Relaxed);
             // SAFETY: these are the unchanged arguments supplied by Windows;
             // the hook handle is ignored by `CallNextHookEx`, so `None` is valid.
             return unsafe { CallNextHookEx(None, code, wparam, lparam) };
+        }
+        if event.flags & LLMHF_INJECTED_FLAG != 0 {
+            EXTERNAL_INJECTED_EVENTS_ACCEPTED.fetch_add(1, Ordering::Relaxed);
         }
         match wparam.0 as u32 {
             WM_MBUTTONDOWN => {
@@ -1151,12 +1167,12 @@ fn queue_event(event: InputEvent) {
     }
 }
 
-fn is_injected_keyboard(flags: u32) -> bool {
-    flags & LLKHF_INJECTED_FLAG != 0
+fn should_ignore_keyboard_event(flags: u32, extra_info: usize) -> bool {
+    flags & LLKHF_INJECTED_FLAG != 0 && extra_info == input::SYNTHETIC_INPUT_MARKER
 }
 
-fn is_injected_mouse(flags: u32) -> bool {
-    flags & LLMHF_INJECTED_FLAG != 0
+fn should_ignore_mouse_event(flags: u32, extra_info: usize) -> bool {
+    flags & LLMHF_INJECTED_FLAG != 0 && extra_info == input::SYNTHETIC_INPUT_MARKER
 }
 
 fn key_name(vk: u32, scan_code: u32, flags: u32) -> Option<&'static str> {
@@ -1591,10 +1607,24 @@ mod tests {
     }
 
     #[test]
-    fn ignores_input_generated_by_send_input() {
-        assert!(is_injected_keyboard(LLKHF_INJECTED_FLAG));
-        assert!(is_injected_mouse(LLMHF_INJECTED_FLAG));
-        assert!(!is_injected_keyboard(0));
-        assert!(!is_injected_mouse(0));
+    fn ignores_only_input_generated_by_this_process() {
+        assert!(should_ignore_keyboard_event(
+            LLKHF_INJECTED_FLAG,
+            input::SYNTHETIC_INPUT_MARKER
+        ));
+        assert!(should_ignore_mouse_event(
+            LLMHF_INJECTED_FLAG,
+            input::SYNTHETIC_INPUT_MARKER
+        ));
+
+        // Third-party injected input can be legitimate input from keyboard
+        // drivers, remappers, remote desktops, and accessibility software.
+        assert!(!should_ignore_keyboard_event(LLKHF_INJECTED_FLAG, 0));
+        assert!(!should_ignore_mouse_event(LLMHF_INJECTED_FLAG, 0));
+        assert!(!should_ignore_keyboard_event(
+            0,
+            input::SYNTHETIC_INPUT_MARKER
+        ));
+        assert!(!should_ignore_mouse_event(0, input::SYNTHETIC_INPUT_MARKER));
     }
 }

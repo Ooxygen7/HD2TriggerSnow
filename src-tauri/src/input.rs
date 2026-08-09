@@ -25,6 +25,11 @@ static MACRO_SHUTTING_DOWN: AtomicBool = AtomicBool::new(false);
 static MACRO_SIGNAL: OnceLock<(Mutex<()>, Condvar)> = OnceLock::new();
 const MAX_DELAY_MS: u64 = 60_000;
 const MAX_MACRO_DURATION_MS: u64 = 300_000;
+// Tag every SendInput event created by this process. The low-level hooks use
+// this marker to suppress only our own macro output instead of rejecting all
+// injected input from keyboard drivers, remappers, remote desktops, or
+// accessibility software.
+pub(crate) const SYNTHETIC_INPUT_MARKER: usize = 0x4844_3253;
 
 /// Returns true for virtual key codes that require the KEYEVENTF_EXTENDEDKEY
 /// flag. Without it, arrow keys / navigation keys are indistinguishable from
@@ -400,19 +405,7 @@ fn key_up(key: VIRTUAL_KEY) -> Result<(), String> {
 fn send_key(key: VIRTUAL_KEY, flags: KEYBD_EVENT_FLAGS) -> Result<(), String> {
     // Use scancodes like nut-js does — many games (including HD2) ignore
     // SendInput events that only carry a virtual key code without a scancode.
-    let (virtual_key, scan_code, full_flags) = keyboard_event_components(key, flags);
-    let input = INPUT {
-        r#type: INPUT_KEYBOARD,
-        Anonymous: INPUT_0 {
-            ki: KEYBDINPUT {
-                wVk: virtual_key,
-                wScan: scan_code,
-                dwFlags: full_flags,
-                time: 0,
-                dwExtraInfo: 0,
-            },
-        },
-    };
+    let input = keyboard_input(key, flags);
     // SAFETY: the INPUT discriminant is INPUT_KEYBOARD and the matching `ki`
     // union field is fully initialized. The one-element slice remains valid for
     // the call, and `cbSize` is the exact size Windows requires for INPUT.
@@ -423,6 +416,24 @@ fn send_key(key: VIRTUAL_KEY, flags: KEYBD_EVENT_FLAGS) -> Result<(), String> {
         Err(format!(
             "Windows rejected synthetic keyboard input ({sent}/1 events sent). Ensure the game and trigger run at the same privilege level"
         ))
+    }
+}
+
+fn keyboard_input(key: VIRTUAL_KEY, flags: KEYBD_EVENT_FLAGS) -> INPUT {
+    // Many games (including HD2) ignore SendInput events that carry only a
+    // virtual-key code, so preserve the existing scan-code based input path.
+    let (virtual_key, scan_code, full_flags) = keyboard_event_components(key, flags);
+    INPUT {
+        r#type: INPUT_KEYBOARD,
+        Anonymous: INPUT_0 {
+            ki: KEYBDINPUT {
+                wVk: virtual_key,
+                wScan: scan_code,
+                dwFlags: full_flags,
+                time: 0,
+                dwExtraInfo: SYNTHETIC_INPUT_MARKER,
+            },
+        },
     }
 }
 
@@ -514,20 +525,7 @@ fn scan_code(virtual_key: u16) -> u16 {
 }
 
 fn send_mouse_button(button: MouseButton, release: bool) -> Result<(), String> {
-    let (flags, mouse_data) = mouse_event(button, release);
-    let input = INPUT {
-        r#type: INPUT_MOUSE,
-        Anonymous: INPUT_0 {
-            mi: MOUSEINPUT {
-                dx: 0,
-                dy: 0,
-                mouseData: mouse_data,
-                dwFlags: flags,
-                time: 0,
-                dwExtraInfo: 0,
-            },
-        },
-    };
+    let input = mouse_button_input(button, release);
     // SAFETY: the INPUT discriminant is INPUT_MOUSE and the matching `mi` union
     // field is fully initialized. The one-element slice remains valid for the
     // call, and `cbSize` is the exact size Windows requires for INPUT.
@@ -538,6 +536,23 @@ fn send_mouse_button(button: MouseButton, release: bool) -> Result<(), String> {
         Err(format!(
             "Windows rejected synthetic mouse input ({sent}/1 events sent). Ensure the game and trigger run at the same privilege level"
         ))
+    }
+}
+
+fn mouse_button_input(button: MouseButton, release: bool) -> INPUT {
+    let (flags, mouse_data) = mouse_event(button, release);
+    INPUT {
+        r#type: INPUT_MOUSE,
+        Anonymous: INPUT_0 {
+            mi: MOUSEINPUT {
+                dx: 0,
+                dy: 0,
+                mouseData: mouse_data,
+                dwFlags: flags,
+                time: 0,
+                dwExtraInfo: SYNTHETIC_INPUT_MARKER,
+            },
+        },
     }
 }
 
@@ -737,6 +752,19 @@ mod tests {
             input_key("NumpadEnter"),
             Some(InputKey::ExtendedKeyboard(VK_RETURN))
         );
+    }
+
+    #[test]
+    fn tags_every_synthetic_input_with_the_private_marker() {
+        let keyboard = keyboard_input(VIRTUAL_KEY(b'W' as u16), KEYBD_EVENT_FLAGS(0));
+        let mouse = mouse_button_input(MouseButton::Side1, false);
+
+        // SAFETY: both helper functions set the INPUT discriminant and the
+        // matching union member together immediately before these reads.
+        unsafe {
+            assert_eq!(keyboard.Anonymous.ki.dwExtraInfo, SYNTHETIC_INPUT_MARKER);
+            assert_eq!(mouse.Anonymous.mi.dwExtraInfo, SYNTHETIC_INPUT_MARKER);
+        }
     }
 
     #[test]
