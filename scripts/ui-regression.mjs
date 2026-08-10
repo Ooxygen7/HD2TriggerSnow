@@ -94,6 +94,7 @@ vm.runInContext(
       canonicalGlobalKeyName,
       normalizeHotkeyChord,
       normalizeGlobalInputEvent,
+      domBindingInputFromCode,
       bindingChordFromInput,
       escapeHtml,
       safeImageSource,
@@ -108,6 +109,7 @@ const {
   canonicalGlobalKeyName,
   normalizeHotkeyChord,
   normalizeGlobalInputEvent,
+  domBindingInputFromCode,
   bindingChordFromInput,
   escapeHtml,
   safeImageSource,
@@ -135,6 +137,18 @@ assert.deepEqual(
   ["ControlLeft", "ShiftLeft", "KeyW", "Digit1"],
   "binding should keep the newest input as the trigger and order held requirements consistently",
 );
+const domPressedKeys = new Set();
+assert.deepEqual(
+  JSON.parse(JSON.stringify(domBindingInputFromCode("ControlLeft", domPressedKeys))),
+  { key: "ControlLeft", pressedInputs: ["ControlLeft"] },
+);
+const domChordInput = domBindingInputFromCode("KeyW", domPressedKeys);
+assert.deepEqual(
+  JSON.parse(JSON.stringify(bindingChordFromInput(domChordInput))),
+  ["ControlLeft", "KeyW"],
+  "focused-window keyboard capture must preserve held keys for chord binding",
+);
+assert.equal(domBindingInputFromCode("NotAKey", domPressedKeys), null);
 assert.equal(escapeHtml('<img src=x onerror="boom">'), "&lt;img src=x onerror=&quot;boom&quot;&gt;");
 assert.equal(safeImageSource("Machine_Gun_Stratagem_Icon.svg"), "Machine_Gun_Stratagem_Icon.svg");
 assert.equal(safeImageSource("javascript:alert(1)"), "empty-image");
@@ -300,6 +314,15 @@ assert.doesNotMatch(indexSource, /function\s+triggerMacro\s*\(/, "JavaScript mus
 assert.match(hooksSource, /impl\s+ShortcutState[\s\S]*fn\s+route\s*\(/);
 assert.match(hooksSource, /input::prepare_macro\(&binding\.payload\)/);
 assert.match(inputSource, /struct\s+PreparedMacro/);
+assert.match(inputSource, /dwExtraInfo:\s*SYNTHETIC_INPUT_MARKER/g);
+assert.match(hooksSource, /extra_info\s*==\s*input::SYNTHETIC_INPUT_MARKER/);
+assert.match(indexSource, /addEventListener\('keydown',\s*handleKeyInput\)/);
+assert.match(indexSource, /addEventListener\('keyup',\s*handleKeyUp\)/);
+assert.match(
+  indexSource,
+  /function\s+handleKeyInput\(e\)[\s\S]{0,500}domBindingInputFromCode\(e\.code,[\s\S]{0,300}captureBindingInput\(input\)/,
+  "focused keyboard events must reach the binding state machine",
+);
 assert.match(mainSource, /fn\s+get_input_diagnostics\s*\(/);
 assert.match(indexSource, /if \(isOverlayVisible\) \{[\s\S]*gameSettings\.ovExec/);
 assert.match(indexSource, /directionOnly:\s*false/, "direction-only mode must be opt-in");
