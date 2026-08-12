@@ -1022,6 +1022,8 @@
                 displaysTitle: "显示器枚举", displaysOk: "检测到 {count} 块屏幕；主屏幕 {width}×{height}，缩放 {scale}。", displaysFailed: "显示器检查失败：{error}", displaysNone: "Windows 未返回可用显示器。",
                 windowsTitle: "窗口状态", windowsOk: "主窗口正常；悬浮窗{overlay}，当前{lockState}。", windowsFailed: "主窗口状态不可用。", overlayOpen: "已创建", overlayClosed: "未创建（正常）", locked: "已锁定", unlocked: "未锁定",
                 updateTitle: "更新服务", updateOk: "update.unsnow.online 响应有效，最新版本 {version}，耗时 {latency} ms。", updateFailed: "更新服务暂时不可用：{error}", updateInvalid: "更新服务可以连接，但返回内容无效：{error}",
+                runtimeFailuresTitle: "最近运行故障", runtimeFailuresOk: "本次启动后未记录功能故障。", runtimeFailuresWarning: "已记录 {warnings} 个警告；最近：{latest}。", runtimeFailuresError: "已记录 {errors} 个错误和 {warnings} 个警告；最近：{latest}。",
+                bindingTraceTitle: "快捷键故障追踪", bindingTraceOk: "快捷键链路已匹配 {matched} 次，成功完成 {completed} 次宏输入。", bindingTraceIdle: "尚未记录快捷键操作；如遇无响应，请在问题发生后立即重新运行诊断。", bindingTraceFailed: "检测到 {failed} 次绑定失败、{cancelled} 次未收到输入的绑定，以及 {macroFailed} 次宏执行失败。", bindingTraceSuppressed: "有 {suppressed} 次快捷键因另一项宏正在执行而被抑制。", bindingTraceUnmatched: "检测到 {unmatched} 次相关按键进入钩子但未匹配完整组合键。", bindingTraceWaiting: "绑定已等待 {seconds} 秒，但尚未收到可用输入。",
                 unavailable: "不可用", unknown: "未知"
             },
             en: {
@@ -1046,6 +1048,8 @@
                 displaysTitle: "Display enumeration", displaysOk: "Detected {count} displays; primary is {width}×{height} at {scale} scale.", displaysFailed: "Display check failed: {error}", displaysNone: "Windows did not return an available display.",
                 windowsTitle: "Window state", windowsOk: "Main window is healthy; overlay {overlay} and currently {lockState}.", windowsFailed: "The main window state is unavailable.", overlayOpen: "exists", overlayClosed: "has not been created (normal)", locked: "locked", unlocked: "unlocked",
                 updateTitle: "Update service", updateOk: "update.unsnow.online returned valid data; latest version {version}, {latency} ms.", updateFailed: "The update service is temporarily unavailable: {error}", updateInvalid: "The update service is reachable but returned invalid data: {error}",
+                runtimeFailuresTitle: "Recent runtime failures", runtimeFailuresOk: "No feature failures have been recorded during this run.", runtimeFailuresWarning: "Recorded {warnings} warnings; latest: {latest}.", runtimeFailuresError: "Recorded {errors} errors and {warnings} warnings; latest: {latest}.",
+                bindingTraceTitle: "Shortcut failure trace", bindingTraceOk: "The shortcut pipeline matched {matched} times and completed {completed} macros.", bindingTraceIdle: "No shortcut activity has been recorded yet. If a shortcut stops responding, run diagnostics immediately afterward.", bindingTraceFailed: "Detected {failed} binding failures, {cancelled} binding attempts with no input, and {macroFailed} macro execution failures.", bindingTraceSuppressed: "{suppressed} shortcuts were suppressed because another macro was still running.", bindingTraceUnmatched: "Detected {unmatched} relevant input edges that reached the hook but did not satisfy a complete shortcut chord.", bindingTraceWaiting: "Binding has waited {seconds} seconds without receiving a usable input.",
                 unavailable: "unavailable", unknown: "unknown"
             }
         };
@@ -1180,6 +1184,27 @@
         let pendingUpdateInfo = null;
         let latestDiagnosticsReport = null;
         let diagnosticsInFlight = null;
+
+        function recordRuntimeFailure(operation, code) {
+            if (window.electronAPI && typeof window.electronAPI.recordRuntimeFailure === 'function') {
+                void window.electronAPI.recordRuntimeFailure(operation, code).catch(() => {});
+            }
+        }
+
+        function recordRuntimeWarning(operation, code) {
+            if (window.electronAPI && typeof window.electronAPI.recordRuntimeWarning === 'function') {
+                void window.electronAPI.recordRuntimeWarning(operation, code).catch(() => {});
+            }
+        }
+
+        function recordBindingDiagnostic(stage) {
+            if (window.electronAPI && typeof window.electronAPI.recordBindingDiagnostic === 'function') {
+                void window.electronAPI.recordBindingDiagnostic(stage).catch(() => {});
+            }
+        }
+
+        window.addEventListener('error', () => recordRuntimeFailure('renderer_runtime', 'uncaught_error'));
+        window.addEventListener('unhandledrejection', () => recordRuntimeFailure('renderer_runtime', 'unhandled_rejection'));
         
         let gameSettings = { 
             menuKey: 'ControlLeft', menuMode: 'hold', directionOnly: false, upKey: 'KeyW', downKey: 'KeyS', leftKey: 'KeyA', rightKey: 'KeyD',
@@ -1333,6 +1358,7 @@
                         await window.electronAPI.setGlobalInputFilter(next.config, next.captureAll);
                     } catch (error) {
                         console.error('Failed to update global input filter:', error);
+                        if (next.captureAll) recordBindingDiagnostic('filter_failed');
                     }
                 }
             })();
@@ -2228,6 +2254,8 @@
             const storage = report.storage || {};
             const configuration = report.configuration || {};
             const input = report.input || {};
+            const runtime = report.runtime || {};
+            const binding = runtime.binding || {};
             const ocrStatus = report.ocr || {};
             const update = report.updateService || {};
             const windows = report.windows || {};
@@ -2290,6 +2318,63 @@
                             maxDepth,
                             capacity
                         }));
+
+            const runtimeErrors = Number(runtime.errorCount) || 0;
+            const runtimeWarnings = Number(runtime.warningCount) || 0;
+            const incidents = Array.isArray(runtime.recentIncidents) ? runtime.recentIncidents : [];
+            const latestIncident = incidents.length > 0 ? incidents[incidents.length - 1] : null;
+            const latestIncidentLabel = latestIncident
+                ? `${latestIncident.component}/${latestIncident.operation}/${latestIncident.code}`
+                : lang.unknown;
+            add('input', runtimeErrors > 0 ? 'error' : (runtimeWarnings > 0 ? 'warning' : 'ok'), lang.runtimeFailuresTitle,
+                runtimeErrors > 0
+                    ? fillDiagnosticTemplate(lang.runtimeFailuresError, {
+                        errors: runtimeErrors,
+                        warnings: runtimeWarnings,
+                        latest: latestIncidentLabel
+                    })
+                    : runtimeWarnings > 0
+                        ? fillDiagnosticTemplate(lang.runtimeFailuresWarning, {
+                            warnings: runtimeWarnings,
+                            latest: latestIncidentLabel
+                        })
+                        : lang.runtimeFailuresOk);
+
+            const bindingFailures = Number(binding.attemptsFailed) || 0;
+            const cancellationsWithoutInput = Number(binding.cancellationsWithoutInput) || 0;
+            const macroFailures = Number(input.nativeMacrosFailed) || 0;
+            const macroSuppressed = Number(input.nativeMacrosSuppressed) || 0;
+            const unmatchedShortcuts = Number(input.unmatchedShortcutEdges) || 0;
+            const activeWithoutInput = Boolean(binding.active)
+                && !binding.currentAttemptHasInput
+                && (Number(binding.currentAttemptAgeMs) || 0) >= 2000;
+            let bindingStatus = 'ok';
+            let bindingSummary = fillDiagnosticTemplate(lang.bindingTraceOk, {
+                matched: Number(input.shortcutsMatched) || 0,
+                completed: Number(input.nativeMacrosCompleted) || 0
+            });
+            if (activeWithoutInput) {
+                bindingStatus = 'error';
+                bindingSummary = fillDiagnosticTemplate(lang.bindingTraceWaiting, {
+                    seconds: Math.floor((Number(binding.currentAttemptAgeMs) || 0) / 1000)
+                });
+            } else if (bindingFailures > 0 || cancellationsWithoutInput > 0 || macroFailures > 0) {
+                bindingStatus = 'error';
+                bindingSummary = fillDiagnosticTemplate(lang.bindingTraceFailed, {
+                    failed: bindingFailures,
+                    cancelled: cancellationsWithoutInput,
+                    macroFailed: macroFailures
+                });
+            } else if (macroSuppressed > 0) {
+                bindingStatus = 'warning';
+                bindingSummary = fillDiagnosticTemplate(lang.bindingTraceSuppressed, { suppressed: macroSuppressed });
+            } else if (unmatchedShortcuts > 0) {
+                bindingStatus = 'warning';
+                bindingSummary = fillDiagnosticTemplate(lang.bindingTraceUnmatched, { unmatched: unmatchedShortcuts });
+            } else if ((Number(binding.attemptsStarted) || 0) === 0 && (Number(input.shortcutsMatched) || 0) === 0) {
+                bindingSummary = lang.bindingTraceIdle;
+            }
+            add('input', bindingStatus, lang.bindingTraceTitle, bindingSummary);
 
             const selfTest = ocrStatus.selfTest || {};
             const modelValue = selfTest.value || {};
@@ -2804,12 +2889,15 @@
         window.startMacroBind = (index, e) => {
             e.stopPropagation();
             cancelBinding({ syncFilter: false });
-            bindingTarget = { type: 'macro', index, chordKeys: [] };
+            bindingTarget = { type: 'macro', index, chordKeys: [], startedAt: Date.now(), observedInput: false };
+            recordBindingDiagnostic('started');
             renderMainList();
             attachListeners();
         }
         window.startSettingBind = (settingKey, e) => {
-            e.stopPropagation(); cancelBinding({ syncFilter: false }); bindingTarget = { type: 'setting', key: settingKey };
+            e.stopPropagation(); cancelBinding({ syncFilter: false });
+            bindingTarget = { type: 'setting', key: settingKey, startedAt: Date.now(), observedInput: false };
+            recordBindingDiagnostic('started');
             updateSettingsUI();
             const btn = document.getElementById(`btn-set-${settingKey}`);
             btn.textContent = i18n[currentLang].waiting; btn.classList.add('listening');
@@ -2862,9 +2950,13 @@
         }
 
         function cancelBinding(options = {}) {
-            const { render = true, syncFilter = true } = options;
+            const { render = true, syncFilter = true, recordDiagnostic = true } = options;
             let needsRender = false;
             if (bindingTarget) {
+                if (recordDiagnostic) {
+                    const elapsed = Date.now() - (Number(bindingTarget.startedAt) || Date.now());
+                    recordBindingDiagnostic(!bindingTarget.observedInput && elapsed >= 2000 ? 'failed' : 'cancelled');
+                }
                 if (bindingTarget.type === 'setting') {
                     const btn = document.getElementById(`btn-set-${bindingTarget.key}`);
                     if(btn) btn.classList.remove('listening');
@@ -2900,6 +2992,10 @@
             if (!bindingTarget || bindingFilterTransition) return false;
             const input = normalizeGlobalInputEvent(inputValue);
             if (!input) return false;
+            if (!bindingTarget.observedInput) {
+                bindingTarget.observedInput = true;
+                recordBindingDiagnostic('input_observed');
+            }
             const keyStr = input.key;
             if (keyStr === 'Escape') {
                 settleBindingTransition(() => cancelBinding());
@@ -2909,10 +3005,12 @@
                 if (keyStr === 'Enter') {
                     const hotkey = normalizeHotkeyChord(bindingTarget.chordKeys || []);
                     if (hotkey) settleBindingTransition(() => saveInput(hotkey));
+                    else recordRuntimeWarning('shortcut_binding', 'empty_chord_confirmation');
                     return true;
                 }
                 const chordKeys = bindingChordFromInput(input);
                 if (!chordKeys) {
+                    recordRuntimeWarning('shortcut_binding', 'chord_limit_exceeded');
                     showToast(currentLang === 'zh' ? '组合键最多支持 8 个按键' : 'A chord can contain up to 8 keys.', true);
                     return true;
                 }
@@ -2942,8 +3040,10 @@
                 const hotkey = normalizeHotkeyChord(keyStr);
                 if (!hotkey) return;
                 if (gameSettings.ocrHotkey && hotkey === gameSettings.ocrHotkey) {
+                    recordRuntimeWarning('shortcut_binding', 'ocr_hotkey_conflict');
+                    recordBindingDiagnostic('failed');
                     showToast(lang.msgOcrHotkeyConflict, true);
-                    cancelBinding();
+                    cancelBinding({ recordDiagnostic: false });
                     return;
                 }
                 const conflictIdx = activeLoadout.findIndex((s, idx) => s.hotkey === hotkey && idx !== bindingTarget.index);
@@ -2953,11 +3053,13 @@
                 }
                 activeLoadout[bindingTarget.index].hotkey = hotkey;
                 loadoutChanged = true;
+                recordBindingDiagnostic('completed');
                 showToast(`${lang.msgMacro} ${formatDisplayKey(hotkey)}`);
             } else if (bindingTarget.type === 'setting') {
                 gameSettings[bindingTarget.key] = keyStr;
+                recordBindingDiagnostic('completed');
             }
-            cancelBinding({ render: !loadoutChanged });
+            cancelBinding({ render: !loadoutChanged, recordDiagnostic: false });
             if (loadoutChanged) commitLoadoutChange();
         }
 
@@ -3184,10 +3286,12 @@
             const lang = i18n[currentLang];
             if (isOcrRunning) return;
             if (!gameSettings.ocrRegion) {
+                recordRuntimeWarning('ocr_auto_equip', 'region_not_configured');
                 showToast(lang.msgOcrNoRegion, true);
                 return;
             }
             if (!window.electronAPI || !window.electronAPI.recognizeOcrRegion) {
+                recordRuntimeWarning('ocr_auto_equip', 'ipc_unavailable');
                 showToast(lang.msgOcrFailed.replace('{error}', 'IPC unavailable'), true);
                 return;
             }
@@ -3200,16 +3304,19 @@
                     throw new Error((result && result.error) || 'unknown');
                 }
                 if (!result.text) {
+                    recordRuntimeWarning('ocr_auto_equip', 'no_text_detected');
                     showToast(lang.msgOcrNoText, true);
                     return;
                 }
                 const matches = matchOcrStratagems(result.text);
                 if (matches.length === 0) {
+                    recordRuntimeWarning('ocr_auto_equip', 'no_stratagem_match');
                     showToast(lang.msgOcrNoMatch, true);
                     return;
                 }
                 const equipResult = applyOcrLoadout(matches);
                 if (!equipResult.ok && equipResult.reason === 'no-space') {
+                    recordRuntimeWarning('ocr_auto_equip', 'no_available_slot');
                     showToast(lang.msgOcrNoSpace, true);
                     return;
                 }

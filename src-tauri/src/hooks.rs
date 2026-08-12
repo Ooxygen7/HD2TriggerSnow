@@ -1,4 +1,4 @@
-use crate::input;
+use crate::{input, runtime_diagnostics};
 use serde::{Deserialize, Serialize};
 use std::{
     sync::{
@@ -6,7 +6,7 @@ use std::{
         mpsc, Arc, Mutex, OnceLock, RwLock,
     },
     thread,
-    time::Duration,
+    time::{Duration, SystemTime, UNIX_EPOCH},
 };
 use tauri::{AppHandle, Emitter};
 use windows::Win32::{
@@ -42,6 +42,14 @@ static NATIVE_ACTIONS_ROUTED: AtomicU64 = AtomicU64::new(0);
 static BINDING_EVENTS_FORWARDED: AtomicU64 = AtomicU64::new(0);
 static OWN_SYNTHETIC_EVENTS_IGNORED: AtomicU64 = AtomicU64::new(0);
 static EXTERNAL_INJECTED_EVENTS_ACCEPTED: AtomicU64 = AtomicU64::new(0);
+static RELEVANT_INPUT_EDGES: AtomicU64 = AtomicU64::new(0);
+static SHORTCUTS_MATCHED: AtomicU64 = AtomicU64::new(0);
+static UNMATCHED_SHORTCUT_EDGES: AtomicU64 = AtomicU64::new(0);
+static NATIVE_MACROS_COMPLETED: AtomicU64 = AtomicU64::new(0);
+static NATIVE_MACROS_FAILED: AtomicU64 = AtomicU64::new(0);
+static LAST_RELEVANT_INPUT_AT_UNIX_MS: AtomicU64 = AtomicU64::new(0);
+static LAST_SHORTCUT_MATCH_AT_UNIX_MS: AtomicU64 = AtomicU64::new(0);
+static LAST_MACRO_COMPLETION_AT_UNIX_MS: AtomicU64 = AtomicU64::new(0);
 static FILTER_INITIALIZED: AtomicBool = AtomicBool::new(false);
 static CAPTURE_ALL_INPUTS: AtomicBool = AtomicBool::new(true);
 static KEY_FILTER: [AtomicU64; 4] = [const { AtomicU64::new(0) }; 4];
@@ -209,6 +217,14 @@ pub struct InputDiagnostics {
     binding_events_forwarded: u64,
     own_synthetic_events_ignored: u64,
     external_injected_events_accepted: u64,
+    relevant_input_edges: u64,
+    shortcuts_matched: u64,
+    unmatched_shortcut_edges: u64,
+    native_macros_completed: u64,
+    native_macros_failed: u64,
+    last_relevant_input_at_unix_ms: Option<u64>,
+    last_shortcut_match_at_unix_ms: Option<u64>,
+    last_macro_completion_at_unix_ms: Option<u64>,
 }
 
 pub fn start(app: AppHandle) -> Result<(), String> {
@@ -323,7 +339,25 @@ pub fn diagnostics() -> InputDiagnostics {
         own_synthetic_events_ignored: OWN_SYNTHETIC_EVENTS_IGNORED.load(Ordering::Relaxed),
         external_injected_events_accepted: EXTERNAL_INJECTED_EVENTS_ACCEPTED
             .load(Ordering::Relaxed),
+        relevant_input_edges: RELEVANT_INPUT_EDGES.load(Ordering::Relaxed),
+        shortcuts_matched: SHORTCUTS_MATCHED.load(Ordering::Relaxed),
+        unmatched_shortcut_edges: UNMATCHED_SHORTCUT_EDGES.load(Ordering::Relaxed),
+        native_macros_completed: NATIVE_MACROS_COMPLETED.load(Ordering::Relaxed),
+        native_macros_failed: NATIVE_MACROS_FAILED.load(Ordering::Relaxed),
+        last_relevant_input_at_unix_ms: nonzero_timestamp(
+            LAST_RELEVANT_INPUT_AT_UNIX_MS.load(Ordering::Relaxed),
+        ),
+        last_shortcut_match_at_unix_ms: nonzero_timestamp(
+            LAST_SHORTCUT_MATCH_AT_UNIX_MS.load(Ordering::Relaxed),
+        ),
+        last_macro_completion_at_unix_ms: nonzero_timestamp(
+            LAST_MACRO_COMPLETION_AT_UNIX_MS.load(Ordering::Relaxed),
+        ),
     }
+}
+
+fn nonzero_timestamp(timestamp: u64) -> Option<u64> {
+    (timestamp != 0).then_some(timestamp)
 }
 
 fn shortcut_state() -> &'static RwLock<ShortcutState> {
@@ -862,9 +896,18 @@ fn forward_events(app: AppHandle, receiver: mpsc::Receiver<InputEvent>) {
                     })
                     .ok();
                 PROCESSED_EVENTS.fetch_add(1, Ordering::Relaxed);
+                let event_time = unix_time_millis();
+                RELEVANT_INPUT_EDGES.fetch_add(1, Ordering::Relaxed);
+                LAST_RELEVANT_INPUT_AT_UNIX_MS.store(event_time, Ordering::Relaxed);
                 if edge.captured_for_binding {
                     BINDING_EVENTS_FORWARDED.fetch_add(1, Ordering::Relaxed);
-                    let _ = emit_binding_edge(&app, edge);
+                    if emit_binding_edge(&app, edge).is_err() {
+                        runtime_diagnostics::record_error(
+                            "input",
+                            "binding_event_delivery",
+                            "event_delivery_failed",
+                        );
+                    }
                     continue;
                 }
                 let routed = shortcut_state()
@@ -873,14 +916,28 @@ fn forward_events(app: AppHandle, receiver: mpsc::Receiver<InputEvent>) {
                     .route(edge.key, edge.pressed);
                 match routed {
                     Some(RoutedShortcut::Macro(binding)) => {
+                        SHORTCUTS_MATCHED.fetch_add(1, Ordering::Relaxed);
+                        LAST_SHORTCUT_MATCH_AT_UNIX_MS.store(event_time, Ordering::Relaxed);
                         start_native_macro(&app, binding);
                     }
                     Some(RoutedShortcut::Action(action)) => {
+                        SHORTCUTS_MATCHED.fetch_add(1, Ordering::Relaxed);
+                        LAST_SHORTCUT_MATCH_AT_UNIX_MS.store(event_time, Ordering::Relaxed);
                         NATIVE_ACTIONS_ROUTED.fetch_add(1, Ordering::Relaxed);
-                        let _ =
-                            app.emit_to("main", "native-shortcut", NativeShortcutEvent { action });
+                        if app
+                            .emit_to("main", "native-shortcut", NativeShortcutEvent { action })
+                            .is_err()
+                        {
+                            runtime_diagnostics::record_error(
+                                "input",
+                                "shortcut_event_delivery",
+                                "event_delivery_failed",
+                            );
+                        }
                     }
-                    None => {}
+                    None => {
+                        UNMATCHED_SHORTCUT_EDGES.fetch_add(1, Ordering::Relaxed);
+                    }
                 }
             }
             InputEvent::Shutdown => break,
@@ -900,6 +957,7 @@ fn emit_binding_edge(app: &AppHandle, edge: InputEdge) -> tauri::Result<()> {
 fn start_native_macro(app: &AppHandle, binding: NativeMacro) {
     let Ok(guard) = input::reserve() else {
         NATIVE_MACROS_SUPPRESSED.fetch_add(1, Ordering::Relaxed);
+        runtime_diagnostics::record_warning("input", "macro_start", "macro_already_running");
         return;
     };
     let started = NativeMacroEvent {
@@ -907,7 +965,16 @@ fn start_native_macro(app: &AppHandle, binding: NativeMacro) {
         duration: binding.prepared.duration_ms(),
         error: None,
     };
-    let _ = app.emit_to("main", "native-macro-started", started.clone());
+    if app
+        .emit_to("main", "native-macro-started", started.clone())
+        .is_err()
+    {
+        runtime_diagnostics::record_warning(
+            "input",
+            "macro_event_delivery",
+            "event_delivery_failed",
+        );
+    }
 
     let worker_app = app.clone();
     let prepared = binding.prepared;
@@ -916,16 +983,57 @@ fn start_native_macro(app: &AppHandle, binding: NativeMacro) {
     NATIVE_MACROS_STARTED.fetch_add(1, Ordering::Relaxed);
     tauri::async_runtime::spawn_blocking(move || {
         let error = input::execute_prepared_macro(&prepared, guard).err();
-        let _ = worker_app.emit_to(
-            "main",
-            "native-macro-finished",
-            NativeMacroEvent {
-                overlay_index,
-                duration,
-                error,
-            },
-        );
+        LAST_MACRO_COMPLETION_AT_UNIX_MS.store(unix_time_millis(), Ordering::Relaxed);
+        if let Some(error) = error.as_deref() {
+            if error != "Macro was cancelled" {
+                NATIVE_MACROS_FAILED.fetch_add(1, Ordering::Relaxed);
+                runtime_diagnostics::record_error(
+                    "input",
+                    "macro_execution",
+                    macro_error_code(error),
+                );
+            }
+        } else {
+            NATIVE_MACROS_COMPLETED.fetch_add(1, Ordering::Relaxed);
+        }
+        if worker_app
+            .emit_to(
+                "main",
+                "native-macro-finished",
+                NativeMacroEvent {
+                    overlay_index,
+                    duration,
+                    error,
+                },
+            )
+            .is_err()
+        {
+            runtime_diagnostics::record_warning(
+                "input",
+                "macro_event_delivery",
+                "event_delivery_failed",
+            );
+        }
     });
+}
+
+fn macro_error_code(error: &str) -> &'static str {
+    if error.contains("privilege level") || error.contains("rejected synthetic") {
+        "windows_input_rejected"
+    } else if error.contains("cleanup also failed") {
+        "input_cleanup_failed"
+    } else if error.contains("shutting down") || error.contains("cancelled") {
+        "macro_cancelled"
+    } else {
+        "macro_execution_failed"
+    }
+}
+
+fn unix_time_millis() -> u64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|duration| u64::try_from(duration.as_millis()).unwrap_or(u64::MAX))
+        .unwrap_or(0)
 }
 
 fn run_message_loop(ready_sender: mpsc::SyncSender<Result<(), String>>) {
@@ -1626,5 +1734,22 @@ mod tests {
             input::SYNTHETIC_INPUT_MARKER
         ));
         assert!(!should_ignore_mouse_event(0, input::SYNTHETIC_INPUT_MARKER));
+    }
+
+    #[test]
+    fn classifies_macro_failures_without_exporting_raw_error_text() {
+        assert_eq!(
+            macro_error_code("Windows rejected synthetic keyboard input; check privilege level"),
+            "windows_input_rejected"
+        );
+        assert_eq!(
+            macro_error_code("primary failure; input cleanup also failed: secondary"),
+            "input_cleanup_failed"
+        );
+        assert_eq!(macro_error_code("Macro was cancelled"), "macro_cancelled");
+        assert_eq!(
+            macro_error_code("some future internal failure"),
+            "macro_execution_failed"
+        );
     }
 }

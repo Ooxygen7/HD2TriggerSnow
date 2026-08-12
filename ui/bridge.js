@@ -4,7 +4,34 @@
     throw new Error("Tauri runtime is unavailable");
   }
 
-  const invoke = (command, argumentsObject) => tauri.core.invoke(command, argumentsObject);
+  const rawInvoke = (command, argumentsObject) => tauri.core.invoke(command, argumentsObject);
+  const diagnosticCommands = new Set([
+    "record_runtime_failure",
+    "record_runtime_warning",
+    "record_binding_diagnostic"
+  ]);
+  const diagnosticFailureCode = (error) => {
+    const text = String(error || "").toLowerCase();
+    if (text.includes("timed out") || text.includes("timeout")) return "timeout";
+    if (text.includes("access") || text.includes("permission") || text.includes("privilege")) return "permission_denied";
+    if (text.includes("invalid") || text.includes("unsupported") || text.includes("malformed")) return "invalid_data";
+    if (text.includes("unavailable") || text.includes("not available")) return "unavailable";
+    if (text.includes("cancelled") || text.includes("canceled")) return "cancelled";
+    return "ipc_rejected";
+  };
+  const invoke = async (command, argumentsObject) => {
+    try {
+      return await rawInvoke(command, argumentsObject);
+    } catch (error) {
+      if (!diagnosticCommands.has(command)) {
+        void rawInvoke("record_runtime_failure", {
+          operation: command,
+          code: diagnosticFailureCode(error)
+        }).catch(() => {});
+      }
+      throw error;
+    }
+  };
   const subscribe = (event, callback) => tauri.event.listen(event, ({ payload }) => callback(payload));
 
   window.electronAPI = Object.freeze({
@@ -27,6 +54,9 @@
     onQuitRequested: (callback) => subscribe("quit-requested", callback),
     setGlobalInputFilter: (config, captureAll) => invoke("set_global_input_filter", { config, captureAll }),
     getInputDiagnostics: () => invoke("get_input_diagnostics"),
+    recordRuntimeFailure: (operation, code) => rawInvoke("record_runtime_failure", { operation, code }),
+    recordRuntimeWarning: (operation, code) => rawInvoke("record_runtime_warning", { operation, code }),
+    recordBindingDiagnostic: (stage) => rawInvoke("record_binding_diagnostic", { stage }),
     collectDiagnosticsReport: () => invoke("collect_diagnostics_report"),
     exportDiagnosticsReport: (report) => invoke("export_diagnostics_report", { report }),
     onNativeShortcut: (callback) => subscribe("native-shortcut", callback),

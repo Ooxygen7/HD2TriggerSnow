@@ -33,6 +33,7 @@ const ocrHelpSource = readUiFile("ocr-help.html");
 const mainSource = fs.readFileSync(path.join(root, "src-tauri", "src", "main.rs"), "utf8");
 const hooksSource = fs.readFileSync(path.join(root, "src-tauri", "src", "hooks.rs"), "utf8");
 const inputSource = fs.readFileSync(path.join(root, "src-tauri", "src", "input.rs"), "utf8");
+const runtimeDiagnosticsSource = fs.readFileSync(path.join(root, "src-tauri", "src", "runtime_diagnostics.rs"), "utf8");
 const updatesSource = fs.readFileSync(path.join(root, "src-tauri", "src", "updates.rs"), "utf8");
 
 assert.match(indexSource, /<div id="titlebar" data-tauri-drag-region="deep">/);
@@ -304,8 +305,20 @@ assert.match(indexSource, /id="btn-diagnostics-export"[^>]*onclick="exportDiagno
 assert.match(indexSource, /No usernames, full paths, hotkey values, stratagem names, or screenshots/);
 assert.match(bridgeSource, /collectDiagnosticsReport:.*collect_diagnostics_report/);
 assert.match(bridgeSource, /exportDiagnosticsReport:.*export_diagnostics_report/);
+assert.match(bridgeSource, /recordRuntimeFailure:.*record_runtime_failure/);
+assert.match(bridgeSource, /recordRuntimeWarning:.*record_runtime_warning/);
+assert.match(bridgeSource, /recordBindingDiagnostic:.*record_binding_diagnostic/);
 assert.match(mainSource, /async fn\s+collect_diagnostics_report\s*\(/);
 assert.match(mainSource, /async fn\s+export_diagnostics_report\s*\(/);
+assert.match(mainSource, /fn\s+record_binding_diagnostic\s*\(/);
+assert.match(runtimeDiagnosticsSource, /const MAX_RECENT_INCIDENTS:\s*usize\s*=\s*32/);
+assert.match(runtimeDiagnosticsSource, /fn\s+allowlisted_operation\s*\(/);
+assert.match(runtimeDiagnosticsSource, /fn\s+allowlisted_code\s*\(/);
+assert.match(indexSource, /recordBindingDiagnostic\('started'\)/);
+assert.match(indexSource, /recordBindingDiagnostic\('input_observed'\)/);
+assert.match(indexSource, /recordBindingDiagnostic\('completed'\)/);
+assert.match(indexSource, /addEventListener\('error'.*recordRuntimeFailure\('renderer_runtime', 'uncaught_error'\)/);
+assert.match(indexSource, /addEventListener\('unhandledrejection'.*recordRuntimeFailure\('renderer_runtime', 'unhandled_rejection'\)/);
 
 const diagnosticI18nStart = indexSource.indexOf("const diagnosticsI18n = {");
 const diagnosticI18nEnd = indexSource.indexOf("const defaultStratagemDB", diagnosticI18nStart);
@@ -330,7 +343,8 @@ const healthyReport = {
   application: { version: "2.0.1", architecture: "x86_64", webviewVersion: "140.0" },
   storage: { writable: true, invalidFileCount: 0, recoverableBackupCount: 0, files: [{ status: "valid" }] },
   configuration: { settingsLoaded: true, slotCount: 10, equippedStratagems: 4, boundStratagems: 3, presetCount: 2, duplicateBindingGroups: 0 },
-  input: { hookRunning: true, filterInitialized: true, droppedEvents: 0, maxQueueDepth: 2, queueCapacity: 512, processedEvents: 20 },
+  input: { hookRunning: true, filterInitialized: true, droppedEvents: 0, maxQueueDepth: 2, queueCapacity: 512, processedEvents: 20, shortcutsMatched: 2, unmatchedShortcutEdges: 0, nativeMacrosCompleted: 2, nativeMacrosFailed: 0 },
+  runtime: { errorCount: 0, warningCount: 0, recentIncidents: [], binding: { active: false, attemptsStarted: 1, attemptsCompleted: 1, attemptsFailed: 0, cancellationsWithoutInput: 0 } },
   ocr: {
     modelFilesPresent: true,
     selfTest: { ok: true, value: { detectionModelLoaded: true, recognitionModelLoaded: true, dictionaryEntries: 1000 } },
@@ -340,10 +354,10 @@ const healthyReport = {
   updateService: { reachable: true, validResponse: true, latestVersion: "2.0.1", latencyMs: 50 },
 };
 const healthyChecks = diagnosticContext.diagnosticsHarness.buildDiagnosticChecks(healthyReport, "en");
-assert.equal(healthyChecks.length, 10);
+assert.equal(healthyChecks.length, 12);
 assert.deepEqual(
   JSON.parse(JSON.stringify(diagnosticContext.diagnosticsHarness.summarizeDiagnosticChecks(healthyChecks))),
-  { healthy: 10, warnings: 0, errors: 0 },
+  { healthy: 12, warnings: 0, errors: 0 },
 );
 const unhealthyReport = structuredClone(healthyReport);
 unhealthyReport.updateService = { reachable: false, validResponse: false, error: "offline" };
@@ -353,7 +367,19 @@ unhealthyReport.storage.invalidFileCount = 1;
 const unhealthySummary = diagnosticContext.diagnosticsHarness.summarizeDiagnosticChecks(
   diagnosticContext.diagnosticsHarness.buildDiagnosticChecks(unhealthyReport, "zh"),
 );
-assert.deepEqual(JSON.parse(JSON.stringify(unhealthySummary)), { healthy: 6, warnings: 2, errors: 2 });
+assert.deepEqual(JSON.parse(JSON.stringify(unhealthySummary)), { healthy: 8, warnings: 2, errors: 2 });
+const runtimeFailureReport = structuredClone(healthyReport);
+runtimeFailureReport.runtime.errorCount = 1;
+runtimeFailureReport.runtime.recentIncidents = [{ component: "input", operation: "macro_execution", code: "windows_input_rejected" }];
+runtimeFailureReport.runtime.binding.attemptsFailed = 1;
+runtimeFailureReport.input.nativeMacrosFailed = 1;
+assert.deepEqual(
+  JSON.parse(JSON.stringify(diagnosticContext.diagnosticsHarness.summarizeDiagnosticChecks(
+    diagnosticContext.diagnosticsHarness.buildDiagnosticChecks(runtimeFailureReport, "zh"),
+  ))),
+  { healthy: 10, warnings: 0, errors: 2 },
+  "runtime and shortcut failures must appear as diagnostic errors",
+);
 
 assert.match(bridgeSource, /subscribe\("quit-requested", callback\)/);
 assert.match(indexSource, /window\.electronAPI\.onQuitRequested/);
@@ -574,5 +600,35 @@ assert.deepEqual(bridgeCalls.slice(-2), ["check_for_updates", "open_release_down
 await bridgeContext.window.electronAPI.collectDiagnosticsReport();
 await bridgeContext.window.electronAPI.exportDiagnosticsReport({ schemaVersion: 1 });
 assert.deepEqual(bridgeCalls.slice(-2), ["collect_diagnostics_report", "export_diagnostics_report"]);
+await bridgeContext.window.electronAPI.recordRuntimeWarning("shortcut_binding", "empty_chord_confirmation");
+await bridgeContext.window.electronAPI.recordBindingDiagnostic("started");
+assert.deepEqual(bridgeCalls.slice(-2), ["record_runtime_warning", "record_binding_diagnostic"]);
+
+const rejectedBridgeCalls = [];
+const rejectedBridgeContext = vm.createContext({
+  window: {
+    __TAURI__: {
+      core: {
+        invoke(command, argumentsObject) {
+          rejectedBridgeCalls.push({ command, argumentsObject });
+          return command === "toggle_overlay"
+            ? Promise.reject(new Error("private raw failure text"))
+            : Promise.resolve();
+        },
+      },
+      event: { listen: () => Promise.resolve(() => {}) },
+    },
+  },
+});
+vm.runInContext(bridgeSource, rejectedBridgeContext, { filename: "bridge.js:failure-tracking" });
+await assert.rejects(rejectedBridgeContext.window.electronAPI.toggleOverlay(), /private raw failure text/);
+assert.deepEqual(
+  JSON.parse(JSON.stringify(rejectedBridgeCalls)),
+  [
+    { command: "toggle_overlay" },
+    { command: "record_runtime_failure", argumentsObject: { operation: "toggle_overlay", code: "ipc_rejected" } },
+  ],
+  "rejected native operations must record a structured code without copying raw error text",
+);
 
 console.log(`UI, native-window, and ${new Set(bundledIcons).size} icon regression tests passed.`);
