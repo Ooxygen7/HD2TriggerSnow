@@ -1,4 +1,4 @@
-use crate::{config, hooks, ocr, updates};
+use crate::{config, hooks, ocr, runtime_diagnostics, updates};
 use serde::Serialize;
 use serde_json::Value;
 use std::{
@@ -124,6 +124,7 @@ pub struct LocalDiagnostics {
     pub configuration: ConfigurationDiagnostics,
     pub migration: config::MigrationReport,
     pub input: hooks::InputDiagnostics,
+    pub runtime: runtime_diagnostics::RuntimeDiagnostics,
     pub ocr_model_files_present: bool,
 }
 
@@ -138,6 +139,7 @@ pub struct DiagnosticReport {
     pub configuration: ConfigurationDiagnostics,
     pub migration: config::MigrationReport,
     pub input: hooks::InputDiagnostics,
+    pub runtime: runtime_diagnostics::RuntimeDiagnostics,
     pub ocr: StaticOcrDiagnostics,
     pub update_service: updates::UpdateEndpointDiagnostics,
     pub privacy: PrivacyDiagnostics,
@@ -184,6 +186,7 @@ pub fn collect_local(
         storage,
         migration,
         input: hooks::diagnostics(),
+        runtime: runtime_diagnostics::snapshot(),
         ocr_model_files_present: ocr::model_files_exist(ocr_model_dir),
     }
 }
@@ -223,6 +226,7 @@ pub fn assemble_report(
         configuration: local.configuration,
         migration: local.migration,
         input: local.input,
+        runtime: local.runtime,
         ocr: StaticOcrDiagnostics {
             model_files_present: local.ocr_model_files_present,
             self_test: ocr_self_test,

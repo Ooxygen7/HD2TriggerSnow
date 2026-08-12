@@ -7,6 +7,7 @@ mod hooks;
 mod input;
 mod legacy;
 mod ocr;
+mod runtime_diagnostics;
 mod tray;
 mod updates;
 mod windows;
@@ -228,12 +229,33 @@ fn migration_status(state: State<'_, AppState>) -> Result<MigrationReport, Strin
 
 #[tauri::command]
 fn set_global_input_filter(config: hooks::ShortcutConfig, capture_all: bool) -> Result<(), String> {
-    hooks::configure(config, capture_all)
+    hooks::configure(config, capture_all).inspect_err(|_| {
+        runtime_diagnostics::record_error(
+            "input",
+            "shortcut_filter_update",
+            "configuration_rejected",
+        );
+    })
 }
 
 #[tauri::command]
 fn get_input_diagnostics() -> hooks::InputDiagnostics {
     hooks::diagnostics()
+}
+
+#[tauri::command]
+fn record_runtime_failure(operation: String, code: String) {
+    runtime_diagnostics::record_error("frontend", &operation, &code);
+}
+
+#[tauri::command]
+fn record_runtime_warning(operation: String, code: String) {
+    runtime_diagnostics::record_warning("frontend", &operation, &code);
+}
+
+#[tauri::command]
+fn record_binding_diagnostic(stage: String) -> Result<(), String> {
+    runtime_diagnostics::record_binding_stage(&stage)
 }
 
 #[tauri::command]
@@ -851,6 +873,9 @@ fn main() {
             migration_status,
             set_global_input_filter,
             get_input_diagnostics,
+            record_runtime_failure,
+            record_runtime_warning,
+            record_binding_diagnostic,
             collect_diagnostics_report,
             export_diagnostics_report,
             toggle_overlay,
