@@ -328,6 +328,28 @@ assert.match(indexSource, /if \(isOverlayVisible\) \{[\s\S]*gameSettings\.ovExec
 assert.match(indexSource, /directionOnly:\s*false/, "direction-only mode must be opt-in");
 assert.match(indexSource, /directionOnly:\s*!!gameSettings\.directionOnly/);
 assert.match(indexSource, /id="direction-only-off"[^>]*onclick="setDirectionOnly\(false\)"/);
+assert.match(indexSource, /autoOpenOverlay:\s*false/, "startup overlay must be opt-in");
+assert.match(indexSource, /autoLockOverlay:\s*false/, "overlay auto-lock must be opt-in");
+assert.match(
+  indexSource,
+  /id="auto-open-overlay-off"[^>]*onclick="setAutoOpenOverlay\(false\)"[^>]*>关闭</,
+  "the startup overlay setting must render off by default",
+);
+assert.match(
+  indexSource,
+  /id="auto-lock-overlay-off"[^>]*onclick="setAutoLockOverlay\(false\)"[^>]*>关闭</,
+  "the overlay auto-lock setting must render off by default",
+);
+assert.match(
+  indexSource,
+  /if \(gameSettings\.autoOpenOverlay === true\) \{\s*await window\.handleToggleOverlay\(\);/,
+  "startup must show the overlay only after an explicit opt-in",
+);
+assert.match(
+  indexSource,
+  /if \(gameSettings\.autoLockOverlay === true\) \{[\s\S]{0,300}await window\.electronAPI\.lockOverlay\(\);/,
+  "every overlay show must honor the explicit auto-lock setting",
+);
 assert.match(hooksSource, /pressed_inputs:\s*Vec</, "native events must include the held-input snapshot");
 assert.match(indexSource, /id="txt-update-title">检测到新版本</);
 assert.match(indexSource, /id="btn-update-download"[^>]*>前往下载</);
@@ -338,6 +360,63 @@ assert.match(updatesSource, /update\.unsnow\.online/);
 assert.match(updatesSource, /QuickStratagemTool\/releases\/latest/);
 assert.match(updatesSource, /WinHttpSetTimeouts/);
 assert.match(updatesSource, /latest_version <= current_version/);
+
+const overlayToggleStart = indexSource.indexOf("window.handleToggleOverlay = async");
+const overlayToggleEnd = indexSource.indexOf("window.unlockOverlaySafely", overlayToggleStart);
+assert.notEqual(overlayToggleStart, -1, "could not find overlay toggle handler");
+assert.notEqual(overlayToggleEnd, -1, "could not find overlay toggle handler end marker");
+const overlayCalls = [];
+const overlayToasts = [];
+const overlayContext = vm.createContext({
+  console: { ...console, error() {} },
+  window: {
+    electronAPI: {
+      async toggleOverlay() { overlayCalls.push("toggle"); return true; },
+      async resizeOverlay() { overlayCalls.push("resize"); },
+      async updateOverlaySettings() { overlayCalls.push("settings"); },
+      async updateOverlay() { overlayCalls.push("data"); },
+      async updateSelection() { overlayCalls.push("selection"); },
+      async lockOverlay() { overlayCalls.push("lock"); },
+    },
+  },
+});
+vm.runInContext(
+  `
+    let isOverlayVisible = false;
+    let overlaySelectedIndex = 0;
+    const activeLoadout = [];
+    const gameSettings = {
+      ovWidth: 300,
+      ovHeight: 550,
+      ovOpacity: 100,
+      ovStyle: "text",
+      autoLockOverlay: false
+    };
+    const currentLang = "en";
+    const i18n = { en: { msgOverlayFailed: "Overlay operation failed: {error}" } };
+    async function syncGlobalInputFilter() { globalThis.overlayCalls.push("filter"); }
+    function showToast(message, isError) { globalThis.overlayToasts.push({ message, isError }); }
+    ${indexSource.slice(overlayToggleStart, overlayToggleEnd)}
+    globalThis.overlayHarness = {
+      toggle: window.handleToggleOverlay,
+      settings: gameSettings,
+      visible: () => isOverlayVisible
+    };
+  `,
+  Object.assign(overlayContext, { overlayCalls, overlayToasts }),
+  { filename: "index.html:overlay-toggle" },
+);
+await overlayContext.overlayHarness.toggle();
+assert.deepEqual(overlayCalls, ["toggle", "filter", "resize", "settings", "data", "selection"]);
+overlayCalls.length = 0;
+overlayContext.overlayHarness.settings.autoLockOverlay = true;
+await overlayContext.overlayHarness.toggle();
+assert.deepEqual(overlayCalls, ["toggle", "filter", "resize", "settings", "data", "selection", "lock"]);
+overlayCalls.length = 0;
+overlayContext.window.electronAPI.lockOverlay = async () => { throw new Error("simulated lock failure"); };
+await overlayContext.overlayHarness.toggle();
+assert.equal(overlayContext.overlayHarness.visible(), true, "a lock failure must not mark a visible overlay as hidden");
+assert.equal(overlayToasts.at(-1).isError, true, "an auto-lock failure must be visible to the user");
 
 const updateHelperStart = indexSource.indexOf("function updateUpdateModalText");
 const updateHelperEnd = indexSource.indexOf("window.goSponsor", updateHelperStart);
