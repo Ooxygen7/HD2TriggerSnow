@@ -1014,6 +1014,7 @@
         let maxSlots = DEFAULT_SLOT_COUNT;
         let bindingTarget = null;
         let bindingFilterTransition = false;
+        const bindingDomPressedKeys = new Set();
         let isOverlayVisible = false; 
         let ocrDisplays = [];
         let pendingUpdateInfo = null;
@@ -1111,6 +1112,13 @@
             }
             pressedInputs.push(key);
             return { key, pressedInputs };
+        }
+
+        function domBindingInputFromCode(code, pressedKeys) {
+            const key = canonicalGlobalKeyName(code);
+            if (!key || !pressedKeys || typeof pressedKeys.add !== 'function') return null;
+            pressedKeys.add(key);
+            return { key, pressedInputs: [...pressedKeys] };
         }
 
         function bindingChordFromInput(value) {
@@ -2418,6 +2426,7 @@
 
         function attachListeners() { 
             window.addEventListener('keydown', handleKeyInput); 
+            window.addEventListener('keyup', handleKeyUp);
             window.addEventListener('mousedown', handleMouseInput); 
             syncGlobalInputFilter();
         }
@@ -2425,7 +2434,17 @@
         function handleKeyInput(e) {
             e.preventDefault();
             e.stopPropagation();
-            if (e.code === 'Escape') settleBindingTransition(() => cancelBinding());
+            if (e.repeat || !bindingTarget) return;
+            const input = domBindingInputFromCode(e.code, bindingDomPressedKeys);
+            if (input) captureBindingInput(input);
+        }
+
+        function handleKeyUp(e) {
+            if (!bindingTarget) return;
+            e.preventDefault();
+            e.stopPropagation();
+            const key = canonicalGlobalKeyName(e.code);
+            if (key) bindingDomPressedKeys.delete(key);
         }
 
         function handleMouseInput(e) {
@@ -2447,7 +2466,9 @@
                 needsRender = true;
             }
             bindingTarget = null; 
+            bindingDomPressedKeys.clear();
             window.removeEventListener('keydown', handleKeyInput); 
+            window.removeEventListener('keyup', handleKeyUp);
             window.removeEventListener('mousedown', handleMouseInput);
             if (needsRender && render) renderMainList(); 
             updateSettingsUI();
@@ -2799,8 +2820,16 @@
             if (bindingTarget) captureBindingInput(inputValue);
         }
 
+        function handleGlobalKeyboardInput(inputValue) {
+            // The focused binding UI owns keyboard capture. Ignore the matching
+            // low-level-hook event here so one physical edge is never recorded
+            // twice; mouse and wheel bindings still use the native hook.
+            if (bindingTarget && document.hasFocus()) return;
+            handleGlobalInput(inputValue);
+        }
+
         if (window.electronAPI) {
-            if (window.electronAPI.onGlobalKeyDown) window.electronAPI.onGlobalKeyDown(handleGlobalInput);
+            if (window.electronAPI.onGlobalKeyDown) window.electronAPI.onGlobalKeyDown(handleGlobalKeyboardInput);
             if (window.electronAPI.onGlobalMouseDown) window.electronAPI.onGlobalMouseDown(handleGlobalInput);
             if (window.electronAPI.onGlobalWheel) window.electronAPI.onGlobalWheel(handleGlobalInput);
             if (window.electronAPI.onNativeShortcut) window.electronAPI.onNativeShortcut(({ action } = {}) => {
