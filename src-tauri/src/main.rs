@@ -1,7 +1,6 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod capture;
-mod catalog;
 mod config;
 mod hooks;
 mod input;
@@ -565,13 +564,6 @@ fn open_release_download() -> Result<(), String> {
 }
 
 #[tauri::command]
-async fn fetch_remote_builtin_strats() -> Result<Value, String> {
-    tauri::async_runtime::spawn_blocking(catalog::fetch_remote_builtin_strats)
-        .await
-        .map_err(|error| format!("Catalog download task failed: {error}"))?
-}
-
-#[tauri::command]
 async fn ocr_model_status(app: AppHandle) -> Result<ocr::ModelStatus, String> {
     let guard = OcrRunGuard::acquire(app.clone())?;
     tauri::async_runtime::spawn_blocking(move || {
@@ -806,7 +798,6 @@ fn main() {
             get_app_version,
             check_for_updates,
             open_release_download,
-            fetch_remote_builtin_strats,
             ocr_model_status,
             recognize_ocr_region,
             get_ocr_displays,

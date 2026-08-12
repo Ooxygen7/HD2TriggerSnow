@@ -350,7 +350,6 @@
         <div class="modal-header">
             <div class="modal-title" id="txt-lib-title">STRATAGEM LIBRARY</div>
             <div style="display: flex; gap: 12px;">
-                <button class="btn-square" id="btn-lib-update-strats" onclick="updateBuiltinStratsFromGithub()">UPDATE STRATS</button>
                 <button class="btn-square primary" id="btn-lib-add" onclick="openAddStratModal()">+ ADD CUSTOM</button>
                 <button class="btn-square" id="btn-lib-done" onclick="closeModals()">DONE</button>
             </div>
@@ -410,22 +409,22 @@
                 </div>
                 <div class="set-row">
                     <div class="set-label">
-                        <span id="txt-set-autoOpenOverlay">启动时自动打开悬浮窗</span>
-                        <span class="set-desc" id="txt-desc-autoOpenOverlay">程序启动并加载完成后，是否自动显示悬浮窗。</span>
+                        <span id="txt-set-autoOpenOverlay">启动时自动开启悬浮窗</span>
+                        <span class="set-desc" id="txt-desc-autoOpenOverlay">程序启动并加载完成后自动显示悬浮窗，默认关闭。</span>
                     </div>
                     <div class="toggle-box">
-                        <div class="toggle-option active" id="auto-open-overlay-on" onclick="setAutoOpenOverlay(true)">ON</div>
-                        <div class="toggle-option" id="auto-open-overlay-off" onclick="setAutoOpenOverlay(false)">OFF</div>
+                        <div class="toggle-option" id="auto-open-overlay-on" onclick="setAutoOpenOverlay(true)">开启</div>
+                        <div class="toggle-option active" id="auto-open-overlay-off" onclick="setAutoOpenOverlay(false)">关闭</div>
                     </div>
                 </div>
                 <div class="set-row">
                     <div class="set-label">
-                        <span id="txt-set-autoLockOverlay">打开悬浮窗时自动锁定</span>
-                        <span class="set-desc" id="txt-desc-autoLockOverlay">显示悬浮窗后是否自动锁定（不可拖动、点击穿透）。默认关闭。</span>
+                        <span id="txt-set-autoLockOverlay">悬浮窗呼出时自动锁定</span>
+                        <span class="set-desc" id="txt-desc-autoLockOverlay">每次显示悬浮窗后自动设为不可拖动和鼠标穿透，默认关闭。</span>
                     </div>
                     <div class="toggle-box">
-                        <div class="toggle-option" id="auto-lock-overlay-on" onclick="setAutoLockOverlay(true)">ON</div>
-                        <div class="toggle-option active" id="auto-lock-overlay-off" onclick="setAutoLockOverlay(false)">OFF</div>
+                        <div class="toggle-option" id="auto-lock-overlay-on" onclick="setAutoLockOverlay(true)">开启</div>
+                        <div class="toggle-option active" id="auto-lock-overlay-off" onclick="setAutoLockOverlay(false)">关闭</div>
                     </div>
                 </div>
             </div>
@@ -784,18 +783,13 @@
                 
                 // 悬浮窗
                 ovOpacity: "透明度", ovSize: "宽高尺寸", ovStyle: "按键样式", ovText: "文本", ovIcon: "图标",
-                autoOpenOverlay: "启动时自动打开悬浮窗", autoOpenOverlayOn: "开启", autoOpenOverlayOff: "关闭",
-                autoLockOverlay: "打开悬浮窗时自动锁定", autoLockOverlayOn: "开启", autoLockOverlayOff: "关闭",
+                autoOpenOverlay: "启动时自动开启悬浮窗", autoOpenOverlayOn: "开启", autoOpenOverlayOff: "关闭",
+                autoLockOverlay: "悬浮窗呼出时自动锁定", autoLockOverlayOn: "开启", autoLockOverlayOff: "关闭",
                 ovCtrlTitle: "悬浮窗控制", ovCtrlUp: "向上选择", ovCtrlDown: "向下选择", ovCtrlExec: "执行选定战备",
-                btnUpdateStrats: "更新战备",
-                msgStratsUpdating: "正在从 GitHub 更新战备…",
-                msgStratsUpdated: "已更新内置战备（{count}）",
-                msgStratsUpdateFailed: "更新战备失败：{error}",
                 
                 // 设置说明
                 descUnlock: "悬浮窗处于锁定状态时,请点击此处解锁", descOpacity: "调整悬浮窗背景的透明度", descSize: "自定义悬浮窗的宽高数值", descStyle: "自定义悬浮窗内显示的按键风格",
-                descAutoOpenOverlay: "程序启动并加载完成后，是否自动显示悬浮窗。",
-                descAutoLockOverlay: "显示悬浮窗后是否自动锁定（不可拖动、点击穿透）。默认关闭。",
+                descAutoOpenOverlay: "程序启动并加载完成后自动显示悬浮窗，默认关闭。", descAutoLockOverlay: "每次显示悬浮窗后自动设为不可拖动和鼠标穿透，默认关闭。",
                 descSlotCount: "设置主界面显示的战备槽位数量，最多支持 14 个。",
                 descOvUp: "设置悬浮窗选中框向上移动的按键(留空为默认配置)", descOvDown: "设置悬浮窗选中框向下移动的按键(留空为默认配置)", descOvExec: "一键执行悬浮窗当前选中的战备指令。(留空为默认配置)",
                 descMenuKey: "在此设定你在游戏内用于呼出战备菜单的按键", descMenuMode: "在此选择你游戏内的设定", descDirectionOnly: "开启后只输入战备方向序列，不再按下或松开呼出战备栏按键。", descMenuDelay: "按下呼出键后，等待多少毫秒再开始输入指令", descPressDelay: "模拟每次按下方向键的持续时间",
@@ -856,15 +850,10 @@
                 autoOpenOverlay: "AUTO-OPEN OVERLAY ON STARTUP", autoOpenOverlayOn: "ON", autoOpenOverlayOff: "OFF",
                 autoLockOverlay: "AUTO-LOCK OVERLAY WHEN SHOWN", autoLockOverlayOn: "ON", autoLockOverlayOff: "OFF",
                 ovCtrlTitle: "OVERLAY CONTROLS", ovCtrlUp: "SCROLL UP", ovCtrlDown: "SCROLL DOWN", ovCtrlExec: "EXECUTE SELECTION",
-                btnUpdateStrats: "UPDATE STRATS",
-                msgStratsUpdating: "Updating stratagems from GitHub…",
-                msgStratsUpdated: "Updated built-in stratagems ({count})",
-                msgStratsUpdateFailed: "Failed to update stratagems: {error}",
                 
                 // 设置说明
                 descUnlock: "Click if the overlay window cannot be dragged.", descOpacity: "Adjust the background transparency of the overlay.", descSize: "Set the width and height of the overlay on screen.", descStyle: "Display hotkeys as plain text or keycap style icons.",
-                descAutoOpenOverlay: "Automatically show the overlay after the app finishes loading.",
-                descAutoLockOverlay: "Automatically lock the overlay when it is shown (click-through, not draggable). Off by default.",
+                descAutoOpenOverlay: "Automatically show the overlay after startup finishes. Off by default.", descAutoLockOverlay: "Automatically make the overlay click-through and not draggable whenever it is shown. Off by default.",
                 descSlotCount: "Set how many loadout slots are shown. Max 14.",
                 descOvUp: "Scroll up the stratagem list in the overlay. (Leave empty for default)", descOvDown: "Scroll down the stratagem list in the overlay. (Leave empty for default)", descOvExec: "Execute the currently selected stratagem in the overlay. (Leave empty for default)",
                 descMenuKey: "The key used to open the stratagem menu in-game.", descMenuMode: "Hold the key to keep menu open, or press once to toggle.", descDirectionOnly: "Only type the directional sequence without pressing or releasing the stratagem menu key.", descMenuDelay: "Time to wait after opening the menu before typing commands.", descPressDelay: "How long each directional key is held down.",
@@ -997,13 +986,10 @@
             { id:'mis_updd', grp:'mission', name:{zh:'上传逃生舱数据',en:'Upload Data'}, aliases:['数据', '上传'], seq:['A','D','W','W','W'], icon: 'Start_Upload_Stratagem_Icon.svg' }
         ];
                 
-        let packagedBuiltinStratagems = defaultStratagemDB;
-        let remoteBuiltinStratagems = null;
-        let stratagemDB = [...packagedBuiltinStratagems];
+        let stratagemDB = [...defaultStratagemDB];
         let customStratagems = [];
         let activeLoadout = [];
         let savedPresets = [];
-        let isUpdatingBuiltinStrats = false;
         const DEFAULT_SLOT_COUNT = 10;
         const MAX_SLOT_COUNT = 14;
         const MAX_PRESET_NAME_LENGTH = 40;
@@ -1023,23 +1009,12 @@
             menuKey: 'ControlLeft', menuMode: 'hold', directionOnly: false, upKey: 'KeyW', downKey: 'KeyS', leftKey: 'KeyA', rightKey: 'KeyD',
             menuOpenDelay: 100, pressDelay: 10, intervalDelay: 10, 
             ovOpacity: 100, ovWidth: 300, ovHeight: 550, ovStyle: 'text',
+            autoOpenOverlay: false, autoLockOverlay: false,
             ovUp: 'WheelUp', ovDown: 'WheelDown', ovExec: 'MouseMiddle',
-            autoOpenOverlay: true,
-            autoLockOverlay: false,
             ocrHotkey: 'F8', ocrRegion: null, ocrRegionCoordinateSpace: null, ocrDisplayId: null, showToasts: true,
             slotCount: DEFAULT_SLOT_COUNT,
             overlayPosition: null
         };
-
-        function getBuiltinStratagems() {
-            return (Array.isArray(remoteBuiltinStratagems) && remoteBuiltinStratagems.length > 0)
-                ? remoteBuiltinStratagems
-                : packagedBuiltinStratagems;
-        }
-
-        function rebuildStratagemDB() {
-            stratagemDB = [...getBuiltinStratagems(), ...customStratagems];
-        }
 
         const CANONICAL_GLOBAL_KEYS = new Set([
             ...Array.from({ length: 26 }, (_, index) => `Key${String.fromCharCode(65 + index)}`),
@@ -1599,6 +1574,13 @@
                     gameSettings.directionOnly = normalizedDirectionOnly;
                     settingsChanged = true;
                 }
+                for (const key of ['autoOpenOverlay', 'autoLockOverlay']) {
+                    const normalized = gameSettings[key] === true;
+                    if (normalized !== gameSettings[key]) {
+                        gameSettings[key] = normalized;
+                        settingsChanged = true;
+                    }
+                }
                 if (gameSettings.language === 'zh' || gameSettings.language === 'en') {
                     currentLang = gameSettings.language;
                 }
@@ -1652,18 +1634,14 @@
                 await saveDataToLocal('settings.json', gameSettings, 'hd2_macro_settings');
             }
 
-            const cacheRemoteBuiltin = await loadWithMigration('remote_builtin_strats.json', 'hd2_remote_builtin_strats');
-            if (cacheRemoteBuiltin && Array.isArray(cacheRemoteBuiltin) && cacheRemoteBuiltin.length > 0) {
-                remoteBuiltinStratagems = cacheRemoteBuiltin;
-                ensureOcrFields(remoteBuiltinStratagems);
-            }
-
             if (cacheCustom && Array.isArray(cacheCustom)) {
                 customStratagems = cacheCustom;
                 ensureOcrFields(customStratagems);
+                stratagemDB = [...defaultStratagemDB, ...customStratagems]; 
+                invalidateOcrCache();
+            } else {
+                stratagemDB = [...defaultStratagemDB];
             }
-            rebuildStratagemDB();
-            invalidateOcrCache();
 
             activeLoadout = restoreLoadout(cacheLoadout, maxSlots);
 
@@ -1679,10 +1657,10 @@
             
             updateI18n();
             renderMainList({ syncOverlay: true });
-            if (gameSettings.autoOpenOverlay !== false) {
+            void checkForStartupUpdate();
+            if (gameSettings.autoOpenOverlay === true) {
                 await window.handleToggleOverlay();
             }
-            void checkForStartupUpdate();
         }
 
         window.handleToggleOverlay = async () => {
@@ -1695,54 +1673,19 @@
                     await window.electronAPI.updateOverlaySettings({ opacity: gameSettings.ovOpacity, style: gameSettings.ovStyle });
                     await window.electronAPI.updateOverlay(activeLoadout);
                     await window.electronAPI.updateSelection(overlaySelectedIndex);
-                    if (gameSettings.autoLockOverlay === true && window.electronAPI.lockOverlay) {
-                        await window.electronAPI.lockOverlay();
+                    if (gameSettings.autoLockOverlay === true) {
+                        try {
+                            await window.electronAPI.lockOverlay();
+                        } catch (error) {
+                            console.error('Failed to auto-lock overlay:', error);
+                            showToast(i18n[currentLang].msgOverlayFailed.replace('{error}', String(error)), true);
+                        }
                     }
                 }
             } catch (error) {
                 isOverlayVisible = false;
                 syncGlobalInputFilter();
                 showToast(i18n[currentLang].msgOverlayFailed.replace('{error}', String(error)), true);
-            }
-        };
-
-        window.updateBuiltinStratsFromGithub = async () => {
-            if (!window.electronAPI || !window.electronAPI.fetchRemoteBuiltinStrats) {
-                showToast(i18n[currentLang].msgStratsUpdateFailed.replace('{error}', 'API unavailable'), true);
-                return;
-            }
-            if (isUpdatingBuiltinStrats) return;
-            isUpdatingBuiltinStrats = true;
-            const button = document.getElementById('btn-lib-update-strats');
-            if (button) button.disabled = true;
-            showToast(i18n[currentLang].msgStratsUpdating);
-            try {
-                const remote = await window.electronAPI.fetchRemoteBuiltinStrats();
-                if (!Array.isArray(remote) || remote.length === 0) {
-                    throw new Error('empty catalog');
-                }
-                ensureOcrFields(remote);
-                remoteBuiltinStratagems = remote;
-                await saveDataToLocal('remote_builtin_strats.json', remoteBuiltinStratagems, 'hd2_remote_builtin_strats');
-                rebuildStratagemDB();
-                invalidateOcrCache();
-                // Rebind loadout entries to refreshed builtin definitions when ids match.
-                activeLoadout = activeLoadout.map(item => {
-                    if (!item || !item.strat || !item.strat.id) return item;
-                    const refreshed = stratagemDB.find(s => s.id === item.strat.id);
-                    return refreshed ? { ...item, strat: refreshed } : item;
-                });
-                const keyword = document.getElementById('lib-search-input')?.value || '';
-                if (document.getElementById('library-modal')?.classList.contains('active')) {
-                    renderLibrary(keyword);
-                }
-                renderMainList({ syncOverlay: true });
-                showToast(i18n[currentLang].msgStratsUpdated.replace('{count}', String(remote.length)));
-            } catch (error) {
-                showToast(i18n[currentLang].msgStratsUpdateFailed.replace('{error}', String(error)), true);
-            } finally {
-                isUpdatingBuiltinStrats = false;
-                if (button) button.disabled = false;
             }
         };
 
@@ -1823,8 +1766,6 @@
             document.getElementById('preset-name-input').placeholder = lang.phPresetName;
             document.getElementById('btn-pre-save').textContent = lang.btnSaveCurrent;  
             document.getElementById('btn-lib-add').textContent = lang.btnAddCustom;
-            const updateStratsBtn = document.getElementById('btn-lib-update-strats');
-            if (updateStratsBtn) updateStratsBtn.textContent = lang.btnUpdateStrats;
             
 
             document.getElementById('btn-pre-import').textContent = lang.btnImport;
@@ -2213,8 +2154,8 @@
         window.setMenuMode = (mode) => { gameSettings.menuMode = mode; updateSettingsUI(); }
         window.setDirectionOnly = (enabled) => { gameSettings.directionOnly = !!enabled; updateSettingsUI(); }
         window.setToastEnabled = (enabled) => { gameSettings.showToasts = !!enabled; updateSettingsUI(); }
-        window.setAutoOpenOverlay = (enabled) => { gameSettings.autoOpenOverlay = !!enabled; updateSettingsUI(); }
-        window.setAutoLockOverlay = (enabled) => { gameSettings.autoLockOverlay = !!enabled; updateSettingsUI(); }
+        window.setAutoOpenOverlay = (enabled) => { gameSettings.autoOpenOverlay = enabled === true; updateSettingsUI(); }
+        window.setAutoLockOverlay = (enabled) => { gameSettings.autoLockOverlay = enabled === true; updateSettingsUI(); }
 
         function updateSettingsUI() {
             document.getElementById('btn-set-menuKey').textContent = formatDisplayKey(gameSettings.menuKey);
@@ -2240,12 +2181,12 @@
             
             document.getElementById('style-text').className = `toggle-option ${gameSettings.ovStyle === 'text' ? 'active' : ''}`;
             document.getElementById('style-svg').className = `toggle-option ${gameSettings.ovStyle === 'svg' ? 'active' : ''}`;
-            const autoOpen = gameSettings.autoOpenOverlay !== false;
-            document.getElementById('auto-open-overlay-on').className = `toggle-option ${autoOpen ? 'active' : ''}`;
-            document.getElementById('auto-open-overlay-off').className = `toggle-option ${autoOpen ? '' : 'active'}`;
-            const autoLock = gameSettings.autoLockOverlay === true;
-            document.getElementById('auto-lock-overlay-on').className = `toggle-option ${autoLock ? 'active' : ''}`;
-            document.getElementById('auto-lock-overlay-off').className = `toggle-option ${autoLock ? '' : 'active'}`;
+            const autoOpenOverlay = gameSettings.autoOpenOverlay === true;
+            document.getElementById('auto-open-overlay-on').className = `toggle-option ${autoOpenOverlay ? 'active' : ''}`;
+            document.getElementById('auto-open-overlay-off').className = `toggle-option ${autoOpenOverlay ? '' : 'active'}`;
+            const autoLockOverlay = gameSettings.autoLockOverlay === true;
+            document.getElementById('auto-lock-overlay-on').className = `toggle-option ${autoLockOverlay ? 'active' : ''}`;
+            document.getElementById('auto-lock-overlay-off').className = `toggle-option ${autoLockOverlay ? '' : 'active'}`;
 
             document.getElementById('btn-set-ovUp').textContent = formatDisplayKey(gameSettings.ovUp) || '';
             document.getElementById('btn-set-ovDown').textContent = formatDisplayKey(gameSettings.ovDown) || '';
@@ -3061,7 +3002,7 @@
                 customStratagems = customStratagems.filter(s => s.id !== idToRemove); 
                 saveDataToLocal('custom_strats.json', customStratagems, 'hd2_custom_stratagems');
                 
-                rebuildStratagemDB();
+                stratagemDB = [...defaultStratagemDB, ...customStratagems]; 
                 activeLoadout = activeLoadout.map(item => {
                     if (item.strat && item.strat.id === idToRemove) return { ...item, strat: null, locked: false };
                     return item;
@@ -3127,7 +3068,7 @@
             const newStrat = { id: `custom_${Date.now()}_${uniqueSuffix}`, grp: cat, name: { zh: nameZh, en: nameEn }, aliases: [], ocr: ocrTerms, seq: rawSeq.split(''), icon: currentUploadBase64 || EMPTY_IMAGE_SOURCE };
             
             customStratagems.push(newStrat); 
-            rebuildStratagemDB();
+            stratagemDB = [...defaultStratagemDB, ...customStratagems]; 
             invalidateOcrCache();
             saveDataToLocal('custom_strats.json', customStratagems, 'hd2_custom_stratagems');
             
