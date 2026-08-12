@@ -1,6 +1,6 @@
 [package]
 name = "hd2-macro-terminal-rust"
-version = "2.0.1"
+version = "2.0.5"
 description = "A lightweight Windows x64 rewrite of HD2 Macro Terminal"
 authors = ["Huizhixin"]
 edition = "2021"

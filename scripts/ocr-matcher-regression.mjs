@@ -72,6 +72,19 @@ function evaluate(context, expression) {
   );
 }
 
+// Newly bundled stratagem terms must resolve directly from the in-game Chinese label.
+{
+  const context = matcherContext({
+    stratagems: [{ id: "wpn_meltagun", grp: "support", ocr: ["热熔枪"] }],
+  });
+  assert.deepEqual(
+    JSON.parse(
+      evaluate(context, "JSON.stringify(matchOcrStratagems('热熔枪').map(item => item.id))"),
+    ),
+    ["wpn_meltagun"],
+  );
+}
+
 // Intentional legacy rule 2: exact lines are removed before fuzzy scores are indexed.
 {
   const context = matcherContext({

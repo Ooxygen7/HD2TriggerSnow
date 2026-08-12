@@ -50,12 +50,12 @@ const tauriConfig = JSON.parse(
 );
 const installerHooks = tauriConfig.bundle?.windows?.nsis?.installerHooks;
 assert.equal(installerHooks, "windows/installer-hooks.nsh");
-assert.equal(tauriConfig.version, "2.0.1", "the bundled version must match the GitHub Release version");
+assert.equal(tauriConfig.version, "2.0.5", "the bundled version must match the GitHub Release version");
 const packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
 const packageLock = JSON.parse(fs.readFileSync(path.join(root, "package-lock.json"), "utf8"));
-assert.equal(packageJson.version, "2.0.1");
-assert.equal(packageLock.version, "2.0.1");
-assert.equal(packageLock.packages[""].version, "2.0.1");
+assert.equal(packageJson.version, "2.0.5");
+assert.equal(packageLock.version, "2.0.5");
+assert.equal(packageLock.packages[""].version, "2.0.5");
 const installerHookSource = fs.readFileSync(path.join(root, "src-tauri", installerHooks), "utf8");
 assert.match(installerHookSource, /CheckIfAppIsRunning "HD2 Macro Terminal\.exe"/);
 assert.match(installerHookSource, /CheckIfAppIsRunning "HD2-Trigger\.exe"/);
@@ -167,6 +167,36 @@ for (const icon of new Set(bundledIcons)) {
   assert.equal(safeImageSource(icon), icon, `bundled icon should be accepted: ${icon}`);
   assert.ok(fs.existsSync(path.join(root, "ui", icon)), `bundled icon is missing: ${icon}`);
 }
+
+const databaseContext = vm.createContext({});
+vm.runInContext(
+  `${indexSource.slice(databaseStart, databaseEnd)}\nglobalThis.database = defaultStratagemDB;`,
+  databaseContext,
+  { filename: "index.html:stratagem-database" },
+);
+const meltagun = JSON.parse(
+  vm.runInContext(
+    "JSON.stringify(database.find((stratagem) => stratagem.id === 'wpn_meltagun'))",
+    databaseContext,
+  ),
+);
+assert.deepEqual(meltagun, {
+  id: "wpn_meltagun",
+  grp: "support",
+  name: { zh: "40-K热熔枪", en: "40-KMeltagun" },
+  aliases: ["热熔枪"],
+  ocr: ["热熔枪"],
+  seq: ["S", "A", "W", "A", "A", "S"],
+  icon: "40-K_Meltagun_Stratagem_Icon.svg",
+});
+
+const meltagunIconSource = readUiFile("40-K_Meltagun_Stratagem_Icon.svg");
+assert.match(meltagunIconSource, /viewBox="0 0 256 256"/);
+assert.match(meltagunIconSource, /fill="#011419" fill-opacity="\.75"/);
+assert.match(meltagunIconSource, /fill="#53bcda"/);
+assert.match(meltagunIconSource, /fill="#ffffee"/);
+assert.match(meltagunIconSource, /fill="#5abeda"/);
+assert.doesNotMatch(meltagunIconSource, /<image\b/i, "the bundled Meltagun icon must remain vector-only");
 
 const validPreset = normalizeImportedPreset({
   n: "Support",

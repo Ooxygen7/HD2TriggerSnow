@@ -1,6 +1,6 @@
 {
   "name": "hd2-macro-terminal-rust",
-  "version": "2.0.1",
+  "version": "2.0.5",
   "private": true,
   "scripts": {
     "tauri": "set \"PATH=%USERPROFILE%\\.cargo\\bin;%PATH%\" && tauri",
