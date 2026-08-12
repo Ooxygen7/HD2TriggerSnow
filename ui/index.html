@@ -321,6 +321,83 @@
         .file-upload-btn:hover { background: var(--hd-yellow-alpha); color: var(--hd-yellow); border-color: var(--hd-yellow); }
         #add-strat-preview { width: 44px; height: 44px; object-fit: contain; border: 1px solid var(--glass-border); border-radius: var(--radius-sm); background: rgba(0,0,0,0.5); display: none; padding: 4px; }
         .hint-text { font-size: 12px; color: var(--hd-text-secondary); text-align: center; margin-top: 12px; line-height: 1.6; }
+
+        .diagnostics-content {
+            width: 100%; max-width: 980px; margin: 0 auto; padding: 24px;
+            display: flex; flex-direction: column; gap: 18px; overflow-y: auto;
+        }
+        .diagnostics-content > * { flex-shrink: 0; }
+        .diagnostics-intro {
+            position: relative; overflow: hidden; padding: 22px 24px;
+            background: linear-gradient(135deg, rgba(255,232,10,0.10), rgba(28,28,30,0.72) 42%, rgba(28,28,30,0.52));
+            border: 1px solid rgba(255,232,10,0.22); border-radius: var(--radius-lg);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.24);
+        }
+        .diagnostics-intro::after {
+            content: ''; position: absolute; width: 180px; height: 180px; right: -70px; top: -110px;
+            border: 1px solid rgba(255,232,10,0.18); border-radius: 50%; box-shadow: 0 0 60px rgba(255,232,10,0.08);
+        }
+        .diagnostics-kicker { color: var(--hd-yellow); font-size: 10px; font-weight: 800; letter-spacing: 2px; margin-bottom: 8px; }
+        .diagnostics-intro h2 { font-size: 20px; line-height: 1.25; margin-bottom: 8px; }
+        .diagnostics-intro p { color: var(--hd-text-secondary); font-size: 12px; line-height: 1.65; max-width: 720px; }
+        .diagnostics-privacy { margin-top: 12px; color: rgba(255,255,255,0.72); font-size: 11px; }
+        .diagnostics-privacy::before { content: '◇'; color: var(--hd-yellow); margin-right: 8px; }
+
+        .diagnostics-health-rail { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+        .diagnostics-meter {
+            min-height: 90px; padding: 16px 18px; border-radius: var(--radius-md);
+            background: rgba(20,20,22,0.78); border: 1px solid var(--glass-border);
+            display: flex; align-items: center; gap: 14px; box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+        }
+        .diagnostics-meter-value { font-size: 30px; font-weight: 850; font-variant-numeric: tabular-nums; line-height: 1; }
+        .diagnostics-meter-label { display: block; font-size: 12px; color: var(--hd-text-secondary); margin-top: 5px; letter-spacing: 0.4px; }
+        .diagnostics-meter.ok { border-left: 4px solid #32d583; }
+        .diagnostics-meter.ok .diagnostics-meter-value { color: #55e69c; }
+        .diagnostics-meter.warning { border-left: 4px solid var(--hd-yellow); }
+        .diagnostics-meter.warning .diagnostics-meter-value { color: var(--hd-yellow); }
+        .diagnostics-meter.error { border-left: 4px solid var(--hd-red); }
+        .diagnostics-meter.error .diagnostics-meter-value { color: #ff6961; }
+
+        .diagnostics-meta {
+            display: flex; justify-content: space-between; align-items: center; gap: 12px;
+            color: var(--hd-text-secondary); font-size: 11px; padding: 0 2px;
+        }
+        .diagnostics-running { color: var(--hd-yellow); display: none; align-items: center; gap: 8px; }
+        .diagnostics-running.active { display: flex; }
+        .diagnostics-running::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--hd-yellow); animation: diagnosticPulse 1.2s ease-in-out infinite; }
+        @keyframes diagnosticPulse { 50% { opacity: 0.25; transform: scale(0.72); } }
+
+        .diagnostics-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+        .diagnostics-section {
+            background: var(--glass-panel); border: 1px solid var(--glass-border); border-radius: var(--radius-lg);
+            overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+        }
+        .diagnostics-section-title {
+            padding: 14px 18px; font-size: 12px; font-weight: 800; letter-spacing: 0.9px;
+            color: rgba(255,255,255,0.82); border-bottom: 1px solid var(--glass-border); background: rgba(0,0,0,0.18);
+        }
+        .diagnostics-check { display: grid; grid-template-columns: 10px minmax(0,1fr); gap: 12px; padding: 15px 18px; border-bottom: 1px solid rgba(255,255,255,0.045); }
+        .diagnostics-check:last-child { border-bottom: 0; }
+        .diagnostics-check-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; background: var(--hd-text-secondary); box-shadow: 0 0 0 4px rgba(255,255,255,0.035); }
+        .diagnostics-check.ok .diagnostics-check-dot { background: #32d583; box-shadow: 0 0 0 4px rgba(50,213,131,0.09); }
+        .diagnostics-check.warning .diagnostics-check-dot { background: var(--hd-yellow); box-shadow: 0 0 0 4px rgba(255,232,10,0.09); }
+        .diagnostics-check.error .diagnostics-check-dot { background: var(--hd-red); box-shadow: 0 0 0 4px rgba(255,69,58,0.11); }
+        .diagnostics-check-title { font-size: 13px; font-weight: 700; line-height: 1.35; }
+        .diagnostics-check-summary { margin-top: 4px; color: var(--hd-text-secondary); font-size: 11px; line-height: 1.5; word-break: break-word; user-select: text; }
+        .diagnostics-empty { grid-column: 1 / -1; padding: 42px 24px; text-align: center; color: var(--hd-text-secondary); border: 1px dashed var(--glass-border); border-radius: var(--radius-lg); }
+        .diagnostics-actions { display: flex; justify-content: flex-end; gap: 10px; padding-bottom: 4px; }
+        .diagnostics-actions .btn-square { flex-grow: 0; min-width: 150px; }
+        .diagnostics-header-actions { display: flex; gap: 10px; }
+
+        @media (max-width: 760px) {
+            .diagnostics-grid { grid-template-columns: 1fr; }
+            .diagnostics-health-rail { gap: 8px; }
+            .diagnostics-meter { padding: 13px; min-height: 76px; }
+            .diagnostics-meter-value { font-size: 24px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .diagnostics-running::before { animation: none; }
+        }
     </style>
 </head>
 <body>
@@ -339,6 +416,7 @@
         <div class="top-controls">
             <button class="btn-square" id="btn-top-settings" onclick="openSettings()">GAME SETTINGS</button>
             <button class="btn-square" id="btn-top-presets" onclick="openPresets()">PRESETS</button>
+            <button class="btn-square" id="btn-top-diagnostics" onclick="openDiagnostics()">DIAGNOSTICS</button>
             <button class="btn-square" id="btn-top-overlay" onclick="handleToggleOverlay()">OVERLAY</button>
             <button class="btn-square primary" id="btn-top-lib" onclick="openLibrary()">OPEN LIBRARY</button>
         </div>
@@ -590,6 +668,51 @@
                     </div>
                     <button class="set-btn" id="btn-set-rightKey" onclick="startSettingBind('rightKey', event)">D</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="diagnostics-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="txt-diagnostics-title">
+        <div class="modal-header">
+            <div class="modal-title" id="txt-diagnostics-title">DIAGNOSTICS CENTER</div>
+            <div class="diagnostics-header-actions">
+                <button class="btn-square" id="btn-diagnostics-refresh" onclick="refreshDiagnostics()">RUN AGAIN</button>
+                <button class="btn-square" id="btn-diagnostics-close" onclick="closeDiagnostics()">CLOSE</button>
+            </div>
+        </div>
+        <div class="diagnostics-content">
+            <section class="diagnostics-intro">
+                <div class="diagnostics-kicker">SYSTEM READINESS</div>
+                <h2 id="txt-diagnostics-lead">Turn a vague problem into reproducible evidence.</h2>
+                <p id="txt-diagnostics-description">One run checks local storage, global input, OCR, displays, windows, and the update service.</p>
+                <div class="diagnostics-privacy" id="txt-diagnostics-privacy">No usernames, full paths, hotkey values, stratagem names, or screenshots are included.</div>
+            </section>
+
+            <div class="diagnostics-health-rail" aria-live="polite">
+                <div class="diagnostics-meter ok">
+                    <div class="diagnostics-meter-value" id="diagnostics-ok-count">0</div>
+                    <div class="diagnostics-meter-label" id="txt-diagnostics-ok">HEALTHY</div>
+                </div>
+                <div class="diagnostics-meter warning">
+                    <div class="diagnostics-meter-value" id="diagnostics-warning-count">0</div>
+                    <div class="diagnostics-meter-label" id="txt-diagnostics-warning">WARNINGS</div>
+                </div>
+                <div class="diagnostics-meter error">
+                    <div class="diagnostics-meter-value" id="diagnostics-error-count">0</div>
+                    <div class="diagnostics-meter-label" id="txt-diagnostics-error">ERRORS</div>
+                </div>
+            </div>
+
+            <div class="diagnostics-meta">
+                <span id="diagnostics-generated-at">NOT RUN YET</span>
+                <span class="diagnostics-running" id="diagnostics-running">RUNNING CHECKS...</span>
+            </div>
+            <div class="diagnostics-grid" id="diagnostics-sections">
+                <div class="diagnostics-empty" id="diagnostics-empty">Run diagnostics to inspect the application.</div>
+            </div>
+            <div class="diagnostics-actions">
+                <button class="btn-square" id="btn-diagnostics-copy" onclick="copyDiagnosticsReport()">COPY REPORT</button>
+                <button class="btn-square primary" id="btn-diagnostics-export" onclick="exportDiagnosticsReport()">EXPORT TO DOWNLOADS</button>
             </div>
         </div>
     </div>
@@ -876,6 +999,57 @@
             }
         };
 
+        const diagnosticsI18n = {
+            zh: {
+                button: "诊断中心", title: "诊断中心", refresh: "重新检测", close: "关闭",
+                lead: "把模糊的问题，变成可复现的证据。",
+                description: "一次检查本地存储、全局输入、OCR、显示器、窗口和更新服务。各项相互独立，单项失败不会中断整份报告。",
+                privacy: "不包含用户名、完整路径、快捷键内容、战备名称或屏幕截图。",
+                healthy: "正常", warnings: "提醒", errors: "异常", running: "正在执行检查...",
+                notRun: "尚未检测", generated: "报告生成于 {time}", empty: "运行诊断后将在这里显示应用状态。",
+                copy: "复制报告", export: "导出到下载目录", copySuccess: "诊断报告已复制",
+                exportSuccess: "诊断报告已导出到 下载/{filename}", runFailed: "诊断执行失败：{error}",
+                copyFailed: "复制诊断报告失败", exportFailed: "导出诊断报告失败：{error}",
+                sectionSystem: "应用与本地数据", sectionInput: "全局输入链路", sectionOcr: "OCR 与显示器", sectionServices: "窗口与在线服务",
+                runtimeTitle: "运行环境", runtimeOk: "版本 {version} · {arch} · WebView2 {webview}",
+                storageTitle: "配置存储", storageOk: "数据目录可写，{valid} 个配置文件有效。", storageFailed: "数据目录不可写：{error}",
+                filesTitle: "配置完整性", filesOk: "未发现损坏的配置文件。", filesInvalid: "发现 {count} 个无效配置文件，其中 {recoverable} 个有可恢复备份。",
+                configTitle: "配置摘要", configOk: "{equipped}/{slots} 个栏位已装备，{bound} 个战备已绑定，{presets} 个预设。",
+                configMissing: "设置文件尚未建立；首次保存设置后会自动创建。", configDuplicate: "检测到 {count} 组重复绑定，请检查快捷键冲突。",
+                hookTitle: "全局输入钩子", hookOk: "输入钩子与快捷键过滤器均已运行。", hookWaiting: "输入钩子已运行，但快捷键过滤器尚未完成初始化。", hookFailed: "全局输入钩子未运行。",
+                queueTitle: "输入事件队列", queueOk: "已处理 {processed} 个事件；峰值队列 {maxDepth}/{capacity}，无丢失。", queueDropped: "已有 {dropped} 个输入事件丢失；峰值队列 {maxDepth}/{capacity}。", queueBusy: "输入队列峰值达到 {maxDepth}/{capacity}，建议在问题发生后再次导出报告。",
+                modelsTitle: "OCR 模型", modelsOk: "检测与识别模型已成功加载，字典包含 {entries} 项。", modelsMissing: "OCR 模型文件不完整。", modelsFailed: "OCR 自检失败：{error}",
+                displaysTitle: "显示器枚举", displaysOk: "检测到 {count} 块屏幕；主屏幕 {width}×{height}，缩放 {scale}。", displaysFailed: "显示器检查失败：{error}", displaysNone: "Windows 未返回可用显示器。",
+                windowsTitle: "窗口状态", windowsOk: "主窗口正常；悬浮窗{overlay}，当前{lockState}。", windowsFailed: "主窗口状态不可用。", overlayOpen: "已创建", overlayClosed: "未创建（正常）", locked: "已锁定", unlocked: "未锁定",
+                updateTitle: "更新服务", updateOk: "update.unsnow.online 响应有效，最新版本 {version}，耗时 {latency} ms。", updateFailed: "更新服务暂时不可用：{error}", updateInvalid: "更新服务可以连接，但返回内容无效：{error}",
+                unavailable: "不可用", unknown: "未知"
+            },
+            en: {
+                button: "DIAGNOSTICS", title: "DIAGNOSTICS CENTER", refresh: "RUN AGAIN", close: "CLOSE",
+                lead: "Turn a vague problem into reproducible evidence.",
+                description: "One run checks local storage, global input, OCR, displays, windows, and the update service. Checks remain independent if one fails.",
+                privacy: "No usernames, full paths, hotkey values, stratagem names, or screenshots are included.",
+                healthy: "HEALTHY", warnings: "WARNINGS", errors: "ERRORS", running: "RUNNING CHECKS...",
+                notRun: "NOT RUN YET", generated: "Report generated at {time}", empty: "Run diagnostics to inspect the application.",
+                copy: "COPY REPORT", export: "EXPORT TO DOWNLOADS", copySuccess: "Diagnostics report copied",
+                exportSuccess: "Diagnostics report exported to Downloads/{filename}", runFailed: "Diagnostics failed: {error}",
+                copyFailed: "Could not copy the diagnostics report", exportFailed: "Could not export the diagnostics report: {error}",
+                sectionSystem: "APPLICATION & LOCAL DATA", sectionInput: "GLOBAL INPUT PIPELINE", sectionOcr: "OCR & DISPLAYS", sectionServices: "WINDOWS & ONLINE SERVICE",
+                runtimeTitle: "Runtime", runtimeOk: "Version {version} · {arch} · WebView2 {webview}",
+                storageTitle: "Configuration storage", storageOk: "Data directory is writable; {valid} configuration files are valid.", storageFailed: "Data directory is not writable: {error}",
+                filesTitle: "Configuration integrity", filesOk: "No damaged configuration files were found.", filesInvalid: "Found {count} invalid configuration files; {recoverable} have a recovery backup.",
+                configTitle: "Configuration summary", configOk: "{equipped}/{slots} slots equipped, {bound} stratagem bindings, {presets} presets.",
+                configMissing: "The settings file has not been created yet; it will be created after the first save.", configDuplicate: "Found {count} duplicate binding groups. Check for hotkey conflicts.",
+                hookTitle: "Global input hook", hookOk: "The input hook and shortcut filter are running.", hookWaiting: "The input hook is running, but the shortcut filter has not finished initializing.", hookFailed: "The global input hook is not running.",
+                queueTitle: "Input event queue", queueOk: "Processed {processed} events; peak queue {maxDepth}/{capacity}, with no drops.", queueDropped: "{dropped} input events were dropped; peak queue {maxDepth}/{capacity}.", queueBusy: "Peak input queue reached {maxDepth}/{capacity}; export another report after the issue occurs.",
+                modelsTitle: "OCR models", modelsOk: "Detection and recognition models loaded; dictionary contains {entries} entries.", modelsMissing: "OCR model files are incomplete.", modelsFailed: "OCR self-test failed: {error}",
+                displaysTitle: "Display enumeration", displaysOk: "Detected {count} displays; primary is {width}×{height} at {scale} scale.", displaysFailed: "Display check failed: {error}", displaysNone: "Windows did not return an available display.",
+                windowsTitle: "Window state", windowsOk: "Main window is healthy; overlay {overlay} and currently {lockState}.", windowsFailed: "The main window state is unavailable.", overlayOpen: "exists", overlayClosed: "has not been created (normal)", locked: "locked", unlocked: "unlocked",
+                updateTitle: "Update service", updateOk: "update.unsnow.online returned valid data; latest version {version}, {latency} ms.", updateFailed: "The update service is temporarily unavailable: {error}", updateInvalid: "The update service is reachable but returned invalid data: {error}",
+                unavailable: "unavailable", unknown: "unknown"
+            }
+        };
+
         const defaultStratagemDB = [
             { id:'wpn_mg', grp:'support', name:{zh:'MG-43 机枪',en:'MG-43 Machine Gun'}, aliases:[],ocr:['机枪'], seq:['S','A','S','W','D'] , icon: 'Machine_Gun_Stratagem_Icon.svg'},
             { id:'wpn_eat', grp:'support', name:{zh:'EAT-17 消耗性反坦克武器',en:'EAT-17 Expendable Anti-Tank'}, aliases:['筒子', '次抛', 'eat'],ocr:['消耗性反坦克武器'], seq:['S','S','A','W','D'], icon: 'Expendable_Anti-Tank_Stratagem_Icon.svg'},
@@ -1004,6 +1178,8 @@
         let isOverlayVisible = false; 
         let ocrDisplays = [];
         let pendingUpdateInfo = null;
+        let latestDiagnosticsReport = null;
+        let diagnosticsInFlight = null;
         
         let gameSettings = { 
             menuKey: 'ControlLeft', menuMode: 'hold', directionOnly: false, upKey: 'KeyW', downKey: 'KeyS', leftKey: 'KeyA', rightKey: 'KeyD',
@@ -1868,6 +2044,7 @@
             document.getElementById('opt-cat-mission').textContent = lang.cat_mission;
 
             document.getElementById('lib-search-input').placeholder = lang.searchPh;
+            updateDiagnosticsI18n();
             updateSettingsUI();
         }
 
@@ -2034,6 +2211,294 @@
                 showInlineStatus(`${i18n[currentLang].msgUpdateOpenFailed}: ${error}`, true);
             }
         }
+
+        // Diagnostics center helpers
+        function fillDiagnosticTemplate(template, values = {}) {
+            return Object.entries(values).reduce(
+                (text, [key, value]) => text.replaceAll(`{${key}}`, String(value)),
+                template
+            );
+        }
+
+        function buildDiagnosticChecks(report, language = currentLang) {
+            const lang = diagnosticsI18n[language] || diagnosticsI18n.en;
+            const checks = [];
+            const add = (section, status, title, summary) => checks.push({ section, status, title, summary });
+            const application = report.application || {};
+            const storage = report.storage || {};
+            const configuration = report.configuration || {};
+            const input = report.input || {};
+            const ocrStatus = report.ocr || {};
+            const update = report.updateService || {};
+            const windows = report.windows || {};
+
+            add('system', application.version ? 'ok' : 'warning', lang.runtimeTitle,
+                fillDiagnosticTemplate(lang.runtimeOk, {
+                    version: application.version || lang.unknown,
+                    arch: application.architecture || lang.unknown,
+                    webview: application.webviewVersion || lang.unavailable
+                }));
+
+            const validFiles = Array.isArray(storage.files)
+                ? storage.files.filter(file => file && file.status === 'valid').length
+                : 0;
+            add('system', storage.writable ? 'ok' : 'error', lang.storageTitle,
+                storage.writable
+                    ? fillDiagnosticTemplate(lang.storageOk, { valid: validFiles })
+                    : fillDiagnosticTemplate(lang.storageFailed, { error: storage.issue || lang.unknown }));
+
+            const invalidFiles = Number(storage.invalidFileCount) || 0;
+            add('system', invalidFiles > 0 ? 'error' : 'ok', lang.filesTitle,
+                invalidFiles > 0
+                    ? fillDiagnosticTemplate(lang.filesInvalid, {
+                        count: invalidFiles,
+                        recoverable: Number(storage.recoverableBackupCount) || 0
+                    })
+                    : lang.filesOk);
+
+            let configurationStatus = 'ok';
+            let configurationSummary = fillDiagnosticTemplate(lang.configOk, {
+                equipped: Number(configuration.equippedStratagems) || 0,
+                slots: Number(configuration.slotCount) || 0,
+                bound: Number(configuration.boundStratagems) || 0,
+                presets: Number(configuration.presetCount) || 0
+            });
+            if (!configuration.settingsLoaded) {
+                configurationStatus = 'warning';
+                configurationSummary = lang.configMissing;
+            } else if ((Number(configuration.duplicateBindingGroups) || 0) > 0) {
+                configurationStatus = 'warning';
+                configurationSummary = `${configurationSummary} ${fillDiagnosticTemplate(lang.configDuplicate, { count: configuration.duplicateBindingGroups })}`;
+            }
+            add('system', configurationStatus, lang.configTitle, configurationSummary);
+
+            const hookStatus = input.hookRunning ? (input.filterInitialized ? 'ok' : 'warning') : 'error';
+            add('input', hookStatus, lang.hookTitle,
+                !input.hookRunning ? lang.hookFailed : (input.filterInitialized ? lang.hookOk : lang.hookWaiting));
+
+            const dropped = Number(input.droppedEvents) || 0;
+            const maxDepth = Number(input.maxQueueDepth) || 0;
+            const capacity = Number(input.queueCapacity) || 0;
+            const queueBusy = capacity > 0 && maxDepth / capacity >= 0.8;
+            add('input', dropped > 0 || queueBusy ? 'warning' : 'ok', lang.queueTitle,
+                dropped > 0
+                    ? fillDiagnosticTemplate(lang.queueDropped, { dropped, maxDepth, capacity })
+                    : queueBusy
+                        ? fillDiagnosticTemplate(lang.queueBusy, { maxDepth, capacity })
+                        : fillDiagnosticTemplate(lang.queueOk, {
+                            processed: Number(input.processedEvents) || 0,
+                            maxDepth,
+                            capacity
+                        }));
+
+            const selfTest = ocrStatus.selfTest || {};
+            const modelValue = selfTest.value || {};
+            let modelStatus = 'ok';
+            let modelSummary = fillDiagnosticTemplate(lang.modelsOk, { entries: Number(modelValue.dictionaryEntries) || 0 });
+            if (!ocrStatus.modelFilesPresent) {
+                modelStatus = 'error';
+                modelSummary = lang.modelsMissing;
+            } else if (!selfTest.ok || !modelValue.detectionModelLoaded || !modelValue.recognitionModelLoaded) {
+                modelStatus = 'error';
+                modelSummary = fillDiagnosticTemplate(lang.modelsFailed, { error: selfTest.error || lang.unknown });
+            }
+            add('ocr', modelStatus, lang.modelsTitle, modelSummary);
+
+            const displayResult = ocrStatus.displays || {};
+            const displayValue = displayResult.value || {};
+            const displayCount = Number(displayValue.displayCount) || 0;
+            let displayStatus = 'ok';
+            let displaySummary = fillDiagnosticTemplate(lang.displaysOk, {
+                count: displayCount,
+                width: displayValue.primaryWidth || lang.unknown,
+                height: displayValue.primaryHeight || lang.unknown,
+                scale: Number(displayValue.primaryScaleFactor || 0).toFixed(2)
+            });
+            if (!displayResult.ok) {
+                displayStatus = 'error';
+                displaySummary = fillDiagnosticTemplate(lang.displaysFailed, { error: displayResult.error || lang.unknown });
+            } else if (displayCount === 0) {
+                displayStatus = 'error';
+                displaySummary = lang.displaysNone;
+            }
+            add('ocr', displayStatus, lang.displaysTitle, displaySummary);
+
+            add('services', windows.mainWindowExists ? 'ok' : 'error', lang.windowsTitle,
+                windows.mainWindowExists
+                    ? fillDiagnosticTemplate(lang.windowsOk, {
+                        overlay: windows.overlayWindowExists ? lang.overlayOpen : lang.overlayClosed,
+                        lockState: windows.overlayLocked ? lang.locked : lang.unlocked
+                    })
+                    : lang.windowsFailed);
+
+            let updateStatus = 'ok';
+            let updateSummary = fillDiagnosticTemplate(lang.updateOk, {
+                version: update.latestVersion || lang.unknown,
+                latency: Number(update.latencyMs) || 0
+            });
+            if (!update.reachable) {
+                updateStatus = 'warning';
+                updateSummary = fillDiagnosticTemplate(lang.updateFailed, { error: update.error || lang.unknown });
+            } else if (!update.validResponse) {
+                updateStatus = 'warning';
+                updateSummary = fillDiagnosticTemplate(lang.updateInvalid, { error: update.error || lang.unknown });
+            }
+            add('services', updateStatus, lang.updateTitle, updateSummary);
+            return checks;
+        }
+
+        function summarizeDiagnosticChecks(checks) {
+            return checks.reduce((summary, check) => {
+                if (check.status === 'ok') summary.healthy += 1;
+                if (check.status === 'warning') summary.warnings += 1;
+                if (check.status === 'error') summary.errors += 1;
+                return summary;
+            }, { healthy: 0, warnings: 0, errors: 0 });
+        }
+
+        function updateDiagnosticsI18n() {
+            const lang = diagnosticsI18n[currentLang];
+            document.getElementById('btn-top-diagnostics').textContent = lang.button;
+            document.getElementById('txt-diagnostics-title').textContent = lang.title;
+            document.getElementById('btn-diagnostics-refresh').textContent = lang.refresh;
+            document.getElementById('btn-diagnostics-close').textContent = lang.close;
+            document.getElementById('txt-diagnostics-lead').textContent = lang.lead;
+            document.getElementById('txt-diagnostics-description').textContent = lang.description;
+            document.getElementById('txt-diagnostics-privacy').textContent = lang.privacy;
+            document.getElementById('txt-diagnostics-ok').textContent = lang.healthy;
+            document.getElementById('txt-diagnostics-warning').textContent = lang.warnings;
+            document.getElementById('txt-diagnostics-error').textContent = lang.errors;
+            document.getElementById('diagnostics-running').textContent = lang.running;
+            document.getElementById('btn-diagnostics-copy').textContent = lang.copy;
+            document.getElementById('btn-diagnostics-export').textContent = lang.export;
+            if (latestDiagnosticsReport) {
+                renderDiagnostics(latestDiagnosticsReport);
+            } else {
+                document.getElementById('diagnostics-generated-at').textContent = lang.notRun;
+                document.getElementById('diagnostics-empty').textContent = lang.empty;
+            }
+        }
+
+        function setDiagnosticsRunning(running) {
+            document.getElementById('diagnostics-running').classList.toggle('active', running);
+            document.getElementById('diagnostics-modal').setAttribute('aria-busy', String(running));
+            document.getElementById('btn-diagnostics-refresh').disabled = running;
+            document.getElementById('btn-diagnostics-copy').disabled = running;
+            document.getElementById('btn-diagnostics-export').disabled = running;
+        }
+
+        function renderDiagnostics(report) {
+            const lang = diagnosticsI18n[currentLang];
+            const checks = buildDiagnosticChecks(report, currentLang);
+            const summary = summarizeDiagnosticChecks(checks);
+            report.healthSummary = summary;
+            document.getElementById('diagnostics-ok-count').textContent = summary.healthy;
+            document.getElementById('diagnostics-warning-count').textContent = summary.warnings;
+            document.getElementById('diagnostics-error-count').textContent = summary.errors;
+            const generatedAt = new Date(Number(report.generatedAtUnixMs) || Date.now());
+            document.getElementById('diagnostics-generated-at').textContent = fillDiagnosticTemplate(lang.generated, {
+                time: generatedAt.toLocaleString(currentLang === 'zh' ? 'zh-CN' : 'en-US')
+            });
+
+            const sectionTitles = {
+                system: lang.sectionSystem,
+                input: lang.sectionInput,
+                ocr: lang.sectionOcr,
+                services: lang.sectionServices
+            };
+            const sections = document.getElementById('diagnostics-sections');
+            sections.innerHTML = Object.entries(sectionTitles).map(([section, title]) => {
+                const rows = checks.filter(check => check.section === section).map(check => `
+                    <div class="diagnostics-check ${check.status}">
+                        <span class="diagnostics-check-dot" aria-hidden="true"></span>
+                        <div>
+                            <div class="diagnostics-check-title">${escapeHtml(check.title)}</div>
+                            <div class="diagnostics-check-summary">${escapeHtml(check.summary)}</div>
+                        </div>
+                    </div>`).join('');
+                return `<section class="diagnostics-section"><div class="diagnostics-section-title">${escapeHtml(title)}</div>${rows}</section>`;
+            }).join('');
+        }
+
+        async function collectDiagnostics() {
+            if (diagnosticsInFlight) return diagnosticsInFlight;
+            const lang = diagnosticsI18n[currentLang];
+            if (!window.electronAPI || typeof window.electronAPI.collectDiagnosticsReport !== 'function') {
+                showInlineStatus(fillDiagnosticTemplate(lang.runFailed, { error: 'IPC unavailable' }), true);
+                return null;
+            }
+            setDiagnosticsRunning(true);
+            diagnosticsInFlight = window.electronAPI.collectDiagnosticsReport()
+                .then(report => {
+                    latestDiagnosticsReport = report;
+                    renderDiagnostics(report);
+                    return report;
+                })
+                .catch(error => {
+                    showInlineStatus(fillDiagnosticTemplate(lang.runFailed, { error: String(error) }), true);
+                    return null;
+                })
+                .finally(() => {
+                    diagnosticsInFlight = null;
+                    setDiagnosticsRunning(false);
+                });
+            return diagnosticsInFlight;
+        }
+
+        window.openDiagnostics = () => {
+            window.closeModals();
+            document.getElementById('diagnostics-modal').classList.add('active');
+            updateDiagnosticsI18n();
+            void collectDiagnostics();
+        }
+
+        window.closeDiagnostics = () => {
+            document.getElementById('diagnostics-modal').classList.remove('active');
+        }
+
+        window.refreshDiagnostics = () => { void collectDiagnostics(); }
+
+        async function writeDiagnosticsClipboard(text) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                await navigator.clipboard.writeText(text);
+                return;
+            }
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            const copied = document.execCommand('copy');
+            textArea.remove();
+            if (!copied) throw new Error('Clipboard API unavailable');
+        }
+
+        window.copyDiagnosticsReport = async () => {
+            const lang = diagnosticsI18n[currentLang];
+            const report = latestDiagnosticsReport || await collectDiagnostics();
+            if (!report) return;
+            try {
+                await writeDiagnosticsClipboard(JSON.stringify(report, null, 2));
+                showInlineStatus(lang.copySuccess);
+            } catch (_error) {
+                showInlineStatus(lang.copyFailed, true);
+            }
+        }
+
+        window.exportDiagnosticsReport = async () => {
+            const lang = diagnosticsI18n[currentLang];
+            const report = latestDiagnosticsReport || await collectDiagnostics();
+            if (!report || !window.electronAPI || typeof window.electronAPI.exportDiagnosticsReport !== 'function') return;
+            try {
+                const result = await window.electronAPI.exportDiagnosticsReport(report);
+                showInlineStatus(fillDiagnosticTemplate(lang.exportSuccess, { filename: result.filename }));
+            } catch (error) {
+                showInlineStatus(fillDiagnosticTemplate(lang.exportFailed, { error: String(error) }), true);
+            }
+        }
+        // End diagnostics center helpers
 
         window.goSponsor = async () => {
             try {
