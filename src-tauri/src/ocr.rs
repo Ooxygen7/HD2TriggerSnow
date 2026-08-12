@@ -110,7 +110,7 @@ fn resolve_runtime_path(model_dir: &Path) -> PathBuf {
         .unwrap_or_else(|| model_dir.join(RUNTIME_LIBRARY))
 }
 
-#[derive(Serialize)]
+#[derive(Clone, Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ModelStatus {
     pub detection_model_loaded: bool,

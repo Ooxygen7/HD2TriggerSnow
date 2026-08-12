@@ -298,6 +298,63 @@ assert.match(
   "display enumeration failures must not erase a saved OCR region",
 );
 const bridgeSource = readUiFile("bridge.js");
+assert.match(indexSource, /id="btn-top-diagnostics"[^>]*onclick="openDiagnostics\(\)"/);
+assert.match(indexSource, /id="diagnostics-modal"[^>]*role="dialog"[^>]*aria-modal="true"/);
+assert.match(indexSource, /id="btn-diagnostics-export"[^>]*onclick="exportDiagnosticsReport\(\)"/);
+assert.match(indexSource, /No usernames, full paths, hotkey values, stratagem names, or screenshots/);
+assert.match(bridgeSource, /collectDiagnosticsReport:.*collect_diagnostics_report/);
+assert.match(bridgeSource, /exportDiagnosticsReport:.*export_diagnostics_report/);
+assert.match(mainSource, /async fn\s+collect_diagnostics_report\s*\(/);
+assert.match(mainSource, /async fn\s+export_diagnostics_report\s*\(/);
+
+const diagnosticI18nStart = indexSource.indexOf("const diagnosticsI18n = {");
+const diagnosticI18nEnd = indexSource.indexOf("const defaultStratagemDB", diagnosticI18nStart);
+const diagnosticHelperStart = indexSource.indexOf("function fillDiagnosticTemplate");
+const diagnosticHelperEnd = indexSource.indexOf("function updateDiagnosticsI18n", diagnosticHelperStart);
+assert.notEqual(diagnosticI18nStart, -1, "could not find diagnostics translations");
+assert.notEqual(diagnosticI18nEnd, -1, "could not find diagnostics translations end marker");
+assert.notEqual(diagnosticHelperStart, -1, "could not find diagnostic health helpers");
+assert.notEqual(diagnosticHelperEnd, -1, "could not find diagnostic health helper end marker");
+const diagnosticContext = vm.createContext({});
+vm.runInContext(
+  `
+    ${indexSource.slice(diagnosticI18nStart, diagnosticI18nEnd)}
+    let currentLang = "en";
+    ${indexSource.slice(diagnosticHelperStart, diagnosticHelperEnd)}
+    globalThis.diagnosticsHarness = { buildDiagnosticChecks, summarizeDiagnosticChecks };
+  `,
+  diagnosticContext,
+  { filename: "index.html:diagnostic-health" },
+);
+const healthyReport = {
+  application: { version: "2.0.1", architecture: "x86_64", webviewVersion: "140.0" },
+  storage: { writable: true, invalidFileCount: 0, recoverableBackupCount: 0, files: [{ status: "valid" }] },
+  configuration: { settingsLoaded: true, slotCount: 10, equippedStratagems: 4, boundStratagems: 3, presetCount: 2, duplicateBindingGroups: 0 },
+  input: { hookRunning: true, filterInitialized: true, droppedEvents: 0, maxQueueDepth: 2, queueCapacity: 512, processedEvents: 20 },
+  ocr: {
+    modelFilesPresent: true,
+    selfTest: { ok: true, value: { detectionModelLoaded: true, recognitionModelLoaded: true, dictionaryEntries: 1000 } },
+    displays: { ok: true, value: { displayCount: 1, primaryWidth: 1920, primaryHeight: 1080, primaryScaleFactor: 1 } },
+  },
+  windows: { mainWindowExists: true, overlayWindowExists: false, overlayLocked: false },
+  updateService: { reachable: true, validResponse: true, latestVersion: "2.0.1", latencyMs: 50 },
+};
+const healthyChecks = diagnosticContext.diagnosticsHarness.buildDiagnosticChecks(healthyReport, "en");
+assert.equal(healthyChecks.length, 10);
+assert.deepEqual(
+  JSON.parse(JSON.stringify(diagnosticContext.diagnosticsHarness.summarizeDiagnosticChecks(healthyChecks))),
+  { healthy: 10, warnings: 0, errors: 0 },
+);
+const unhealthyReport = structuredClone(healthyReport);
+unhealthyReport.updateService = { reachable: false, validResponse: false, error: "offline" };
+unhealthyReport.input.droppedEvents = 2;
+unhealthyReport.ocr.modelFilesPresent = false;
+unhealthyReport.storage.invalidFileCount = 1;
+const unhealthySummary = diagnosticContext.diagnosticsHarness.summarizeDiagnosticChecks(
+  diagnosticContext.diagnosticsHarness.buildDiagnosticChecks(unhealthyReport, "zh"),
+);
+assert.deepEqual(JSON.parse(JSON.stringify(unhealthySummary)), { healthy: 6, warnings: 2, errors: 2 });
+
 assert.match(bridgeSource, /subscribe\("quit-requested", callback\)/);
 assert.match(indexSource, /window\.electronAPI\.onQuitRequested/);
 assert.match(bridgeSource, /setGlobalInputFilter:\s*\(config, captureAll\).*set_global_input_filter/);
@@ -514,5 +571,8 @@ assert.deepEqual(bridgeCalls, ["begin_exit", "window_close"]);
 await bridgeContext.window.electronAPI.checkForUpdates();
 await bridgeContext.window.electronAPI.openReleaseDownload();
 assert.deepEqual(bridgeCalls.slice(-2), ["check_for_updates", "open_release_download"]);
+await bridgeContext.window.electronAPI.collectDiagnosticsReport();
+await bridgeContext.window.electronAPI.exportDiagnosticsReport({ schemaVersion: 1 });
+assert.deepEqual(bridgeCalls.slice(-2), ["collect_diagnostics_report", "export_diagnostics_report"]);
 
 console.log(`UI, native-window, and ${new Set(bundledIcons).size} icon regression tests passed.`);

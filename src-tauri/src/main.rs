@@ -2,6 +2,7 @@
 
 mod capture;
 mod config;
+mod diagnostics;
 mod hooks;
 mod input;
 mod legacy;
@@ -233,6 +234,85 @@ fn set_global_input_filter(config: hooks::ShortcutConfig, capture_all: bool) -> 
 #[tauri::command]
 fn get_input_diagnostics() -> hooks::InputDiagnostics {
     hooks::diagnostics()
+}
+
+#[tauri::command]
+async fn collect_diagnostics_report(
+    app: AppHandle,
+    state: State<'_, AppState>,
+) -> Result<diagnostics::DiagnosticReport, String> {
+    let data_dir = state.data_dir.clone();
+    let ocr_model_dir = state.ocr_model_dir.clone();
+    let migration_report = state.migration_report.clone();
+    let overlay_locked = state
+        .overlay_snapshot
+        .lock()
+        .map_err(|_| "Overlay state is unavailable".to_owned())?
+        .locked;
+    let main_window = app.get_webview_window("main");
+    let overlay_window = app.get_webview_window("overlay");
+    let window_diagnostics = diagnostics::WindowDiagnostics {
+        main_window_exists: main_window.is_some(),
+        main_window_visible: main_window
+            .as_ref()
+            .and_then(|window| window.is_visible().ok())
+            .unwrap_or(false),
+        overlay_window_exists: overlay_window.is_some(),
+        overlay_window_visible: overlay_window
+            .as_ref()
+            .and_then(|window| window.is_visible().ok())
+            .unwrap_or(false),
+        overlay_locked,
+    };
+
+    let local_data_dir = data_dir.clone();
+    let local_model_dir = ocr_model_dir.clone();
+    let local_task = tauri::async_runtime::spawn_blocking(move || {
+        diagnostics::collect_local(
+            &local_data_dir,
+            &local_model_dir,
+            migration_report,
+            window_diagnostics,
+        )
+    });
+    let update_task = tauri::async_runtime::spawn_blocking(updates::diagnose_endpoint);
+    let display_task = tauri::async_runtime::spawn_blocking(ocr::available_displays);
+    let ocr_app = app.clone();
+    let ocr_task = tauri::async_runtime::spawn(async move { ocr_model_status(ocr_app).await });
+
+    let local = local_task
+        .await
+        .map_err(|error| format!("Local diagnostics task failed: {error}"))?;
+    let ocr_self_test = ocr_task
+        .await
+        .unwrap_or_else(|error| Err(format!("OCR diagnostics task failed: {error}")));
+    let displays = display_task
+        .await
+        .unwrap_or_else(|error| Err(format!("Display diagnostics task failed: {error}")));
+    let update_service = update_task
+        .await
+        .map_err(|error| format!("Update diagnostics task failed: {error}"))?;
+    Ok(diagnostics::assemble_report(
+        local,
+        ocr_self_test,
+        displays,
+        update_service,
+        &[data_dir, ocr_model_dir],
+    ))
+}
+
+#[tauri::command]
+async fn export_diagnostics_report(
+    app: AppHandle,
+    report: Value,
+) -> Result<diagnostics::ExportResult, String> {
+    let download_dir = app
+        .path()
+        .download_dir()
+        .map_err(|error| format!("Cannot locate the Downloads folder: {error}"))?;
+    tauri::async_runtime::spawn_blocking(move || diagnostics::export_report(&download_dir, &report))
+        .await
+        .map_err(|error| format!("Diagnostics export task failed: {error}"))?
 }
 
 #[tauri::command]
@@ -771,6 +851,8 @@ fn main() {
             migration_status,
             set_global_input_filter,
             get_input_diagnostics,
+            collect_diagnostics_report,
+            export_diagnostics_report,
             toggle_overlay,
             window_minimize,
             window_tray,

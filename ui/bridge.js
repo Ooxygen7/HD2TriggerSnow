@@ -27,6 +27,8 @@
     onQuitRequested: (callback) => subscribe("quit-requested", callback),
     setGlobalInputFilter: (config, captureAll) => invoke("set_global_input_filter", { config, captureAll }),
     getInputDiagnostics: () => invoke("get_input_diagnostics"),
+    collectDiagnosticsReport: () => invoke("collect_diagnostics_report"),
+    exportDiagnosticsReport: (report) => invoke("export_diagnostics_report", { report }),
     onNativeShortcut: (callback) => subscribe("native-shortcut", callback),
     onNativeMacroStarted: (callback) => subscribe("native-macro-started", callback),
     onNativeMacroFinished: (callback) => subscribe("native-macro-finished", callback),
