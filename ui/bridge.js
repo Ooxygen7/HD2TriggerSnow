@@ -101,6 +101,8 @@
 
     getAppVersion: () => invoke("get_app_version"),
     checkForUpdates: () => invoke("check_for_updates"),
+    loadCachedStratagemCatalog: () => invoke("load_cached_stratagem_catalog"),
+    checkStratagemCatalogUpdates: () => invoke("check_stratagem_catalog_updates"),
     openReleaseDownload: () => invoke("open_release_download"),
 
     getOcrDisplays: () => invoke("get_ocr_displays"),

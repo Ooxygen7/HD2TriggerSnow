@@ -1,11 +1,13 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod capture;
+mod catalog;
 mod config;
 mod diagnostics;
 mod hooks;
 mod input;
 mod legacy;
+mod network;
 mod ocr;
 mod runtime_diagnostics;
 mod tray;
@@ -661,6 +663,50 @@ async fn check_for_updates() -> Option<updates::UpdateInfo> {
 }
 
 #[tauri::command]
+async fn load_cached_stratagem_catalog(
+    state: State<'_, AppState>,
+) -> Result<Option<catalog::CatalogPayload>, String> {
+    let data_dir = state.data_dir.clone();
+    match tauri::async_runtime::spawn_blocking(move || catalog::load_cached(&data_dir)).await {
+        Ok(Ok(catalog)) => Ok(catalog),
+        Ok(Err(_error)) => {
+            runtime_diagnostics::record_warning("catalog", "cache_load", "invalid_cache");
+            #[cfg(debug_assertions)]
+            eprintln!("Catalog cache skipped: {_error}");
+            Ok(None)
+        }
+        Err(_error) => {
+            runtime_diagnostics::record_warning("catalog", "cache_load", "task_failed");
+            #[cfg(debug_assertions)]
+            eprintln!("Catalog cache task failed: {_error}");
+            Ok(None)
+        }
+    }
+}
+
+#[tauri::command]
+async fn check_stratagem_catalog_updates(
+    state: State<'_, AppState>,
+) -> Result<Option<catalog::CatalogPayload>, String> {
+    let data_dir = state.data_dir.clone();
+    match tauri::async_runtime::spawn_blocking(move || catalog::check_for_update(&data_dir)).await {
+        Ok(Ok(catalog)) => Ok(catalog),
+        Ok(Err(_error)) => {
+            runtime_diagnostics::record_warning("catalog", "update_check", "unavailable");
+            #[cfg(debug_assertions)]
+            eprintln!("Catalog update skipped: {_error}");
+            Ok(None)
+        }
+        Err(_error) => {
+            runtime_diagnostics::record_warning("catalog", "update_check", "task_failed");
+            #[cfg(debug_assertions)]
+            eprintln!("Catalog update task failed: {_error}");
+            Ok(None)
+        }
+    }
+}
+
+#[tauri::command]
 fn open_release_download() -> Result<(), String> {
     updates::open_releases_page()
 }
@@ -904,6 +950,8 @@ fn main() {
             get_ocr_help_language,
             get_app_version,
             check_for_updates,
+            load_cached_stratagem_catalog,
+            check_stratagem_catalog_updates,
             open_release_download,
             ocr_model_status,
             recognize_ocr_region,

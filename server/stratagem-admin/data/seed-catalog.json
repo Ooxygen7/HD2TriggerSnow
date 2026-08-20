@@ -1,0 +1,2781 @@
+{
+  "schemaVersion": 1,
+  "catalogVersion": 0,
+  "items": [
+    {
+      "id": "wpn_mg",
+      "grp": "support",
+      "name": {
+        "zh": "MG-43 机枪",
+        "en": "MG-43 Machine Gun"
+      },
+      "aliases": [],
+      "ocr": [
+        "机枪"
+      ],
+      "seq": [
+        "S",
+        "A",
+        "S",
+        "W",
+        "D"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Machine_Gun_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 0
+    },
+    {
+      "id": "wpn_eat",
+      "grp": "support",
+      "name": {
+        "zh": "EAT-17 消耗性反坦克武器",
+        "en": "EAT-17 Expendable Anti-Tank"
+      },
+      "aliases": [
+        "筒子",
+        "次抛",
+        "eat"
+      ],
+      "ocr": [
+        "消耗性反坦克武器"
+      ],
+      "seq": [
+        "S",
+        "S",
+        "A",
+        "W",
+        "D"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Expendable_Anti-Tank_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 1
+    },
+    {
+      "id": "wpn_stalwart",
+      "grp": "support",
+      "name": {
+        "zh": "M-105 盟友",
+        "en": "M-105 Stalwart"
+      },
+      "aliases": [
+        "盟友",
+        "小机枪"
+      ],
+      "ocr": [
+        "盟友"
+      ],
+      "seq": [
+        "S",
+        "A",
+        "S",
+        "W",
+        "W",
+        "A"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Stalwart_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 2
+    },
+    {
+      "id": "wpn_laser",
+      "grp": "support",
+      "name": {
+        "zh": "LAS-98 激光大炮",
+        "en": "LAS-98 Laser Cannon"
+      },
+      "aliases": [
+        "激光炮"
+      ],
+      "ocr": [
+        "激光大炮"
+      ],
+      "seq": [
+        "S",
+        "A",
+        "S",
+        "W",
+        "A"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Laser_Cannon_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 3
+    },
+    {
+      "id": "wpn_amr",
+      "grp": "support",
+      "name": {
+        "zh": "APW-1 反器材步枪",
+        "en": "APW-1 Anti-Materiel Rifle"
+      },
+      "aliases": [
+        "大狙",
+        "反器材"
+      ],
+      "ocr": [
+        "反器材步枪"
+      ],
+      "seq": [
+        "S",
+        "A",
+        "D",
+        "W",
+        "S"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Anti-Materiel_Rifle_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 4
+    },
+    {
+      "id": "wpn_rr",
+      "grp": "support",
+      "name": {
+        "zh": "GR-8 无后坐力炮",
+        "en": "GR-8 Recoilless Rifle"
+      },
+      "aliases": [
+        "无后座"
+      ],
+      "ocr": [
+        "无后坐力炮"
+      ],
+      "seq": [
+        "S",
+        "A",
+        "D",
+        "D",
+        "A"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Recoilless_Rifle_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 5
+    },
+    {
+      "id": "wpn_gl",
+      "grp": "support",
+      "name": {
+        "zh": "GL-21 榴弹发射器",
+        "en": "GL-21 Grenade Launcher"
+      },
+      "aliases": [
+        "榴弹"
+      ],
+      "ocr": [
+        "榴弹发射器"
+      ],
+      "seq": [
+        "S",
+        "A",
+        "W",
+        "A",
+        "S"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Grenade_Launcher_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 6
+    },
+    {
+      "id": "wpn_flame",
+      "grp": "support",
+      "name": {
+        "zh": "FLAM-40 火焰喷射器",
+        "en": "FLAM-40 Flamethrower"
+      },
+      "aliases": [
+        "喷火器"
+      ],
+      "ocr": [
+        "火焰喷射器"
+      ],
+      "seq": [
+        "S",
+        "A",
+        "W",
+        "S",
+        "W"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Flamethrower_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 7
+    },
+    {
+      "id": "wpn_hmg",
+      "grp": "support",
+      "name": {
+        "zh": "MG-206 重机枪",
+        "en": "MG-206 Heavy Machine Gun"
+      },
+      "aliases": [],
+      "ocr": [
+        "重机枪"
+      ],
+      "seq": [
+        "S",
+        "A",
+        "W",
+        "S",
+        "S"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Heavy_Machine_Gun_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 8
+    },
+    {
+      "id": "wpn_ac",
+      "grp": "support",
+      "name": {
+        "zh": "AC-8 机炮",
+        "en": "AC-8 Autocannon"
+      },
+      "aliases": [
+        "机炮"
+      ],
+      "ocr": [
+        "机炮"
+      ],
+      "seq": [
+        "S",
+        "A",
+        "S",
+        "W",
+        "W",
+        "D"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Autocannon_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 9
+    },
+    {
+      "id": "wpn_arc",
+      "grp": "support",
+      "name": {
+        "zh": "ARC-3 电弧发射器",
+        "en": "ARC-3 Arc Thrower"
+      },
+      "aliases": [
+        "电弧",
+        "杨永信"
+      ],
+      "ocr": [
+        "电弧发射器"
+      ],
+      "seq": [
+        "S",
+        "D",
+        "S",
+        "W",
+        "A",
+        "A"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Arc_Thrower_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 10
+    },
+    {
+      "id": "wpn_quasar",
+      "grp": "support",
+      "name": {
+        "zh": "LAS-99类星体加农炮",
+        "en": "LAS-99 Quasar Cannon"
+      },
+      "aliases": [
+        "类星体"
+      ],
+      "ocr": [
+        "类星体加农炮"
+      ],
+      "seq": [
+        "S",
+        "S",
+        "W",
+        "A",
+        "D"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Quasar_Cannon_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 11
+    },
+    {
+      "id": "wpn_airburst",
+      "grp": "support",
+      "name": {
+        "zh": "RL-77 空爆火箭弹发射器",
+        "en": "RL-77 Airburst Rocket Launcher"
+      },
+      "aliases": [
+        "空爆火箭弹发射器"
+      ],
+      "ocr": [
+        "空爆火箭弹发射器"
+      ],
+      "seq": [
+        "S",
+        "W",
+        "W",
+        "A",
+        "D"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Airburst_Rocket_Launcher_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 12
+    },
+    {
+      "id": "wpn_commando",
+      "grp": "support",
+      "name": {
+        "zh": "MLS-4X 突击兵",
+        "en": "MLS-4X Commando"
+      },
+      "aliases": [
+        "突击兵"
+      ],
+      "ocr": [
+        "突击兵"
+      ],
+      "seq": [
+        "S",
+        "A",
+        "W",
+        "S",
+        "D"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Commando_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 13
+    },
+    {
+      "id": "wpn_spear",
+      "grp": "support",
+      "name": {
+        "zh": "FAF-14 飞矛",
+        "en": "FAF-14 Spear"
+      },
+      "aliases": [
+        "飞矛",
+        "长矛"
+      ],
+      "ocr": [
+        "飞矛"
+      ],
+      "seq": [
+        "S",
+        "S",
+        "W",
+        "S",
+        "S"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Spear_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 14
+    },
+    {
+      "id": "wpn_railgun",
+      "grp": "support",
+      "name": {
+        "zh": "RS-422 磁轨炮",
+        "en": "RS-422 Railgun"
+      },
+      "aliases": [
+        "磁轨炮",
+        "电磁炮"
+      ],
+      "ocr": [
+        "磁轨炮"
+      ],
+      "seq": [
+        "S",
+        "D",
+        "S",
+        "W",
+        "A",
+        "D"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Railgun_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 15
+    },
+    {
+      "id": "wpn_wasp",
+      "grp": "support",
+      "name": {
+        "zh": "StA-X3 W.A.S.P. 发射器",
+        "en": "StA-X3 W.A.S.P. Launcher"
+      },
+      "aliases": [
+        "wasp",
+        "蜂"
+      ],
+      "ocr": [
+        "W.A.S.P发射器"
+      ],
+      "seq": [
+        "S",
+        "S",
+        "W",
+        "S",
+        "D"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "W.A.S.P._Launcher_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 16
+    },
+    {
+      "id": "wpn_breach",
+      "grp": "support",
+      "name": {
+        "zh": "CQC-20 破门锤",
+        "en": "CQC-20 Breaching Hammer"
+      },
+      "aliases": [
+        "破门锤",
+        "大锤",
+        "锤子"
+      ],
+      "ocr": [
+        "破门锤"
+      ],
+      "seq": [
+        "S",
+        "A",
+        "D",
+        "A",
+        "W"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Breaching_Hammer_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 17
+    },
+    {
+      "id": "wpn_epoch",
+      "grp": "support",
+      "name": {
+        "zh": "PLAS-45 纪元",
+        "en": "PLAS-45 Epoch"
+      },
+      "aliases": [
+        "纪元"
+      ],
+      "ocr": [
+        "纪元"
+      ],
+      "seq": [
+        "S",
+        "A",
+        "W",
+        "A",
+        "D"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Epoch_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 18
+    },
+    {
+      "id": "wpn_speargun",
+      "grp": "support",
+      "name": {
+        "zh": "S-11 矛枪",
+        "en": "S-11 Speargun"
+      },
+      "aliases": [
+        "矛枪",
+        "渔叉",
+        "毒矛"
+      ],
+      "ocr": [
+        "矛枪"
+      ],
+      "seq": [
+        "S",
+        "D",
+        "S",
+        "A",
+        "W",
+        "D"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Speargun_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 19
+    },
+    {
+      "id": "wpn_defoliator",
+      "grp": "support",
+      "name": {
+        "zh": "CQC-9 除叶工具",
+        "en": "CQC-9 Defoliation Tool"
+      },
+      "aliases": [
+        "电锯"
+      ],
+      "ocr": [
+        "除叶工具"
+      ],
+      "seq": [
+        "S",
+        "A",
+        "D",
+        "D",
+        "S"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Defoliation_Tool_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 20
+    },
+    {
+      "id": "wpn_leveller",
+      "grp": "support",
+      "name": {
+        "zh": "EAT-411 荡平者",
+        "en": "EAT-411 Leveller"
+      },
+      "aliases": [
+        "荡平",
+        "大通牒"
+      ],
+      "ocr": [
+        "荡平者"
+      ],
+      "seq": [
+        "S",
+        "S",
+        "A",
+        "W",
+        "S"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Leveller_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 21
+    },
+    {
+      "id": "wpn_sterilizer",
+      "grp": "support",
+      "name": {
+        "zh": "TX-41 灭菌器",
+        "en": "TX-41 Sterilizer"
+      },
+      "aliases": [
+        "灭菌器",
+        "毒喷"
+      ],
+      "ocr": [
+        "灭菌器"
+      ],
+      "seq": [
+        "S",
+        "A",
+        "W",
+        "S",
+        "A"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Sterilizer_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 22
+    },
+    {
+      "id": "wpn_deescalator",
+      "grp": "support",
+      "name": {
+        "zh": "GL-52 缓和使者",
+        "en": "GL-52 De-Escalator"
+      },
+      "aliases": [
+        "电榴",
+        "电榴弹"
+      ],
+      "ocr": [
+        "缓和使者"
+      ],
+      "seq": [
+        "S",
+        "D",
+        "W",
+        "A",
+        "D"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "De-Escalator_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 23
+    },
+    {
+      "id": "wpn_napalm",
+      "grp": "support",
+      "name": {
+        "zh": "EAT-700 消耗性凝固汽油弹",
+        "en": "EAT-700 Expendable Napalm"
+      },
+      "aliases": [
+        "凝固汽油弹",
+        "火次抛"
+      ],
+      "ocr": [
+        "消耗性凝固汽油弹"
+      ],
+      "seq": [
+        "S",
+        "S",
+        "A",
+        "W",
+        "A"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Expendable_Napalm_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 24
+    },
+    {
+      "id": "wpn_beltgl",
+      "grp": "support",
+      "name": {
+        "zh": "GL-28 弹链式榴弹发射器",
+        "en": "GL-28 Belt-Fed Grenade Launcher"
+      },
+      "aliases": [
+        "弹链榴"
+      ],
+      "ocr": [
+        "弹链式榴弹发射器"
+      ],
+      "seq": [
+        "S",
+        "A",
+        "W",
+        "A",
+        "W",
+        "W"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Belt-Fed_Grenade_Launcher_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 25
+    },
+    {
+      "id": "wpn_maxigun",
+      "grp": "support",
+      "name": {
+        "zh": "M-1000 重装机枪",
+        "en": "M-1000 Maxigun"
+      },
+      "aliases": [
+        "加特林"
+      ],
+      "ocr": [
+        "重装机枪"
+      ],
+      "seq": [
+        "S",
+        "A",
+        "D",
+        "S",
+        "W",
+        "W"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Maxigun_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 26
+    },
+    {
+      "id": "wpn_silo",
+      "grp": "support",
+      "name": {
+        "zh": "MS-11 单兵导弹发射井",
+        "en": "MS-11 Solo Silo"
+      },
+      "aliases": [
+        "发射井",
+        "导弹井"
+      ],
+      "ocr": [
+        "单兵导弹发射井"
+      ],
+      "seq": [
+        "S",
+        "W",
+        "D",
+        "S",
+        "S"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Solo_Silo_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 27
+    },
+    {
+      "id": "wpn_flag",
+      "grp": "support",
+      "name": {
+        "zh": "CQC-1 唯一真旗",
+        "en": "CQC-1 One True Flag"
+      },
+      "aliases": [
+        "真旗",
+        "旗子"
+      ],
+      "ocr": [
+        "唯一真旗"
+      ],
+      "seq": [
+        "S",
+        "A",
+        "D",
+        "D",
+        "W"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "One_True_Flag_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 28
+    },
+    {
+      "id": "wpn_flam80",
+      "grp": "support",
+      "name": {
+        "zh": "B/FLAM-80 焚燃者",
+        "en": "B/FLAM-80 Cremator"
+      },
+      "aliases": [
+        "背包火",
+        "火"
+      ],
+      "ocr": [
+        "焚燃者"
+      ],
+      "seq": [
+        "S",
+        "S",
+        "D",
+        "S",
+        "W",
+        "W"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "B-FLAM-80_Cremator_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 29
+    },
+    {
+      "id": "wpn_c4",
+      "grp": "support",
+      "name": {
+        "zh": "B/MD C4背包",
+        "en": "B/MD C4 Pack"
+      },
+      "aliases": [
+        "c4"
+      ],
+      "ocr": [
+        "C4背包"
+      ],
+      "seq": [
+        "S",
+        "D",
+        "W",
+        "W",
+        "D",
+        "W"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "C4_Pack_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 30
+    },
+    {
+      "id": "wpn_bulletstorm",
+      "grp": "support",
+      "name": {
+        "zh": "MGX-42 子弹风暴",
+        "en": "MGX-42 Bullet Storm"
+      },
+      "aliases": [
+        "子弹风暴"
+      ],
+      "ocr": [
+        "子弹风暴"
+      ],
+      "seq": [
+        "S",
+        "A",
+        "S",
+        "D",
+        "W",
+        "A"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Bullet_Storm_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 31
+    },
+    {
+      "id": "wpn_meltagun",
+      "grp": "support",
+      "name": {
+        "zh": "40-K热熔枪",
+        "en": "40-KMeltagun"
+      },
+      "aliases": [
+        "热熔枪"
+      ],
+      "ocr": [
+        "热熔枪"
+      ],
+      "seq": [
+        "S",
+        "A",
+        "W",
+        "A",
+        "A",
+        "S"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "40-K_Meltagun_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 32
+    },
+    {
+      "id": "orb_precision",
+      "grp": "orbital",
+      "name": {
+        "zh": "轨道精准攻击",
+        "en": "Orbital Precision Strike"
+      },
+      "aliases": [
+        "精准"
+      ],
+      "ocr": [
+        "轨道精准攻击"
+      ],
+      "seq": [
+        "D",
+        "D",
+        "W"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Orbital_Precision_Strike_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 33
+    },
+    {
+      "id": "orb_gatling",
+      "grp": "orbital",
+      "name": {
+        "zh": "轨道加特林火力网",
+        "en": "Orbital Gatling Barrage"
+      },
+      "aliases": [
+        "轨道加特林"
+      ],
+      "ocr": [
+        "轨道加特林火力网"
+      ],
+      "seq": [
+        "D",
+        "S",
+        "A",
+        "W",
+        "W"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Orbital_Gatling_Barrage_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 34
+    },
+    {
+      "id": "orb_gas",
+      "grp": "orbital",
+      "name": {
+        "zh": "轨道毒气攻击",
+        "en": "Orbital Gas Strike"
+      },
+      "aliases": [
+        "轨道毒气"
+      ],
+      "ocr": [
+        "轨道毒气攻击"
+      ],
+      "seq": [
+        "D",
+        "D",
+        "S",
+        "D"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Orbital_Gas_Strike_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 35
+    },
+    {
+      "id": "orb_120",
+      "grp": "orbital",
+      "name": {
+        "zh": "轨道120mm高爆弹火力网",
+        "en": "Orbital 120mm HE Barrage"
+      },
+      "aliases": [],
+      "ocr": [
+        "轨道120MM高爆弹火力网"
+      ],
+      "seq": [
+        "D",
+        "D",
+        "S",
+        "A",
+        "D",
+        "S"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Orbital_120mm_HE_Barrage_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 36
+    },
+    {
+      "id": "orb_airburst",
+      "grp": "orbital",
+      "name": {
+        "zh": "轨道空爆攻击",
+        "en": "Orbital Airburst Strike"
+      },
+      "aliases": [
+        "轨道空爆"
+      ],
+      "ocr": [
+        "轨道空爆攻击"
+      ],
+      "seq": [
+        "D",
+        "D",
+        "D"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Orbital_Airburst_Strike_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 37
+    },
+    {
+      "id": "orb_smoke",
+      "grp": "orbital",
+      "name": {
+        "zh": "轨道烟雾攻击",
+        "en": "Orbital Smoke Strike"
+      },
+      "aliases": [
+        "轨道烟雾"
+      ],
+      "ocr": [
+        "轨道烟雾攻击"
+      ],
+      "seq": [
+        "D",
+        "D",
+        "S",
+        "W"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Orbital_Smoke_Strike_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 38
+    },
+    {
+      "id": "orb_ems",
+      "grp": "orbital",
+      "name": {
+        "zh": "轨道电磁冲击波攻击",
+        "en": "Orbital EMS Strike"
+      },
+      "aliases": [
+        "轨道电磁"
+      ],
+      "ocr": [
+        "轨道电磁冲击波攻击"
+      ],
+      "seq": [
+        "D",
+        "D",
+        "A",
+        "S"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Orbital_EMS_Strike_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 39
+    },
+    {
+      "id": "orb_380",
+      "grp": "orbital",
+      "name": {
+        "zh": "轨道380mm高爆弹火力网",
+        "en": "Orbital 380mm HE Barrage"
+      },
+      "aliases": [],
+      "ocr": [
+        "轨道380MM高爆弹火力网"
+      ],
+      "seq": [
+        "D",
+        "S",
+        "W",
+        "W",
+        "A",
+        "S",
+        "S"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Orbital_380mm_HE_Barrage_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 40
+    },
+    {
+      "id": "orb_walking",
+      "grp": "orbital",
+      "name": {
+        "zh": "轨道游走火力网",
+        "en": "Orbital Walking Barrage"
+      },
+      "aliases": [
+        "游走"
+      ],
+      "ocr": [
+        "轨道游走火力网"
+      ],
+      "seq": [
+        "D",
+        "S",
+        "D",
+        "S",
+        "D",
+        "S"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Orbital_Walking_Barrage_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 41
+    },
+    {
+      "id": "orb_laser",
+      "grp": "orbital",
+      "name": {
+        "zh": "轨道激光炮",
+        "en": "Orbital Laser"
+      },
+      "aliases": [
+        "轨道激光"
+      ],
+      "ocr": [
+        "轨道激光炮"
+      ],
+      "seq": [
+        "D",
+        "S",
+        "W",
+        "D",
+        "S"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Orbital_Laser_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 42
+    },
+    {
+      "id": "orb_napalm",
+      "grp": "orbital",
+      "name": {
+        "zh": "轨道凝固汽油弹火力网",
+        "en": "Orbital Napalm Barrage"
+      },
+      "aliases": [
+        "轨道火"
+      ],
+      "ocr": [
+        "轨道凝固汽油弹火力网"
+      ],
+      "seq": [
+        "D",
+        "D",
+        "S",
+        "A",
+        "D",
+        "W"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Orbital_Napalm_Barrage_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 43
+    },
+    {
+      "id": "orb_railcannon",
+      "grp": "orbital",
+      "name": {
+        "zh": "轨道炮攻击",
+        "en": "Orbital Railcannon Strike"
+      },
+      "aliases": [
+        "自瞄"
+      ],
+      "ocr": [
+        "轨道炮攻击"
+      ],
+      "seq": [
+        "D",
+        "W",
+        "S",
+        "S",
+        "D"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Orbital_Railcannon_Strike_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 44
+    },
+    {
+      "id": "eagle_strafing",
+      "grp": "eagle",
+      "name": {
+        "zh": "“飞鹰”机枪扫射",
+        "en": "Eagle Strafing Run"
+      },
+      "aliases": [
+        "飞鹰机枪",
+        "扫射"
+      ],
+      "ocr": [
+        "“飞鹰”机枪扫射"
+      ],
+      "seq": [
+        "W",
+        "D",
+        "D"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Eagle_Strafing_Run_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 45
+    },
+    {
+      "id": "eagle_airstrike",
+      "grp": "eagle",
+      "name": {
+        "zh": "“飞鹰”空袭",
+        "en": "Eagle Airstrike"
+      },
+      "aliases": [
+        "空袭",
+        "飞鹰空袭"
+      ],
+      "ocr": [
+        "“飞鹰”空袭"
+      ],
+      "seq": [
+        "W",
+        "D",
+        "S",
+        "D"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Eagle_Airstrike_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 46
+    },
+    {
+      "id": "eagle_cluster",
+      "grp": "eagle",
+      "name": {
+        "zh": "“飞鹰”集束炸弹",
+        "en": "Eagle Cluster Bomb"
+      },
+      "aliases": [
+        "集束",
+        "集束炸弹"
+      ],
+      "ocr": [
+        "“飞鹰”集束炸弹"
+      ],
+      "seq": [
+        "W",
+        "D",
+        "S",
+        "S",
+        "D"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Eagle_Cluster_Bomb_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 47
+    },
+    {
+      "id": "eagle_smoke",
+      "grp": "eagle",
+      "name": {
+        "zh": "“飞鹰”烟雾攻击",
+        "en": "Eagle Smoke Strike"
+      },
+      "aliases": [
+        "飞鹰烟雾"
+      ],
+      "ocr": [
+        "“飞鹰”烟雾攻击"
+      ],
+      "seq": [
+        "W",
+        "D",
+        "W",
+        "S"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Eagle_Smoke_Strike_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 48
+    },
+    {
+      "id": "eagle_napalm",
+      "grp": "eagle",
+      "name": {
+        "zh": "“飞鹰”凝固汽油弹空袭",
+        "en": "Eagle Napalm Airstrike"
+      },
+      "aliases": [
+        "飞鹰火"
+      ],
+      "ocr": [
+        "“飞鹰”凝固汽油弹空袭"
+      ],
+      "seq": [
+        "W",
+        "D",
+        "S",
+        "W"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Eagle_Napalm_Airstrike_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 49
+    },
+    {
+      "id": "eagle_110",
+      "grp": "eagle",
+      "name": {
+        "zh": "“飞鹰”110MM火箭巢",
+        "en": "Eagle 110mm Rocket Pods"
+      },
+      "aliases": [
+        "110",
+        "火箭巢"
+      ],
+      "ocr": [
+        "“飞鹰”110MM火箭巢"
+      ],
+      "seq": [
+        "W",
+        "D",
+        "W",
+        "A"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Eagle_110mm_Rocket_Pods_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 50
+    },
+    {
+      "id": "eagle_500kg",
+      "grp": "eagle",
+      "name": {
+        "zh": "“飞鹰”500KG炸弹",
+        "en": "Eagle 500kg Bomb"
+      },
+      "aliases": [
+        "500",
+        "500kg"
+      ],
+      "ocr": [
+        "“飞鹰”500KG炸弹"
+      ],
+      "seq": [
+        "W",
+        "D",
+        "S",
+        "S",
+        "S"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Eagle_500kg_Bomb_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 51
+    },
+    {
+      "id": "emp_mine_ap",
+      "grp": "emplacement",
+      "name": {
+        "zh": "MD-6 反步兵雷区",
+        "en": "MD-6 Anti-Personnel Minefield"
+      },
+      "aliases": [
+        "反步兵地雷"
+      ],
+      "ocr": [
+        "反步兵雷区"
+      ],
+      "seq": [
+        "S",
+        "A",
+        "W",
+        "D"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Anti-Personnel_Minefield_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 52
+    },
+    {
+      "id": "emp_mine_inc",
+      "grp": "emplacement",
+      "name": {
+        "zh": "MD-I4 燃烧地雷",
+        "en": "MD-I4 Incendiary Mines"
+      },
+      "aliases": [
+        "燃烧地雷",
+        "火雷"
+      ],
+      "ocr": [
+        "燃烧地雷"
+      ],
+      "seq": [
+        "S",
+        "A",
+        "A",
+        "S"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Incendiary_Mines_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 53
+    },
+    {
+      "id": "emp_mine_at",
+      "grp": "emplacement",
+      "name": {
+        "zh": "MD-17 反坦克地雷",
+        "en": "MD-17 Anti-Tank Mines"
+      },
+      "aliases": [
+        "反坦克地雷"
+      ],
+      "ocr": [
+        "反坦克地雷"
+      ],
+      "seq": [
+        "S",
+        "A",
+        "W",
+        "W"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Anti-Tank_Mines_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 54
+    },
+    {
+      "id": "emp_shield",
+      "grp": "emplacement",
+      "name": {
+        "zh": "FX-12 防护罩生成中继器",
+        "en": "FX-12 Shield Generator Relay"
+      },
+      "aliases": [
+        "大蛋盾"
+      ],
+      "ocr": [
+        "防护罩生成中继器"
+      ],
+      "seq": [
+        "S",
+        "S",
+        "A",
+        "D",
+        "A",
+        "D"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Shield_Generator_Relay_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 55
+    },
+    {
+      "id": "emp_hmg",
+      "grp": "emplacement",
+      "name": {
+        "zh": "E/MG-101 重机枪部署支架",
+        "en": "E/MG-101 HMG Emplacement"
+      },
+      "aliases": [
+        "固定机枪"
+      ],
+      "ocr": [
+        "重机枪部署支架"
+      ],
+      "seq": [
+        "S",
+        "W",
+        "A",
+        "D",
+        "D",
+        "A"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "HMG_Emplacement_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 56
+    },
+    {
+      "id": "emp_grenadier",
+      "grp": "emplacement",
+      "name": {
+        "zh": "E/GL-21 掷弹兵防卫墙",
+        "en": "E/GL-21 Grenadier Battlement"
+      },
+      "aliases": [
+        "防卫墙"
+      ],
+      "ocr": [
+        "掷弹兵防卫墙"
+      ],
+      "seq": [
+        "S",
+        "D",
+        "S",
+        "A",
+        "D"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Grenadier_Battlement_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 57
+    },
+    {
+      "id": "emp_mine_gas",
+      "grp": "emplacement",
+      "name": {
+        "zh": "MD-8 毒气地雷",
+        "en": "MD-8 Gas Mines"
+      },
+      "aliases": [
+        "毒气地雷"
+      ],
+      "ocr": [
+        "毒气地雷"
+      ],
+      "seq": [
+        "S",
+        "A",
+        "A",
+        "D"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Gas_Mines_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 58
+    },
+    {
+      "id": "emp_at",
+      "grp": "emplacement",
+      "name": {
+        "zh": "E/AT-12 反坦克炮台",
+        "en": "E/AT-12 Anti-Tank Emplacement"
+      },
+      "aliases": [
+        "轮椅炮"
+      ],
+      "ocr": [
+        "反坦克炮台"
+      ],
+      "seq": [
+        "S",
+        "W",
+        "A",
+        "D",
+        "D",
+        "D"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Anti-Tank_Emplacement_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 59
+    },
+    {
+      "id": "sen_mg",
+      "grp": "sentry",
+      "name": {
+        "zh": "A/MG-43 哨戒机枪",
+        "en": "A/MG-43 Machine Gun Sentry"
+      },
+      "aliases": [
+        "机枪塔"
+      ],
+      "ocr": [
+        "哨戒机枪"
+      ],
+      "seq": [
+        "S",
+        "W",
+        "D",
+        "D",
+        "W"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Machine_Gun_Sentry_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 60
+    },
+    {
+      "id": "sen_gatling",
+      "grp": "sentry",
+      "name": {
+        "zh": "A/G-16 加特林哨戒炮",
+        "en": "A/G-16 Gatling Sentry"
+      },
+      "aliases": [
+        "加特林塔"
+      ],
+      "ocr": [
+        "加特林哨戒炮"
+      ],
+      "seq": [
+        "S",
+        "W",
+        "D",
+        "A"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Gatling_Sentry_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 61
+    },
+    {
+      "id": "sen_ac",
+      "grp": "sentry",
+      "name": {
+        "zh": "A/AC-8 自动哨戒炮",
+        "en": "A/AC-8 Autocannon Sentry"
+      },
+      "aliases": [
+        "机炮塔"
+      ],
+      "ocr": [
+        "自动哨戒炮"
+      ],
+      "seq": [
+        "S",
+        "W",
+        "D",
+        "W",
+        "A",
+        "W"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Autocannon_Sentry_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 62
+    },
+    {
+      "id": "sen_mortar",
+      "grp": "sentry",
+      "name": {
+        "zh": "A/M-12 迫击哨戒炮",
+        "en": "A/M-12 Mortar Sentry"
+      },
+      "aliases": [
+        "迫击炮"
+      ],
+      "ocr": [
+        "迫击哨戒炮"
+      ],
+      "seq": [
+        "S",
+        "W",
+        "D",
+        "D",
+        "S"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Mortar_Sentry_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 63
+    },
+    {
+      "id": "sen_rocket",
+      "grp": "sentry",
+      "name": {
+        "zh": "A/MLS-4X 火箭哨戒炮",
+        "en": "A/MLS-4X Rocket Sentry"
+      },
+      "aliases": [
+        "火箭"
+      ],
+      "ocr": [
+        "火箭哨戒炮"
+      ],
+      "seq": [
+        "S",
+        "W",
+        "D",
+        "D",
+        "A"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Rocket_Sentry_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 64
+    },
+    {
+      "id": "sen_tesla",
+      "grp": "sentry",
+      "name": {
+        "zh": "A/ARC-3 特斯拉塔",
+        "en": "A/ARC-3 Tesla Tower"
+      },
+      "aliases": [
+        "电塔",
+        "特斯拉"
+      ],
+      "ocr": [
+        "特斯拉塔"
+      ],
+      "seq": [
+        "S",
+        "W",
+        "D",
+        "W",
+        "A",
+        "D"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Tesla_Tower_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 65
+    },
+    {
+      "id": "sen_ems",
+      "grp": "sentry",
+      "name": {
+        "zh": "A/M-23 电磁冲击波迫击哨戒炮",
+        "en": "A/M-23 EMS Mortar Sentry"
+      },
+      "aliases": [
+        "电磁迫击炮"
+      ],
+      "ocr": [
+        "电磁冲击波迫击哨戒炮"
+      ],
+      "seq": [
+        "S",
+        "W",
+        "D",
+        "S",
+        "D"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "EMS_Mortar_Sentry_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 66
+    },
+    {
+      "id": "sen_flame",
+      "grp": "sentry",
+      "name": {
+        "zh": "A/FLAM-40 火焰喷射哨戒炮",
+        "en": "A/FLAM-40 Flame Sentry"
+      },
+      "aliases": [
+        "喷火塔"
+      ],
+      "ocr": [
+        "火焰喷射哨戒炮"
+      ],
+      "seq": [
+        "S",
+        "W",
+        "D",
+        "S",
+        "W",
+        "W"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Flame_Sentry_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 67
+    },
+    {
+      "id": "sen_laser",
+      "grp": "sentry",
+      "name": {
+        "zh": "A/LAS-98 激光哨戒炮",
+        "en": "A/LAS-98 Laser Sentry"
+      },
+      "aliases": [
+        "激光塔"
+      ],
+      "ocr": [
+        "激光哨戒炮"
+      ],
+      "seq": [
+        "S",
+        "W",
+        "D",
+        "S",
+        "W",
+        "D"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Laser_Sentry_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 68
+    },
+    {
+      "id": "sen_gas",
+      "grp": "sentry",
+      "name": {
+        "zh": "A/GM-17 瓦斯迫击哨戒炮",
+        "en": "A/GM-17 Gas Mortar Sentry"
+      },
+      "aliases": [
+        "毒"
+      ],
+      "ocr": [
+        "瓦斯迫击哨戒炮"
+      ],
+      "seq": [
+        "S",
+        "W",
+        "D",
+        "S",
+        "A"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "AGM-17_Gas_Mortar_Sentry.svg"
+      },
+      "enabled": true,
+      "order": 69
+    },
+    {
+      "id": "pack_supply",
+      "grp": "backpack",
+      "name": {
+        "zh": "B-1 补给背包",
+        "en": "B-1 Supply Pack"
+      },
+      "aliases": [
+        "补包",
+        "弹药包"
+      ],
+      "ocr": [
+        "补给背包"
+      ],
+      "seq": [
+        "S",
+        "A",
+        "S",
+        "W",
+        "W",
+        "S"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Supply_Pack_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 70
+    },
+    {
+      "id": "pack_jump",
+      "grp": "backpack",
+      "name": {
+        "zh": "LIFT-850 喷射背包",
+        "en": "LIFT-850 Jump Pack"
+      },
+      "aliases": [
+        "跳包",
+        "喷射包"
+      ],
+      "ocr": [
+        "喷射背包"
+      ],
+      "seq": [
+        "S",
+        "W",
+        "W",
+        "S",
+        "W"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Jump_Pack_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 71
+    },
+    {
+      "id": "pack_ballistic",
+      "grp": "backpack",
+      "name": {
+        "zh": "SH-20 防弹护盾背包",
+        "en": "SH-20 Ballistic Shield Backpack"
+      },
+      "aliases": [
+        "防弹盾"
+      ],
+      "ocr": [
+        "防弹护盾背包"
+      ],
+      "seq": [
+        "S",
+        "A",
+        "S",
+        "S",
+        "W",
+        "A"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Ballistic_Shield_Backpack_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 72
+    },
+    {
+      "id": "pack_guard",
+      "grp": "backpack",
+      "name": {
+        "zh": "AX/AR-23 “护卫犬”",
+        "en": "AX/AR-23 Guard Dog"
+      },
+      "aliases": [
+        "实弹狗"
+      ],
+      "ocr": [
+        "“护卫犬”"
+      ],
+      "seq": [
+        "S",
+        "W",
+        "A",
+        "W",
+        "D",
+        "S"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Guard_Dog_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 73
+    },
+    {
+      "id": "pack_rover",
+      "grp": "backpack",
+      "name": {
+        "zh": "AX/LAS-5 漫游车",
+        "en": "AX/LAS-5 Rover"
+      },
+      "aliases": [
+        "激光狗"
+      ],
+      "ocr": [
+        "漫游车"
+      ],
+      "seq": [
+        "S",
+        "W",
+        "A",
+        "W",
+        "D",
+        "D"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Rover_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 74
+    },
+    {
+      "id": "pack_shield",
+      "grp": "backpack",
+      "name": {
+        "zh": "SH-32 防护罩生成包",
+        "en": "SH-32 Shield Generator Pack"
+      },
+      "aliases": [
+        "护盾背包",
+        "蛋壳"
+      ],
+      "ocr": [
+        "防护罩生成包"
+      ],
+      "seq": [
+        "S",
+        "W",
+        "A",
+        "D",
+        "A",
+        "D"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Shield_Generator_Pack_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 75
+    },
+    {
+      "id": "pack_dir_shield",
+      "grp": "backpack",
+      "name": {
+        "zh": "SH-51 定向护盾",
+        "en": "SH-51 Directional Shield"
+      },
+      "aliases": [
+        "定向盾"
+      ],
+      "ocr": [
+        "定向护盾"
+      ],
+      "seq": [
+        "S",
+        "W",
+        "A",
+        "D",
+        "W",
+        "W"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Directional_Shield_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 76
+    },
+    {
+      "id": "pack_hotdog",
+      "grp": "backpack",
+      "name": {
+        "zh": "AX/FLAM-75 热狗",
+        "en": "AX/FLAM-75 Hot Dog"
+      },
+      "aliases": [
+        "火狗",
+        "热狗"
+      ],
+      "ocr": [
+        "热狗"
+      ],
+      "seq": [
+        "S",
+        "W",
+        "A",
+        "W",
+        "A",
+        "A"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Hot_Dog_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 77
+    },
+    {
+      "id": "pack_portable_hb",
+      "grp": "backpack",
+      "name": {
+        "zh": "B-100 便携式地狱火炸弹",
+        "en": "B-100 Portable Hellbomb"
+      },
+      "aliases": [
+        "地狱火"
+      ],
+      "ocr": [
+        "便携式地狱火炸弹"
+      ],
+      "seq": [
+        "S",
+        "D",
+        "W",
+        "W",
+        "W"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Portable_Hellbomb_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 78
+    },
+    {
+      "id": "pack_k9",
+      "grp": "backpack",
+      "name": {
+        "zh": "AX/ARC-3 K-9",
+        "en": "AX/ARC-3 K-9"
+      },
+      "aliases": [
+        "电狗"
+      ],
+      "ocr": [
+        "K-9"
+      ],
+      "seq": [
+        "S",
+        "W",
+        "A",
+        "W",
+        "D",
+        "A"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "K-9_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 79
+    },
+    {
+      "id": "pack_hover",
+      "grp": "backpack",
+      "name": {
+        "zh": "LIFT-860 悬浮背包",
+        "en": "LIFT-860 Hover Pack"
+      },
+      "aliases": [
+        "悬浮包"
+      ],
+      "ocr": [
+        "悬浮背包"
+      ],
+      "seq": [
+        "S",
+        "W",
+        "W",
+        "S",
+        "A",
+        "D"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Hover_Pack_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 80
+    },
+    {
+      "id": "pack_dog_breath",
+      "grp": "backpack",
+      "name": {
+        "zh": "AX/TX-13 腐息",
+        "en": "AX/TX-13 Dog Breath"
+      },
+      "aliases": [
+        "毒狗"
+      ],
+      "ocr": [
+        "腐息"
+      ],
+      "seq": [
+        "S",
+        "W",
+        "A",
+        "W",
+        "D",
+        "W"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Dog_Breath_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 81
+    },
+    {
+      "id": "pack_warp",
+      "grp": "backpack",
+      "name": {
+        "zh": "LIFT-182 传送背包",
+        "en": "LIFT-182 Warp Pack"
+      },
+      "aliases": [
+        "传包"
+      ],
+      "ocr": [
+        "传送背包"
+      ],
+      "seq": [
+        "S",
+        "A",
+        "D",
+        "S",
+        "A",
+        "D"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Warp_Pack_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 82
+    },
+    {
+      "id": "veh_patriot",
+      "grp": "vehicle",
+      "name": {
+        "zh": "EXO-45 “爱国者” 外骨骼装甲",
+        "en": "EXO-45 Patriot Exosuit"
+      },
+      "aliases": [
+        "爱国者"
+      ],
+      "ocr": [
+        "“爱国者” 外骨骼装甲"
+      ],
+      "seq": [
+        "A",
+        "S",
+        "D",
+        "W",
+        "A",
+        "S",
+        "S"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Patriot_Exosuit_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 83
+    },
+    {
+      "id": "veh_emancipator",
+      "grp": "vehicle",
+      "name": {
+        "zh": "EXO-49 “解放者” 外骨骼装甲",
+        "en": "EXO-49 Emancipator Exosuit"
+      },
+      "aliases": [
+        "解放者"
+      ],
+      "ocr": [
+        "“解放者” 外骨骼装甲"
+      ],
+      "seq": [
+        "A",
+        "S",
+        "D",
+        "W",
+        "A",
+        "S",
+        "W"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Emancipator_Exosuit_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 84
+    },
+    {
+      "id": "veh_Breakthrough",
+      "grp": "vehicle",
+      "name": {
+        "zh": "EXO-55 “突破” 外骨骼装甲",
+        "en": "EXO-55 Breakthrough Exosuit"
+      },
+      "aliases": [
+        "突破"
+      ],
+      "ocr": [
+        "突破"
+      ],
+      "seq": [
+        "A",
+        "S",
+        "D",
+        "A",
+        "D",
+        "S",
+        "W"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Breakthrough_Exosuit_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 85
+    },
+    {
+      "id": "veh_Lumberer",
+      "grp": "vehicle",
+      "name": {
+        "zh": "EXO-51 “伐木者” 外骨骼装甲",
+        "en": "EXO-51 Lumberer Exosuit"
+      },
+      "aliases": [
+        "伐木者"
+      ],
+      "ocr": [
+        "伐木者"
+      ],
+      "seq": [
+        "A",
+        "S",
+        "D",
+        "W",
+        "D",
+        "A",
+        "W"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Lumberer_Exosuit_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 86
+    },
+    {
+      "id": "veh_recon",
+      "grp": "vehicle",
+      "name": {
+        "zh": "M-102 快速侦察载具",
+        "en": "M-102 Fast Recon Vehicle"
+      },
+      "aliases": [
+        "小车",
+        "车"
+      ],
+      "ocr": [
+        "快速侦察载具"
+      ],
+      "seq": [
+        "A",
+        "S",
+        "D",
+        "S",
+        "D",
+        "S",
+        "W"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Fast_Recon_Vehicle_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 87
+    },
+    {
+      "id": "veh_supply",
+      "grp": "vehicle",
+      "name": {
+        "zh": "M-103 补给型快速侦察载具",
+        "en": "M-103 Supply FRV"
+      },
+      "aliases": [
+        "补给车",
+        "车"
+      ],
+      "ocr": [
+        "补给型快速侦察载具"
+      ],
+      "seq": [
+        "A",
+        "S",
+        "A",
+        "A",
+        "S",
+        "W",
+        "D"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Supply_FRV_Stratagem_Icon_Background.svg"
+      },
+      "enabled": true,
+      "order": 88
+    },
+    {
+      "id": "veh_incinerator",
+      "grp": "vehicle",
+      "name": {
+        "zh": "M-104 炽灼型快速侦察载具",
+        "en": "M-104 Incinerator FRV"
+      },
+      "aliases": [
+        "喷火车",
+        "车"
+      ],
+      "ocr": [
+        "炽灼型快速侦察载具"
+      ],
+      "seq": [
+        "A",
+        "S",
+        "D",
+        "A",
+        "S",
+        "W",
+        "W"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Incinerator_FRV_Stratagem_Icon_Background.svg"
+      },
+      "enabled": true,
+      "order": 89
+    },
+    {
+      "id": "veh_bastion",
+      "grp": "vehicle",
+      "name": {
+        "zh": "TD-220 堡垒 MK XVI",
+        "en": "TD-220 Bastion MK XVI"
+      },
+      "aliases": [
+        "坦克",
+        "堡垒"
+      ],
+      "ocr": [
+        "堡垒MK XVI"
+      ],
+      "seq": [
+        "A",
+        "S",
+        "D",
+        "S",
+        "A",
+        "S",
+        "W",
+        "S",
+        "W"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Bastion_MK_XVI_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 90
+    },
+    {
+      "id": "mis_sos",
+      "grp": "mission",
+      "name": {
+        "zh": "SOS救援信标",
+        "en": "SOS Beacon"
+      },
+      "aliases": [
+        "sos",
+        "求救"
+      ],
+      "ocr": [],
+      "seq": [
+        "W",
+        "S",
+        "D",
+        "W"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "SOS_Beacon_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 91
+    },
+    {
+      "id": "mis_resupply",
+      "grp": "mission",
+      "name": {
+        "zh": "重新补给",
+        "en": "Resupply"
+      },
+      "aliases": [
+        "补给"
+      ],
+      "ocr": [],
+      "seq": [
+        "S",
+        "S",
+        "W",
+        "D"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Resupply_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 92
+    },
+    {
+      "id": "mis_reinforce",
+      "grp": "mission",
+      "name": {
+        "zh": "增援",
+        "en": "Reinforce"
+      },
+      "aliases": [
+        "复活",
+        "增援"
+      ],
+      "ocr": [],
+      "seq": [
+        "W",
+        "S",
+        "D",
+        "A",
+        "W"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Reinforce_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 93
+    },
+    {
+      "id": "mis_hellbomb",
+      "grp": "mission",
+      "name": {
+        "zh": "呼叫地狱火炸弹",
+        "en": "Hellbomb"
+      },
+      "aliases": [
+        "地狱火",
+        "炸弹"
+      ],
+      "ocr": [],
+      "seq": [
+        "S",
+        "W",
+        "A",
+        "S",
+        "W",
+        "D",
+        "S",
+        "W"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Hellbomb_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 94
+    },
+    {
+      "id": "mis_flag",
+      "grp": "mission",
+      "name": {
+        "zh": "呼叫超级地球旗帜",
+        "en": "Super Earth Flag"
+      },
+      "aliases": [
+        "升旗"
+      ],
+      "ocr": [],
+      "seq": [
+        "S",
+        "W",
+        "S",
+        "W"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Super_Earth_Flag_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 95
+    },
+    {
+      "id": "mis_eagleresupply",
+      "grp": "mission",
+      "name": {
+        "zh": "重新武装 “飞鹰”",
+        "en": "Eagle Rearm"
+      },
+      "aliases": [
+        "重装飞鹰",
+        "洗飞鹰"
+      ],
+      "ocr": [],
+      "seq": [
+        "W",
+        "W",
+        "A",
+        "W",
+        "D"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Eagle_Rearm_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 96
+    },
+    {
+      "id": "mis_seafartillery",
+      "grp": "mission",
+      "name": {
+        "zh": "超级地球武装部队大炮",
+        "en": "SEAF Artillery"
+      },
+      "aliases": [
+        "大炮"
+      ],
+      "ocr": [],
+      "seq": [
+        "D",
+        "W",
+        "W",
+        "S"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "SEAF_Artillery_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 97
+    },
+    {
+      "id": "mis_callinsys",
+      "grp": "mission",
+      "name": {
+        "zh": "呼叫超级驱逐舰",
+        "en": "Call In Super Destroyer"
+      },
+      "aliases": [
+        "驱逐舰"
+      ],
+      "ocr": [],
+      "seq": [
+        "W",
+        "W",
+        "S",
+        "S",
+        "A",
+        "D",
+        "A",
+        "D"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Call_In_Super_Destroyer_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 98
+    },
+    {
+      "id": "mis_cargo",
+      "grp": "mission",
+      "name": {
+        "zh": "呼叫货柜",
+        "en": "Cargo Container"
+      },
+      "aliases": [
+        "货柜"
+      ],
+      "ocr": [],
+      "seq": [
+        "W",
+        "W",
+        "S",
+        "S",
+        "D",
+        "S"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Cargo_Container_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 99
+    },
+    {
+      "id": "mis_updd",
+      "grp": "mission",
+      "name": {
+        "zh": "上传逃生舱数据",
+        "en": "Upload Data"
+      },
+      "aliases": [
+        "数据",
+        "上传"
+      ],
+      "ocr": [],
+      "seq": [
+        "A",
+        "D",
+        "W",
+        "W",
+        "W"
+      ],
+      "icon": {
+        "kind": "bundled",
+        "value": "Start_Upload_Stratagem_Icon.svg"
+      },
+      "enabled": true,
+      "order": 100
+    }
+  ]
+}

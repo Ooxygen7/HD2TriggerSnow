@@ -1,0 +1,17 @@
+{
+  "name": "hd2-stratagem-admin",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test",
+    "seed": "node ../../scripts/export-stratagem-catalog.mjs"
+  },
+  "dependencies": {
+    "sharp": "^0.35.0"
+  }
+}

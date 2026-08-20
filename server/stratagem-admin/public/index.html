@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>战备数据库</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231d1d1f'/%3E%3Cpath d='M8 10h16v3H8zm0 6h16v3H8zm0 6h10v3H8z' fill='white'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#editor">跳到编辑区</a>
+  <header class="topbar">
+    <div>
+      <h1>战备数据库</h1>
+      <span class="version-pill" id="catalog-version">—</span>
+    </div>
+    <div class="topbar-actions">
+      <span class="user" id="session-user"></span>
+      <button class="button secondary" id="history-button" type="button">历史</button>
+    </div>
+  </header>
+
+  <main class="workspace" aria-busy="true">
+    <aside class="catalog-pane" aria-label="战备列表">
+      <div class="catalog-tools">
+        <label class="search">
+          <span class="sr-only">搜索战备</span>
+          <input id="search-input" type="search" autocomplete="off" placeholder="搜索">
+        </label>
+        <button class="icon-button" id="add-button" type="button" aria-label="添加战备">＋</button>
+      </div>
+      <div class="catalog-count" id="catalog-count">0 项</div>
+      <nav class="catalog-list" id="catalog-list" aria-label="战备"></nav>
+    </aside>
+
+    <section class="editor-pane" id="editor" aria-labelledby="editor-title">
+      <form id="stratagem-form" novalidate>
+        <div class="editor-heading">
+          <div>
+            <p class="eyebrow" id="editor-category">—</p>
+            <h2 id="editor-title">选择战备</h2>
+          </div>
+          <label class="switch-row">
+            <span>启用</span>
+            <input id="enabled-input" type="checkbox" disabled>
+            <span class="switch" aria-hidden="true"></span>
+          </label>
+        </div>
+
+        <div class="form-grid">
+          <label class="field field-wide">
+            <span>标识符</span>
+            <input id="id-input" name="id" maxlength="100" spellcheck="false" autocomplete="off" required disabled>
+          </label>
+          <label class="field">
+            <span>中文名</span>
+            <input id="name-zh-input" name="nameZh" maxlength="96" autocomplete="off" required disabled>
+          </label>
+          <label class="field">
+            <span>英文名</span>
+            <input id="name-en-input" name="nameEn" maxlength="96" autocomplete="off" required disabled>
+          </label>
+          <label class="field">
+            <span>分类</span>
+            <select id="group-input" name="group" required disabled>
+              <option value="support">支援武器</option>
+              <option value="orbital">轨道</option>
+              <option value="eagle">飞鹰</option>
+              <option value="emplacement">防御工事</option>
+              <option value="sentry">哨戒炮</option>
+              <option value="backpack">背包</option>
+              <option value="vehicle">载具</option>
+              <option value="mission">任务</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>OCR</span>
+            <input id="ocr-input" name="ocr" maxlength="512" autocomplete="off" placeholder="逗号分隔" disabled>
+          </label>
+          <label class="field field-wide">
+            <span>外号</span>
+            <input id="aliases-input" name="aliases" maxlength="512" autocomplete="off" placeholder="逗号分隔" disabled>
+          </label>
+          <div class="field field-wide">
+            <span>指令</span>
+            <div class="sequence-row">
+              <input id="sequence-input" name="sequence" maxlength="32" spellcheck="false" autocomplete="off" required disabled>
+              <div class="direction-buttons" aria-label="添加方向">
+                <button type="button" data-direction="W" disabled>↑</button>
+                <button type="button" data-direction="A" disabled>←</button>
+                <button type="button" data-direction="S" disabled>↓</button>
+                <button type="button" data-direction="D" disabled>→</button>
+              </div>
+              <button class="button tertiary compact" id="clear-sequence" type="button" disabled>清除</button>
+            </div>
+          </div>
+          <div class="field field-wide">
+            <span>图标</span>
+            <div class="file-row">
+              <button class="button secondary" id="icon-button" type="button" disabled>选择文件</button>
+              <span id="icon-filename">SVG、PNG 或 JPEG</span>
+              <input class="sr-only" id="icon-input" type="file" accept="image/svg+xml,image/png,image/jpeg" tabindex="-1">
+            </div>
+          </div>
+        </div>
+
+        <div class="editor-actions">
+          <button class="button tertiary" id="revert-button" type="button" disabled>还原</button>
+          <button class="button primary" id="save-button" type="submit" disabled>保存</button>
+        </div>
+      </form>
+    </section>
+
+    <aside class="preview-pane" aria-label="预览">
+      <div class="preview-label">预览</div>
+      <article class="client-card" id="client-card">
+        <div class="client-icon-shell"><img id="preview-icon" alt=""></div>
+        <div class="client-card-copy">
+          <strong id="preview-name">—</strong>
+          <span id="preview-sequence">—</span>
+        </div>
+      </article>
+    </aside>
+  </main>
+
+  <dialog id="publish-dialog">
+    <form method="dialog" class="dialog-content">
+      <h2>发布更改？</h2>
+      <p id="publish-summary"></p>
+      <div class="dialog-actions">
+        <button class="button secondary" value="cancel">取消</button>
+        <button class="button primary" id="publish-confirm" value="default">发布</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="history-dialog" class="history-dialog">
+    <div class="dialog-content">
+      <div class="dialog-heading">
+        <h2>发布历史</h2>
+        <button class="icon-button" id="history-close" type="button" aria-label="关闭">×</button>
+      </div>
+      <div class="history-list" id="history-list"></div>
+    </div>
+  </dialog>
+
+  <dialog id="rollback-dialog">
+    <form method="dialog" class="dialog-content">
+      <h2>回滚并发布？</h2>
+      <p id="rollback-summary"></p>
+      <div class="dialog-actions">
+        <button class="button secondary" value="cancel">取消</button>
+        <button class="button danger" id="rollback-confirm" value="default">回滚</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
