@@ -10,9 +10,11 @@ data_root=/var/lib/hd2-stratagem-admin
 release_root="$app_root/releases/$release_id"
 nginx_site=/etc/nginx/sites-available/update.unsnow.online
 nginx_snippet=/etc/nginx/snippets/update-unsnow-stratagems.conf
+env_file=/etc/hd2-stratagem-admin.env
 backup_root="/var/backups/hd2-stratagem-admin/$release_id"
 previous_target=""
 nginx_changed=0
+env_changed=0
 
 rollback() {
   status=$?
@@ -31,6 +33,9 @@ rollback() {
     fi
     nginx -t && systemctl reload nginx || true
   fi
+  if [[ $env_changed -eq 1 && -f "$backup_root/hd2-stratagem-admin.env" ]]; then
+    install -m 0600 "$backup_root/hd2-stratagem-admin.env" "$env_file"
+  fi
   systemctl restart hd2-stratagem-admin.service 2>/dev/null || true
   exit "$status"
 }
@@ -44,6 +49,9 @@ install -m 0600 "$nginx_site" "$backup_root/update.unsnow.online"
 if [[ -f "$nginx_snippet" ]]; then
   install -m 0600 "$nginx_snippet" "$backup_root/update-unsnow-stratagems.conf"
 fi
+if [[ -f "$env_file" ]]; then
+  install -m 0600 "$env_file" "$backup_root/hd2-stratagem-admin.env"
+fi
 if [[ -L "$app_root/current" ]]; then
   previous_target="$(readlink -f "$app_root/current")"
 fi
@@ -55,6 +63,7 @@ fi
 mkdir -p "$release_root"
 tar -xzf "$archive" -C "$release_root"
 cd "$release_root"
+[[ -d "$release_root/bundled-icons" ]]
 npm ci --omit=dev --no-audit --no-fund
 chown -R root:root "$release_root"
 chmod -R u=rwX,go=rX "$release_root"
@@ -77,18 +86,22 @@ if [[ -n "$previous_target" ]]; then
   ln -sfn "$previous_target" "$app_root/previous"
 fi
 
-if [[ ! -f /etc/hd2-stratagem-admin.env ]]; then
-  cat >/etc/hd2-stratagem-admin.env <<'ENV'
+if [[ ! -f "$env_file" ]]; then
+  cat >"$env_file" <<'ENV'
 HD2_CATALOG_HOST=127.0.0.1
 HD2_CATALOG_PORT=8785
 HD2_CATALOG_DATA=/var/lib/hd2-stratagem-admin
 HD2_CATALOG_KEYS=/var/lib/hd2-stratagem-admin/keys
-HD2_BUNDLED_ICONS=/opt/hd2-stratagem-admin/current/ui
+HD2_BUNDLED_ICONS=/opt/hd2-stratagem-admin/current/bundled-icons
 HD2_SEED_CATALOG=/opt/hd2-stratagem-admin/current/data/seed-catalog.json
 HD2_PUBLIC_ORIGIN=https://update.unsnow.online
 HD2_ADMIN_DISABLED=1
 ENV
-  chmod 0600 /etc/hd2-stratagem-admin.env
+  chmod 0600 "$env_file"
+  env_changed=1
+elif grep -qFx 'HD2_BUNDLED_ICONS=/opt/hd2-stratagem-admin/current/ui' "$env_file"; then
+  sed -i 's|^HD2_BUNDLED_ICONS=/opt/hd2-stratagem-admin/current/ui$|HD2_BUNDLED_ICONS=/opt/hd2-stratagem-admin/current/bundled-icons|' "$env_file"
+  env_changed=1
 fi
 
 install -m 0644 "$release_root/deploy/hd2-stratagem-admin.service" /etc/systemd/system/hd2-stratagem-admin.service
@@ -109,7 +122,11 @@ for _ in {1..20}; do
 done
 curl --fail --silent --show-error http://127.0.0.1:8785/api/v1/stratagems/manifest >/dev/null
 admin_status="$(curl --silent --output /dev/null --write-out '%{http_code}' http://127.0.0.1:8785/admin/)"
-[[ "$admin_status" == "503" ]]
+if grep -qFx 'HD2_ADMIN_DISABLED=1' "$env_file"; then
+  [[ "$admin_status" == "503" ]]
+else
+  [[ "$admin_status" == "403" ]]
+fi
 
 nginx -t
 systemctl reload nginx

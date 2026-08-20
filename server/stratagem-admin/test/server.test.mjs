@@ -5,7 +5,7 @@ import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { CatalogStore } from "../lib/store.mjs";
-import { createCatalogServer } from "../server.mjs";
+import { createCatalogServer, validateBundledIcons } from "../server.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -21,7 +21,7 @@ async function fixture(t) {
   const server = createCatalogServer({
     store,
     access: { authenticate: async () => ({ email: "owner@example.com" }) },
-    bundledIconRoot: path.resolve(root, "../../ui"),
+    bundledIconRoot: path.join(root, "bundled-icons"),
     publicOrigin: "https://update.example.test",
   });
   await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
@@ -75,8 +75,23 @@ test("admin serves only allowlisted assets and safe bundled icon names", async (
   assert.match(stylesheet, /\.catalog-pane[^}]*min-height:\s*0/s);
   assert.match(stylesheet, /\.catalog-list\s*{[^}]*min-height:\s*0[^}]*overflow-y:\s*auto/s);
   assert.equal((await fetch(`${base}/admin/secret.txt`)).status, 404);
+  const icon = await fetch(`${base}/admin/api/bundled-icon/Machine_Gun_Stratagem_Icon.svg`);
+  assert.equal(icon.status, 200);
+  assert.equal(icon.headers.get("content-type"), "image/svg+xml");
+  assert.match(await icon.text(), /<svg\b/i);
   assert.equal((await fetch(`${base}/admin/api/bundled-icon/..%2Fsecret.svg`)).status, 404);
   assert.equal((await fetch(`${base}/admin/api/bundled-icon/not-present.svg`)).status, 404);
+});
+
+test("startup validation rejects an incomplete bundled icon package", async (t) => {
+  const { store } = await fixture(t);
+  const emptyDirectory = await mkdtemp(path.join(os.tmpdir(), "hd2-empty-icons-"));
+  t.after(() => rm(emptyDirectory, { recursive: true, force: true }));
+  await assert.rejects(
+    validateBundledIcons(store, emptyDirectory),
+    /Bundled icon validation failed \(101 missing\)/,
+  );
+  assert.equal(await validateBundledIcons(store, path.join(root, "bundled-icons")), 101);
 });
 
 test("admin can be fail-closed while public catalog remains available", async (t) => {
@@ -84,7 +99,7 @@ test("admin can be fail-closed while public catalog remains available", async (t
   const server = createCatalogServer({
     store,
     access: { authenticate: async () => { throw new Error("must not run"); } },
-    bundledIconRoot: path.resolve(root, "../../ui"),
+    bundledIconRoot: path.join(root, "bundled-icons"),
     publicOrigin: "https://update.example.test",
     adminDisabled: true,
   });

@@ -1,0 +1,15 @@
+<svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2">
+  <desc>Traced by Dogo314</desc>
+  <g transform="translate(-276 -306)">
+    <path style="fill:none" d="M276 306h256v256H276z"/>
+    <clipPath id="a">
+      <path d="M276 306h256v256H276z"/>
+    </clipPath>
+    <g clip-path="url(#a)">
+      <path style="fill:#011419;fill-opacity:.75" transform="translate(0 306)" d="M276 0h256v256H276z"/>
+      <path d="M4284.473 2382.75H4201.5v-7.5h82.973c1.667-6.467 7.543-11.25 14.527-11.25 8.279 0 15 6.721 15 15s-6.721 15-15 15c-6.984 0-12.86-4.783-14.527-11.25m18.277-41.25v15h-7.5v-15zm25.418 13.635-10.606 10.607-5.304-5.304 10.607-10.606zm8.332 27.615h-15v-7.5h15zm-13.635 25.418-10.607-10.606 5.304-5.304 10.606 10.607zm-27.615 8.332v-15h7.5v15zm-25.418-13.635 10.606-10.607 5.304 5.304-10.607 10.606zm5.303-53.033 10.607 10.606-5.304 5.304-10.606-10.607z" style="fill:#ffe" transform="translate(-4149.6 -2151.6)scale(1.06667)"/>
+      <path d="M276 15V0h256v15zM518 .82H290v13.36h228z" style="fill:#5abeda" transform="matrix(1 0 0 17.06667 0 306)"/>
+      <path d="M779 2755h-1v1h-2v-1h-14v1h-2v-1h-1v1h-2v-1h-1v1h-2v-1h-1v1h-2v-1h-1v1h-2v-1h-1v1h-2v-1h-2v1h-2v2h2v1l-1 1h-9v1l-1 1h-13v2h-2v14a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-14h-2v-2h-2v4h-17v5l1 1v1h-2l1 1v1h-3a2 2 0 0 0-2 2v.586a1 1 0 0 1-.293.707l-.414.414a1 1 0 0 1-.707.293h-.051c-.334 0-.646.167-.832.445l-1.16 1.741a2 2 0 0 0-.234 1.742l.382 1.144a2 2 0 0 1-.234 1.742l-.478.717a2 2 0 0 1-2.558.679L670 2783l8.208-10.943a3.97 3.97 0 0 0 .792-2.378 4.68 4.68 0 0 0-4.678-4.679H674v-5h-3v2h-8v2l-4 4h-8a4 4 0 0 0-2.828 1.172A4 4 0 0 0 647 2772v11a1 1 0 0 1-1 1h-4v1l-1 1h-2l-1-1c-1-10-6-20-13-20h-4v-3h-6v-2h-34a4 4 0 0 1-2.828-1.172A4 4 0 0 1 577 2756v-20c0-1.061.421-2.078 1.172-2.828A4 4 0 0 1 581 2732h10v-19h9l3 2h3v-1h26v1h4v-1h5v1h3l3-2h9v18h11l4 4h4v1h9s4-5 14-5 14 5 14 5h4v-1h5v1h22v1h2v-1h2v1h1v-1h2v1h1v-1h2v1h1v-1h2v1h1v-1h2v1h1v-1h2v1h12v-1h2v1h1v-1h2v1s4 6.927 4 10v6a2 2 0 0 1-2 2v1h-2z" style="fill:#53bcda" transform="translate(-276 -2268)"/>
+    </g>
+  </g>
+</svg>

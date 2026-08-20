@@ -1,5 +1,5 @@
 import { createServer } from "node:http";
-import { readFile } from "node:fs/promises";
+import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { AccessVerifier } from "./lib/access.mjs";
@@ -111,6 +111,39 @@ async function sendFile(response, filename, cacheControl = "no-store") {
 
 function isMissingFile(error) {
   return error?.code === "ENOENT" || error?.code === "ENOTDIR";
+}
+
+export async function validateBundledIcons(store, bundledIconRoot) {
+  const resolvedIcons = path.resolve(bundledIconRoot);
+  const { catalog } = await store.current();
+  const filenames = [...new Set(
+    catalog.items
+      .filter((item) => item.icon?.kind === "bundled")
+      .map((item) => item.icon.value),
+  )];
+  const missing = [];
+  for (const filename of filenames) {
+    if (!BUNDLED_ICON_PATTERN.test(filename)) {
+      missing.push(filename);
+      continue;
+    }
+    const iconPath = path.resolve(resolvedIcons, filename);
+    if (path.dirname(iconPath) !== resolvedIcons) {
+      missing.push(filename);
+      continue;
+    }
+    try {
+      if (!(await stat(iconPath)).isFile()) missing.push(filename);
+    } catch (error) {
+      if (isMissingFile(error)) missing.push(filename);
+      else throw error;
+    }
+  }
+  if (missing.length > 0) {
+    const preview = missing.slice(0, 5).join(", ");
+    throw new Error(`Bundled icon validation failed (${missing.length} missing): ${preview}`);
+  }
+  return filenames.length;
 }
 
 export function createCatalogServer({ store, access, bundledIconRoot, publicOrigin, adminDisabled = false }) {
@@ -227,7 +260,7 @@ async function main() {
   const dataRoot = process.env.HD2_CATALOG_DATA || path.join(root, ".data");
   const keyRoot = process.env.HD2_CATALOG_KEYS || path.join(dataRoot, "keys");
   const publicOrigin = process.env.HD2_PUBLIC_ORIGIN || `http://${host}:${port}`;
-  const bundledIconRoot = process.env.HD2_BUNDLED_ICONS || path.resolve(root, "../../ui");
+  const bundledIconRoot = process.env.HD2_BUNDLED_ICONS || path.join(root, "bundled-icons");
   const adminDisabled = process.env.HD2_ADMIN_DISABLED === "1";
   const store = new CatalogStore({
     dataRoot,
@@ -236,6 +269,7 @@ async function main() {
     publicKeyPath: path.join(keyRoot, "catalog-signing-public.pem"),
   });
   await store.initialize();
+  const bundledIconCount = await validateBundledIcons(store, bundledIconRoot);
   const access = new AccessVerifier({
     teamDomain: process.env.CF_ACCESS_TEAM_DOMAIN,
     audience: process.env.CF_ACCESS_AUD,
@@ -247,7 +281,7 @@ async function main() {
   }
   const server = createCatalogServer({ store, access, bundledIconRoot, publicOrigin, adminDisabled });
   server.listen(port, host, () => {
-    console.log(`HD2 stratagem catalog listening on http://${host}:${port}`);
+    console.log(`HD2 stratagem catalog listening on http://${host}:${port} with ${bundledIconCount} bundled icons`);
   });
 }
 
