@@ -47,6 +47,39 @@ assert.match(sponsorSource, /<button id="close-btn" data-tauri-drag-region="fals
 assert.match(ocrHelpSource, /<div id="titlebar" data-tauri-drag-region="deep">/);
 assert.match(ocrHelpSource, /<button id="close-btn" data-tauri-drag-region="false"/);
 
+assert.match(
+  indexSource,
+  /<html lang="zh-CN" data-ui-ready="false" aria-busy="true">/,
+  "the unlocalized startup shell must be hidden before the first paint",
+);
+assert.match(
+  indexSource,
+  /html\[data-ui-ready="false"\] body > \*\s*{\s*visibility:\s*hidden;/,
+  "startup content must remain hidden while settings are loading",
+);
+assert.match(indexSource, /function finishUiStartup\(\)[\s\S]*dataset\.uiReady = 'true'/);
+const initDataStart = indexSource.indexOf("async function initData()");
+const initDataEnd = indexSource.indexOf("window.handleToggleOverlay", initDataStart);
+assert.notEqual(initDataStart, -1, "could not find main UI initialization");
+assert.notEqual(initDataEnd, -1, "could not find main UI initialization end marker");
+const initDataSource = indexSource.slice(initDataStart, initDataEnd);
+const firstI18nUpdate = initDataSource.indexOf("updateI18n();");
+const slowStartupIo = initDataSource.indexOf("await Promise.all([");
+assert.ok(
+  firstI18nUpdate > -1 && firstI18nUpdate < slowStartupIo,
+  "the saved language must be applied before slower startup I/O",
+);
+assert.match(
+  initDataSource,
+  /updateI18n\(\);\s*renderMainList\(\{ syncOverlay: true \}\);\s*finishUiStartup\(\);/,
+  "the UI may only be revealed after localization and the initial list render",
+);
+assert.match(
+  indexSource,
+  /initData\(\)\.catch\([\s\S]*?\)\.finally\(finishUiStartup\);/,
+  "startup failures must not leave the window permanently hidden",
+);
+
 const tauriConfig = JSON.parse(
   fs.readFileSync(path.join(root, "src-tauri", "tauri.conf.json"), "utf8"),
 );
