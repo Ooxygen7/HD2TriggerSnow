@@ -71,6 +71,9 @@ test("admin serves only allowlisted assets and safe bundled icon names", async (
   const { base } = await fixture(t);
   assert.equal((await fetch(`${base}/admin/`)).status, 200);
   assert.equal((await fetch(`${base}/admin/app.js`)).status, 200);
+  const stylesheet = await (await fetch(`${base}/admin/styles.css`)).text();
+  assert.match(stylesheet, /\.catalog-pane[^}]*min-height:\s*0/s);
+  assert.match(stylesheet, /\.catalog-list\s*{[^}]*min-height:\s*0[^}]*overflow-y:\s*auto/s);
   assert.equal((await fetch(`${base}/admin/secret.txt`)).status, 404);
   assert.equal((await fetch(`${base}/admin/api/bundled-icon/..%2Fsecret.svg`)).status, 404);
   assert.equal((await fetch(`${base}/admin/api/bundled-icon/not-present.svg`)).status, 404);
