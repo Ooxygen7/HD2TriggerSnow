@@ -1,0 +1,15 @@
+<svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2">
+  <desc>Traced by Dogo314</desc>
+  <g transform="translate(-276 -306)">
+    <path style="fill:none" d="M276 306h256v256H276z"/>
+    <clipPath id="a">
+      <path d="M276 306h256v256H276z"/>
+    </clipPath>
+    <g clip-path="url(#a)">
+      <path style="fill:#011419;fill-opacity:.75" transform="translate(0 306)" d="M276 0h256v256H276z"/>
+      <path d="M2299.096 2483.755a.89.89 0 0 0-.869-.709c-.563-.046-1.227-.046-1.227-.046l-7 13q-1.5 3-3 3c-1 0-2-2-2-2h-2c-10 0-20-4-25-11h-10l-3-2h-9v-2h-3l-2-21h6l4-1h36l3-3h27l3-2h30v4h35v3c2 1 2 2 2 4h5v2h4v-2h8v2h38v-1h12v5h-12v-1h-38v3h3v4h-4v1h-5v-1h-4l6 37h4v4h-8l-4-4h4l-1.135-7H2380l-4-4h4l-3-26h-3l-4 4v5l-9 9v1l-8 8h-7l-3 3h-3l-2 2h-23l-4-2h-3v-31l-3 2v4a3.001 3.001 0 0 1-5.904.755M2238 2471v6h3l2-2v-4zm116-8a1 1 0 1 0 0 2 1 1 0 0 0 0-2m14-2a1 1 0 1 0 0 2 1 1 0 0 0 0-2m-6 2a1 1 0 1 0 0 2 1 1 0 0 0 0-2m22.216 41-.749-4.622.533 4.622zM2270 2478l-1 1v6.5a1 1 0 0 0 .4.8l2.582 1.937a1 1 0 0 0 1.519-.407l1.699-3.963a3 3 0 0 0-.636-3.303L2271 2477v1zm86-17a1 1 0 1 0 0 2 1 1 0 0 0 0-2m-4 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2m-8 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2m16 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2m-68 24 1-3h-5c-1 1-1 2 0 3zm-6 10 6-9h-9l-1.728 4.32c-.176.439-.19.926-.04 1.375l.506 1.519c.168.503.788 1.549 1.262 1.786zm72-32a1 1 0 1 0 0 2 1 1 0 0 0 0-2m6-2a1 1 0 1 0 0 2 1 1 0 0 0 0-2m-18 2a1 1 0 1 0 0 2 1 1 0 0 0 0-2m20 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2m-16 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2m-48 19a1 1 0 1 0 0 2 1 1 0 0 0 0-2m46-21a1 1 0 1 0 0 2 1 1 0 0 0 0-2m22 2a1 1 0 1 0 0 2 1 1 0 0 0 0-2m2-2a1 1 0 1 0 0 2 1 1 0 0 0 0-2" style="fill:#53bcda" transform="translate(-1932 -1992)"/>
+      <path d="M356 2350v20h-8v-20zm78 16-5 4h-65v-20h65l5 4h15l11 6-11 6zm-78 12v20h-8v-20zm78 16-5 4h-65v-20h65l5 4h15l11 6-11 6zm-78 12v20h-8v-20zm78 16-5 4h-65v-20h65l5 4h15l11 6-11 6z" style="fill:#ffe" transform="translate(0 -1992)"/>
+      <path d="M276 15V0h256v15zM518 .82H290v13.36h228z" style="fill:#5abeda" transform="matrix(1 0 0 17.06667 0 306)"/>
+    </g>
+  </g>
+</svg>

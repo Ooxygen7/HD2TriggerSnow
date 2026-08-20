@@ -1,18 +1,12 @@
 use semver::Version;
 use serde::{Deserialize, Serialize};
-use std::{ffi::c_void, mem::size_of, ptr, time::Instant};
+use std::time::Instant;
 use windows::{
-    core::{w, Error as WindowsError, PCWSTR},
-    Win32::{
-        Networking::WinHttp::{
-            WinHttpCloseHandle, WinHttpConnect, WinHttpOpen, WinHttpOpenRequest,
-            WinHttpQueryHeaders, WinHttpReadData, WinHttpReceiveResponse, WinHttpSendRequest,
-            WinHttpSetTimeouts, INTERNET_DEFAULT_HTTPS_PORT, WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY,
-            WINHTTP_FLAG_SECURE, WINHTTP_QUERY_FLAG_NUMBER, WINHTTP_QUERY_STATUS_CODE,
-        },
-        UI::{Shell::ShellExecuteW, WindowsAndMessaging::SW_SHOWNORMAL},
-    },
+    core::{w, PCWSTR},
+    Win32::UI::{Shell::ShellExecuteW, WindowsAndMessaging::SW_SHOWNORMAL},
 };
+
+use crate::network;
 
 const UPDATE_ENDPOINT_HOST: &str = "update.unsnow.online";
 const UPDATE_ENDPOINT_PATH: &str = "/api/v1/releases/latest";
@@ -49,35 +43,6 @@ struct ReleasePayload {
     draft: bool,
     #[serde(default)]
     prerelease: bool,
-}
-
-struct WinHttpHandle(*mut c_void);
-
-impl WinHttpHandle {
-    fn from_raw(handle: *mut c_void, operation: &str) -> Result<Self, String> {
-        if handle.is_null() {
-            Err(format!(
-                "{operation} failed: {}",
-                WindowsError::from_win32()
-            ))
-        } else {
-            Ok(Self(handle))
-        }
-    }
-
-    fn raw(&self) -> *mut c_void {
-        self.0
-    }
-}
-
-impl Drop for WinHttpHandle {
-    fn drop(&mut self) {
-        // SAFETY: `self.0` is a non-null HINTERNET returned by WinHTTP and this
-        // RAII owner closes it exactly once after all dependent handles are gone.
-        unsafe {
-            let _ = WinHttpCloseHandle(self.0);
-        }
-    }
 }
 
 pub fn check_for_update() -> Result<Option<UpdateInfo>, String> {
@@ -150,119 +115,12 @@ pub fn open_releases_page() -> Result<(), String> {
 }
 
 fn fetch_latest_release() -> Result<ReleasePayload, String> {
-    let host = wide_null(UPDATE_ENDPOINT_HOST);
-    let path = wide_null(UPDATE_ENDPOINT_PATH);
-
-    // SAFETY: compile-time and owned UTF-16 strings remain valid for each
-    // synchronous call. Returned handles are checked and immediately owned by
-    // `WinHttpHandle`, which closes them in reverse dependency order.
-    let session = unsafe {
-        WinHttpHandle::from_raw(
-            WinHttpOpen(
-                w!("HD2-Macro-Terminal/2.0"),
-                WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY,
-                PCWSTR::null(),
-                PCWSTR::null(),
-                0,
-            ),
-            "WinHttpOpen",
-        )?
-    };
-
-    // SAFETY: `session` is a live WinHTTP session and the timeout values are
-    // finite milliseconds. WinHTTP does not retain references to Rust memory.
-    unsafe { WinHttpSetTimeouts(session.raw(), 1_500, 2_500, 2_500, 4_000) }
-        .map_err(|error| format!("WinHttpSetTimeouts failed: {error}"))?;
-
-    // SAFETY: `session` remains live, and `host` is a nul-terminated buffer
-    // that outlives the synchronous connection creation call.
-    let connection = unsafe {
-        WinHttpHandle::from_raw(
-            WinHttpConnect(
-                session.raw(),
-                PCWSTR(host.as_ptr()),
-                INTERNET_DEFAULT_HTTPS_PORT,
-                0,
-            ),
-            "WinHttpConnect",
-        )?
-    };
-
-    // SAFETY: `connection` remains live, `path` is nul-terminated, and all
-    // optional pointer arguments are intentionally null. The request is HTTPS.
-    let request = unsafe {
-        WinHttpHandle::from_raw(
-            WinHttpOpenRequest(
-                connection.raw(),
-                w!("GET"),
-                PCWSTR(path.as_ptr()),
-                PCWSTR::null(),
-                PCWSTR::null(),
-                ptr::null(),
-                WINHTTP_FLAG_SECURE,
-            ),
-            "WinHttpOpenRequest",
-        )?
-    };
-
-    let headers: Vec<u16> = "Accept: application/vnd.github+json\r\n"
-        .encode_utf16()
-        .collect();
-    // SAFETY: `request` is live, the header slice is valid for the synchronous
-    // call, and there is no request body or asynchronous callback context.
-    unsafe { WinHttpSendRequest(request.raw(), Some(&headers), None, 0, 0, 0) }
-        .map_err(|error| format!("WinHttpSendRequest failed: {error}"))?;
-    // SAFETY: `request` is live and the reserved pointer must be null.
-    unsafe { WinHttpReceiveResponse(request.raw(), ptr::null_mut()) }
-        .map_err(|error| format!("WinHttpReceiveResponse failed: {error}"))?;
-
-    let mut status_code = 0_u32;
-    let mut status_length = size_of::<u32>() as u32;
-    let mut header_index = 0_u32;
-    // SAFETY: the status and length pointers are valid writable storage for the
-    // synchronous query, and numeric status-code mode writes exactly a u32.
-    unsafe {
-        WinHttpQueryHeaders(
-            request.raw(),
-            WINHTTP_QUERY_STATUS_CODE | WINHTTP_QUERY_FLAG_NUMBER,
-            PCWSTR::null(),
-            Some((&mut status_code as *mut u32).cast()),
-            &mut status_length,
-            &mut header_index,
-        )
-    }
-    .map_err(|error| format!("WinHttpQueryHeaders failed: {error}"))?;
-    if status_code != 200 {
-        return Err(format!(
-            "Update endpoint returned unexpected HTTP status {status_code}"
-        ));
-    }
-
-    let mut body = Vec::with_capacity(8 * 1024);
-    let mut buffer = [0_u8; 8 * 1024];
-    loop {
-        let mut bytes_read = 0_u32;
-        // SAFETY: `request` is live and `buffer` is valid writable storage for
-        // its declared length. WinHTTP writes the actual count to `bytes_read`.
-        unsafe {
-            WinHttpReadData(
-                request.raw(),
-                buffer.as_mut_ptr().cast(),
-                buffer.len() as u32,
-                &mut bytes_read,
-            )
-        }
-        .map_err(|error| format!("WinHttpReadData failed: {error}"))?;
-        if bytes_read == 0 {
-            break;
-        }
-        let bytes_read = bytes_read as usize;
-        if body.len() + bytes_read > MAX_RESPONSE_BYTES {
-            return Err("Update endpoint response is too large".to_owned());
-        }
-        body.extend_from_slice(&buffer[..bytes_read]);
-    }
-
+    let body = network::fetch_https(
+        UPDATE_ENDPOINT_HOST,
+        UPDATE_ENDPOINT_PATH,
+        "application/vnd.github+json",
+        MAX_RESPONSE_BYTES,
+    )?;
     serde_json::from_slice(&body).map_err(|error| format!("Invalid update response: {error}"))
 }
 

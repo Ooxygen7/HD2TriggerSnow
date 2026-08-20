@@ -1,0 +1,15 @@
+<svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2">
+  <desc>Traced by Dogo314</desc>
+  <g transform="translate(-276 -306)">
+    <path style="fill:none" d="M276 306h256v256H276z"/>
+    <clipPath id="a">
+      <path d="M276 306h256v256H276z"/>
+    </clipPath>
+    <g clip-path="url(#a)">
+      <path style="fill:#011419;fill-opacity:.75" transform="translate(0 306)" d="M276 0h256v256H276z"/>
+      <path d="m1790 2732 2 2h9l1-1h4l3 3h1v-1l3-3h2v4h3v-1l3-3h2v4h3v-1l3-3h2v4h3v-1l3-3h2v4h3v-1l3-3h2v4h3v-1l3-3h2v4h3v-1l3-3h2v4h2v-2h3v3h6l1-5 15 7-15 8-1-6h-5v4l-.2 4-.8 4h-2v-1h-1v1h-1v-1h-1v1h-1v-1h-1v1h-1v-1h-1v1h-1v-1h-1v1h-1v-1h-1v1h-1v-1h-1v1h-1v-1h-1v1h-2v-1h-1v-3h-41l-3 3h-4l-5 4-30 1-2-2-1 1h-5v-1h-11v1h-2l-1-1v-3h-2l-2 2h-5l-2-2v-2h-5l-6 3h-2l-1-1v2l1 1-1 1v1l1 1v1l-1 1v1h-4v-1l-1-1-1 1v1h-4v-1l-1-1-1 1v1h-4v-1l-1-1-1 1v1h-4v-1l-1-1v-1l1-1v-1h-1v1h-5l-3 3h-1l-1-1v-3h-1v2l-1 1h-3.089l-.911-1 2-10-2-10 .911-1H1683l1 1v2h1v-3l1-1h1l3 3h23l6 4h2v2h5l12-6v-2l3-3h11l1-1h3l1 1h4l2 2h1v-1h1l2-2h2v-1h2v-1h2v1h1v-1h1v1h1v-1h1v1h1v-1h1v1h1v-1h1v1h1v-1h1v1h1v-1h1v1h1v-1h1v1h1v-1h2zm-90 17v5h2v-5zm130-4h4l-1-1v-2h-1l-2 2zm24 0h4l-1-1v-2h-1l-2 2zm-148 4v5h2v-5zm-22 6 2-1v-1l-2-2zm192-11.5 6-3h-5zm-108-7.5h2l1 1h13l1-1h2l-1-1h-17zm-34 12h-1v3l2 2h3l3-3v-2h-5c-1 2-1 3 0 4h-1c-1-1-1-2-1-4m80-3h4l-1-1v-2h-1l-2 2zm-100 11h-2v1l1 1 1-1zm-12 0h-2v1l1 1 1-1zm144-11h4l-1-1v-2h-1l-2 2zm-158-1v3l2-1v-1l-1-1zm150 1h4l-1-1v-2h-1l-2 2zm26-3-2 2v1h3v-3zm-42 3h4l-1-1v-2h-1l-2 2zm-136-6v2l1 2 2-1v-1l-2-2zm190-4 1 3h5zm-181 14v5h1v-5zm13 7h-2v1l1 1 1-1zm4-7v5h2v-5zm-24 3h1l1-1v-1l-2-1zm-4-11v4l2-2v-1zm124 1v3h2l-1-1v-2zm-122 15h1l2-2v-1l-2-1-1 2z" style="fill:#53bcda" transform="translate(-1380 -2268)"/>
+      <path d="m1860 2663-35 23 10-19h-44l-9-4 9-4h44l-10-19zm-6.182-10.045L1847 2640l35 23-35 23 6.818-12.955 15.287-10.045zM1751 2646h5v19l-15.5 15.5 3.5 3.5 5-5 4 4-15.5 15.5-4.5-4.5 6.041-5.959L1736 2685l-.929.929a10 10 0 0 1-14.142 0l-1.429-1.429-3.541 3.541L1722 2694l-4.5 4.5-15.5-15.5 4-4 5 5 4-4-15-15v-19h5c0-11.59 10.306-21 23-21s23 9.41 23 21m-40 0v15l6 5 11-7 10 7 7-5v-15zm17 21a2 2 0 1 0-.001-4.001A2 2 0 0 0 1728 2667m7 1a2 2 0 1 0 .001 4.001A2 2 0 0 0 1735 2668m-14 0a2 2 0 1 0 .001 4.001A2 2 0 0 0 1721 2668m0 9a2 2 0 1 0 .001 4.001A2 2 0 0 0 1721 2677m7 4a2 2 0 1 0 .001 4.001A2 2 0 0 0 1728 2681m0-9a2 2 0 1 0 .001 4.001A2 2 0 0 0 1728 2672m7 5a2 2 0 1 0 .001 4.001A2 2 0 0 0 1735 2677" style="fill:#ffe" transform="translate(-1380 -2268)"/>
+      <path d="M276 15V0h256v15zM518 .82H290v13.36h228z" style="fill:#5abeda" transform="matrix(1 0 0 17.06667 0 306)"/>
+    </g>
+  </g>
+</svg>

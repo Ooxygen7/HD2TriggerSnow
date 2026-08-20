@@ -35,6 +35,8 @@ const hooksSource = fs.readFileSync(path.join(root, "src-tauri", "src", "hooks.r
 const inputSource = fs.readFileSync(path.join(root, "src-tauri", "src", "input.rs"), "utf8");
 const runtimeDiagnosticsSource = fs.readFileSync(path.join(root, "src-tauri", "src", "runtime_diagnostics.rs"), "utf8");
 const updatesSource = fs.readFileSync(path.join(root, "src-tauri", "src", "updates.rs"), "utf8");
+const networkSource = fs.readFileSync(path.join(root, "src-tauri", "src", "network.rs"), "utf8");
+const catalogSource = fs.readFileSync(path.join(root, "src-tauri", "src", "catalog.rs"), "utf8");
 
 assert.match(indexSource, /<div id="titlebar" data-tauri-drag-region="deep">/);
 assert.match(indexSource, /<div class="titlebar-controls" data-tauri-drag-region="false">/);
@@ -50,12 +52,12 @@ const tauriConfig = JSON.parse(
 );
 const installerHooks = tauriConfig.bundle?.windows?.nsis?.installerHooks;
 assert.equal(installerHooks, "windows/installer-hooks.nsh");
-assert.equal(tauriConfig.version, "2.0.5", "the bundled version must match the GitHub Release version");
+assert.equal(tauriConfig.version, "2.0.6", "the bundled version must match the application version");
 const packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
 const packageLock = JSON.parse(fs.readFileSync(path.join(root, "package-lock.json"), "utf8"));
-assert.equal(packageJson.version, "2.0.5");
-assert.equal(packageLock.version, "2.0.5");
-assert.equal(packageLock.packages[""].version, "2.0.5");
+assert.equal(packageJson.version, "2.0.6");
+assert.equal(packageLock.version, "2.0.6");
+assert.equal(packageLock.packages[""].version, "2.0.6");
 const installerHookSource = fs.readFileSync(path.join(root, "src-tauri", installerHooks), "utf8");
 assert.match(installerHookSource, /CheckIfAppIsRunning "HD2 Macro Terminal\.exe"/);
 assert.match(installerHookSource, /CheckIfAppIsRunning "HD2-Trigger\.exe"/);
@@ -471,8 +473,13 @@ assert.match(indexSource, /void checkForStartupUpdate\(\)/, "startup must trigge
 assert.match(indexSource, /messageElement\.textContent = message/, "server text must never be injected as HTML");
 assert.match(updatesSource, /update\.unsnow\.online/);
 assert.match(updatesSource, /QuickStratagemTool\/releases\/latest/);
-assert.match(updatesSource, /WinHttpSetTimeouts/);
+assert.match(networkSource, /WinHttpSetTimeouts/);
 assert.match(updatesSource, /latest_version <= current_version/);
+assert.match(indexSource, /id="txt-catalog-update-title">战备数据库已更新</);
+assert.match(indexSource, /void checkForStratagemCatalogUpdate\(\)/);
+assert.match(indexSource, /strat\.enabled !== false/);
+assert.match(catalogSource, /Catalog signature verification failed/);
+assert.match(catalogSource, /BUNDLED_CATALOG_VERSION:\s*u64\s*=\s*1/);
 
 const overlayToggleStart = indexSource.indexOf("window.handleToggleOverlay = async");
 const overlayToggleEnd = indexSource.indexOf("window.unlockOverlaySafely", overlayToggleStart);

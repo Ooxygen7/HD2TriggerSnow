@@ -1,6 +1,6 @@
 {
   "name": "hd2-macro-terminal-rust",
-  "version": "2.0.5",
+  "version": "2.0.6",
   "private": true,
   "scripts": {
     "tauri": "set \"PATH=%USERPROFILE%\\.cargo\\bin;%PATH%\" && tauri",
@@ -8,9 +8,10 @@
     "build": "npm run check && npm test && npm run build:bundle",
     "build:bundle": "npm run tauri -- build --target x86_64-pc-windows-msvc -- --locked",
     "check": "set \"PATH=%USERPROFILE%\\.cargo\\bin;%PATH%\" && cargo fmt --manifest-path src-tauri/Cargo.toml --all -- --check && cargo clippy --locked --manifest-path src-tauri/Cargo.toml --all-targets --all-features -- -D warnings -D clippy::undocumented_unsafe_blocks",
-    "test": "npm run test:ui && npm run test:ocr-matcher && set \"PATH=%USERPROFILE%\\.cargo\\bin;%PATH%\" && cargo test --locked --manifest-path src-tauri/Cargo.toml --all-targets",
+    "test": "npm run test:ui && npm run test:ocr-matcher && npm run test:catalog-admin && set \"PATH=%USERPROFILE%\\.cargo\\bin;%PATH%\" && cargo test --locked --manifest-path src-tauri/Cargo.toml --all-targets",
     "test:ui": "node scripts/ui-regression.mjs",
-    "test:ocr-matcher": "node scripts/ocr-matcher-regression.mjs"
+    "test:ocr-matcher": "node scripts/ocr-matcher-regression.mjs",
+    "test:catalog-admin": "npm --prefix server/stratagem-admin test"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.11.4"

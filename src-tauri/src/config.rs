@@ -136,7 +136,7 @@ fn read_json_path(path: &Path, label: &str, max_bytes: u64) -> Result<Value, Str
     serde_json::from_slice(&contents).map_err(|error| format!("Cannot parse {label}: {error}"))
 }
 
-fn atomic_write(path: &Path, contents: &[u8], keep_backup: bool) -> io::Result<()> {
+pub(crate) fn atomic_write(path: &Path, contents: &[u8], keep_backup: bool) -> io::Result<()> {
     let pending = pending_path(path);
     let mut file = fs::OpenOptions::new()
         .create(true)

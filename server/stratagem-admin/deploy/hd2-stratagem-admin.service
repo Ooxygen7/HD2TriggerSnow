@@ -1,0 +1,35 @@
+[Unit]
+Description=HD2 signed stratagem catalog and admin
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=hd2-catalog
+Group=hd2-catalog
+WorkingDirectory=/opt/hd2-stratagem-admin/current
+EnvironmentFile=/etc/hd2-stratagem-admin.env
+ExecStart=/usr/bin/node server.mjs
+Restart=on-failure
+RestartSec=3s
+TimeoutStopSec=10s
+UMask=0027
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+RestrictSUIDSGID=true
+LockPersonality=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+ReadWritePaths=/var/lib/hd2-stratagem-admin
+MemoryMax=256M
+TasksMax=64
+
+[Install]
+WantedBy=multi-user.target

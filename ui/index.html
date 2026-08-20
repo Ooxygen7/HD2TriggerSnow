@@ -754,6 +754,16 @@
         </div>
     </div>
 
+    <div id="catalog-update-modal" class="modal-overlay" style="z-index: 91;" role="dialog" aria-modal="true" aria-labelledby="txt-catalog-update-title">
+        <div class="confirm-box" style="width: 430px; max-width: calc(100% - 32px);">
+            <div class="confirm-header update-header" id="txt-catalog-update-title">战备数据库已更新</div>
+            <div class="confirm-body" id="txt-catalog-update-msg">已更新至新版本。</div>
+            <div class="confirm-footer">
+                <button class="btn-square primary" id="btn-catalog-update-ok" onclick="closeCatalogUpdateModal()">知道了</button>
+            </div>
+        </div>
+    </div>
+
     <div id="sponsor-modal" class="modal-overlay" style="z-index: 70;">
         <div class="confirm-box" style="width: 500px; max-width: calc(100% - 32px);">
             <div class="confirm-header" id="txt-sponsor-title" style="background: rgba(255, 232, 10, 0.1); color: var(--hd-yellow); border-bottom: 1px solid rgba(255, 232, 10, 0.2);">赞助</div>
@@ -928,6 +938,9 @@
                 updateDownload: "前往下载",
                 updateLater: "暂不",
                 msgUpdateOpenFailed: "打开下载页面失败",
+                catalogUpdateTitle: "战备数据库已更新",
+                catalogUpdateMessage: "已更新至 v{version}。",
+                catalogUpdateOk: "知道了",
                 ocrHelp: "帮助",
                 ocrTitle: "OCR 自动识别", ocrRegion: "识别区域", ocrSelectRegion: "框选识别区域", ocrDisplay: "识别屏幕", ocrPrimaryDisplay: "主屏幕", ocrHotkey: "识别快捷键", toastEnabled: "提示气泡", toastOn: "开启", toastOff: "关闭", ocrRegionUnset: "未设置", ocrRegionSet: "已设置: {width} x {height} @ {x},{y}",
                 descOcrRegion: "在屏幕叠加层上拖动鼠标框选游戏左上角战备栏文字区域，保存后 OCR 只识别此区域。", descOcrDisplay: "选择游戏所在的显示器，框选窗口只会出现在这块屏幕上。", descOcrHotkey: "按下该快捷键后自动识别区域内文字，并和中英文战备库名称比对后装备识别结果。", descToastEnabled: "在玩家屏幕底部稍微靠上的位置显示提示气泡。",
@@ -992,6 +1005,9 @@
                 updateDownload: "GO TO DOWNLOAD",
                 updateLater: "NOT NOW",
                 msgUpdateOpenFailed: "Failed to open the download page",
+                catalogUpdateTitle: "STRATAGEM DATABASE UPDATED",
+                catalogUpdateMessage: "Updated to v{version}.",
+                catalogUpdateOk: "OK",
                 ocrHelp: "Help",
                 ocrTitle: "OCR AUTO LOADOUT", ocrRegion: "OCR REGION", ocrSelectRegion: "SELECT REGION", ocrDisplay: "OCR SCREEN", ocrPrimaryDisplay: "PRIMARY SCREEN", ocrHotkey: "OCR HOTKEY", toastEnabled: "TOAST NOTIFICATIONS", toastOn: "ON", toastOff: "OFF", ocrRegionUnset: "NOT SET", ocrRegionSet: "SET: {width} x {height} @ {x},{y}",
                 descOcrRegion: "Drag a rectangle over the in-game stratagem text area. OCR will only read this saved region until you replace it.", descOcrDisplay: "Select the monitor where the game is running. The region selector will only appear on that screen.", descOcrHotkey: "Press this hotkey to recognize the selected region and equip stratagems matched against the English and Chinese library names.", descToastEnabled: "Show notification bubbles slightly above the bottom of the player screen.",
@@ -1183,6 +1199,9 @@
         let isOverlayVisible = false; 
         let ocrDisplays = [];
         let pendingUpdateInfo = null;
+        let remoteCatalogItems = [];
+        let remoteCatalogVersion = 1;
+        let pendingCatalogNoticeVersion = null;
         let latestDiagnosticsReport = null;
         let diagnosticsInFlight = null;
 
@@ -1215,6 +1234,7 @@
             ovUp: 'WheelUp', ovDown: 'WheelDown', ovExec: 'MouseMiddle',
             ocrHotkey: 'F8', ocrRegion: null, ocrRegionCoordinateSpace: null, ocrDisplayId: null, showToasts: true,
             slotCount: DEFAULT_SLOT_COUNT,
+            catalogNoticeVersion: 1,
             overlayPosition: null
         };
 
@@ -1392,6 +1412,65 @@
                 return source;
             }
             return EMPTY_IMAGE_SOURCE;
+        }
+
+        function normalizeRemoteCatalogPayload(payload) {
+            if (!payload || !Number.isSafeInteger(payload.catalogVersion) || payload.catalogVersion < 1 || !Array.isArray(payload.items) || payload.items.length < 1 || payload.items.length > 512) {
+                throw new Error('Invalid catalog payload');
+            }
+            const ids = new Set();
+            const groups = new Set(['support', 'orbital', 'eagle', 'emplacement', 'sentry', 'backpack', 'vehicle', 'mission']);
+            const items = payload.items.map(item => {
+                if (!item || typeof item !== 'object' || Array.isArray(item) || typeof item.id !== 'string' || !/^[A-Za-z0-9][A-Za-z0-9_.-]{0,99}$/.test(item.id) || item.id.toLowerCase().startsWith('custom_')) {
+                    throw new Error('Invalid catalog item');
+                }
+                const idKey = item.id.toLowerCase();
+                if (ids.has(idKey) || !groups.has(item.grp)) throw new Error('Invalid catalog item');
+                ids.add(idKey);
+                if (!item.name || typeof item.name.zh !== 'string' || typeof item.name.en !== 'string' || !Array.isArray(item.aliases) || !Array.isArray(item.ocr) || !Array.isArray(item.seq)) {
+                    throw new Error('Invalid catalog item');
+                }
+                const icon = safeImageSource(item.icon);
+                if (!item.icon || icon !== item.icon || item.seq.length < 1 || !item.seq.every(key => ['W', 'A', 'S', 'D'].includes(key))) {
+                    throw new Error('Invalid catalog item');
+                }
+                return {
+                    id: item.id,
+                    grp: item.grp,
+                    name: { zh: item.name.zh, en: item.name.en },
+                    aliases: item.aliases.map(String),
+                    ocr: item.ocr.map(String),
+                    seq: [...item.seq],
+                    icon,
+                    enabled: item.enabled !== false
+                };
+            });
+            return { catalogVersion: payload.catalogVersion, items };
+        }
+
+        function rebuildStratagemDatabase() {
+            const base = remoteCatalogItems.length ? remoteCatalogItems : defaultStratagemDB;
+            stratagemDB = [...base, ...customStratagems];
+            ensureOcrFields(stratagemDB);
+            invalidateOcrCache();
+        }
+
+        async function applyRemoteCatalog(payload, render = true) {
+            const normalized = normalizeRemoteCatalogPayload(payload);
+            const loadoutSnapshot = activeLoadout.length ? compactLoadout() : null;
+            remoteCatalogItems = normalized.items;
+            remoteCatalogVersion = normalized.catalogVersion;
+            rebuildStratagemDatabase();
+            if (!loadoutSnapshot) return;
+            activeLoadout = restoreLoadout(loadoutSnapshot, maxSlots);
+            clampOverlaySelection();
+            await syncGlobalInputFilter();
+            if (render) {
+                renderMainList({ syncOverlay: true });
+                if (document.getElementById('library-modal').classList.contains('active')) {
+                    renderLibrary(document.getElementById('lib-search-input').value);
+                }
+            }
         }
 
         function normalizeImportedPreset(dataObj) {
@@ -1772,6 +1851,8 @@
                     cacheSet.menuOpenDelay = 100;
                 }
                 gameSettings = { ...gameSettings, ...cacheSet };
+                const noticeVersion = Number(gameSettings.catalogNoticeVersion);
+                gameSettings.catalogNoticeVersion = Number.isSafeInteger(noticeVersion) && noticeVersion >= 1 ? noticeVersion : 1;
                 const normalizedDirectionOnly = gameSettings.directionOnly === true;
                 if (normalizedDirectionOnly !== gameSettings.directionOnly) {
                     gameSettings.directionOnly = normalizedDirectionOnly;
@@ -1810,7 +1891,7 @@
                 }
             }
 
-            const [displayResult, cacheCustom, cacheLoadout, cachePresets] = await Promise.all([
+            const [displayResult, cacheCustom, cacheLoadout, cachePresets, cachedCatalog] = await Promise.all([
                 window.electronAPI && window.electronAPI.getOcrDisplays
                     ? window.electronAPI.getOcrDisplays()
                         .then(displays => ({ ok: true, displays: displays || [] }))
@@ -1821,7 +1902,10 @@
                     : Promise.resolve({ ok: false, displays: [] }),
                 loadWithMigration('custom_strats.json', 'hd2_custom_stratagems'),
                 loadWithMigration('loadout.json', 'hd2_macro_current_loadout'),
-                loadWithMigration('presets.json', 'hd2_macro_presets')
+                loadWithMigration('presets.json', 'hd2_macro_presets'),
+                window.electronAPI && typeof window.electronAPI.loadCachedStratagemCatalog === 'function'
+                    ? window.electronAPI.loadCachedStratagemCatalog().catch(() => null)
+                    : Promise.resolve(null)
             ]);
 
             ocrDisplays = displayResult.displays;
@@ -1840,11 +1924,15 @@
             if (cacheCustom && Array.isArray(cacheCustom)) {
                 customStratagems = cacheCustom;
                 ensureOcrFields(customStratagems);
-                stratagemDB = [...defaultStratagemDB, ...customStratagems]; 
-                invalidateOcrCache();
-            } else {
-                stratagemDB = [...defaultStratagemDB];
             }
+            if (cachedCatalog) {
+                try {
+                    await applyRemoteCatalog(cachedCatalog, false);
+                } catch (error) {
+                    console.debug('Cached catalog skipped:', error);
+                }
+            }
+            rebuildStratagemDatabase();
 
             activeLoadout = restoreLoadout(cacheLoadout, maxSlots);
 
@@ -1860,6 +1948,10 @@
             
             updateI18n();
             renderMainList({ syncOverlay: true });
+            if (remoteCatalogVersion > gameSettings.catalogNoticeVersion) {
+                showCatalogUpdateModal(remoteCatalogVersion);
+            }
+            void checkForStratagemCatalogUpdate();
             void checkForStartupUpdate();
             if (gameSettings.autoOpenOverlay === true) {
                 await window.handleToggleOverlay();
@@ -1964,6 +2056,7 @@
             document.getElementById('btn-sponsor-go').textContent = lang.sponsorGo;
             document.getElementById('btn-sponsor-close').textContent = lang.sponsorClose;
             if (pendingUpdateInfo) updateUpdateModalText();
+            updateCatalogModalText();
             document.getElementById('txt-pre-title').textContent = lang.preTitle;
             document.getElementById('btn-pre-done').textContent = lang.btnDone;
             document.getElementById('preset-name-input').placeholder = lang.phPresetName;
@@ -2238,6 +2331,41 @@
                 showInlineStatus(`${i18n[currentLang].msgUpdateOpenFailed}: ${error}`, true);
             }
         }
+
+        function updateCatalogModalText() {
+            const lang = i18n[currentLang];
+            document.getElementById('txt-catalog-update-title').textContent = lang.catalogUpdateTitle;
+            document.getElementById('txt-catalog-update-msg').textContent = lang.catalogUpdateMessage.replace('{version}', pendingCatalogNoticeVersion || remoteCatalogVersion);
+            document.getElementById('btn-catalog-update-ok').textContent = lang.catalogUpdateOk;
+        }
+
+        function showCatalogUpdateModal(version) {
+            pendingCatalogNoticeVersion = version;
+            updateCatalogModalText();
+            document.getElementById('catalog-update-modal').classList.add('active');
+            document.getElementById('btn-catalog-update-ok').focus();
+        }
+
+        async function checkForStratagemCatalogUpdate() {
+            if (!window.electronAPI || typeof window.electronAPI.checkStratagemCatalogUpdates !== 'function') return;
+            try {
+                const catalog = await window.electronAPI.checkStratagemCatalogUpdates();
+                if (!catalog) return;
+                await applyRemoteCatalog(catalog, true);
+                showCatalogUpdateModal(catalog.catalogVersion);
+            } catch (error) {
+                console.debug('Catalog update skipped:', error);
+            }
+        }
+
+        window.closeCatalogUpdateModal = () => {
+            if (Number.isSafeInteger(pendingCatalogNoticeVersion)) {
+                gameSettings.catalogNoticeVersion = Math.max(gameSettings.catalogNoticeVersion || 1, pendingCatalogNoticeVersion);
+                saveDataToLocal('settings.json', gameSettings, 'hd2_macro_settings');
+            }
+            pendingCatalogNoticeVersion = null;
+            document.getElementById('catalog-update-modal').classList.remove('active');
+        };
 
         // Diagnostics center helpers
         function fillDiagnosticTemplate(template, values = {}) {
@@ -2613,7 +2741,7 @@
                 document.getElementById('lib-search-hint').style.display = 'none';
                 const groups =['support', 'orbital', 'eagle', 'emplacement', 'sentry', 'backpack', 'vehicle', 'mission'];
                 groups.forEach(grp => {
-                    const items = stratagemDB.filter(s => s.grp === grp);
+                    const items = stratagemDB.filter(s => s.enabled !== false && s.grp === grp);
                     if(items.length === 0) return;
                     const header = document.createElement('div'); header.className = 'lib-cat-header'; header.textContent = lang[`cat_${grp}`];
                     container.appendChild(header);
@@ -2625,6 +2753,7 @@
                 });
             } else {
                 const matchedStrats = stratagemDB.filter(strat => {
+                    if (strat.enabled === false) return false;
                     const nameZhMatch = strat.name.zh.toLowerCase().includes(keyword);
                     const nameEnMatch = strat.name.en.toLowerCase().includes(keyword);
                     const aliasMatch = strat.aliases && strat.aliases.some(a => a.toLowerCase().includes(keyword));
@@ -3111,7 +3240,7 @@
 
         function rebuildOcrCache() {
             const candidates = stratagemDB
-                .filter(strat => strat.grp !== 'mission')
+                .filter(strat => strat.enabled !== false && strat.grp !== 'mission')
                 .flatMap(strat => getStratagemMatchTerms(strat).map(term => ({
                     strat,
                     term,
@@ -3575,7 +3704,7 @@
                 customStratagems = customStratagems.filter(s => s.id !== idToRemove); 
                 saveDataToLocal('custom_strats.json', customStratagems, 'hd2_custom_stratagems');
                 
-                stratagemDB = [...defaultStratagemDB, ...customStratagems]; 
+                rebuildStratagemDatabase();
                 activeLoadout = activeLoadout.map(item => {
                     if (item.strat && item.strat.id === idToRemove) return { ...item, strat: null, locked: false };
                     return item;
@@ -3641,8 +3770,7 @@
             const newStrat = { id: `custom_${Date.now()}_${uniqueSuffix}`, grp: cat, name: { zh: nameZh, en: nameEn }, aliases: [], ocr: ocrTerms, seq: rawSeq.split(''), icon: currentUploadBase64 || EMPTY_IMAGE_SOURCE };
             
             customStratagems.push(newStrat); 
-            stratagemDB = [...defaultStratagemDB, ...customStratagems]; 
-            invalidateOcrCache();
+            rebuildStratagemDatabase();
             saveDataToLocal('custom_strats.json', customStratagems, 'hd2_custom_stratagems');
             
             showToast(lang.msgCustomSaved); closeAddStratModal(); 
