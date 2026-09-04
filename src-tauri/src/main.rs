@@ -348,12 +348,16 @@ async fn toggle_overlay(app: AppHandle, state: State<'_, AppState>) -> Result<bo
         .window_creation
         .lock()
         .map_err(|_| "Window creation is unavailable".to_owned())?;
-    let saved_position = load_overlay_position(&state.data_dir)?;
-    let visible = windows::toggle_overlay(&app, saved_position)?;
-    if !visible {
+    if windows::overlay_is_visible(&app)? {
+        // Persist first so a storage failure leaves the still-live overlay in
+        // a state the renderer can accurately report and retry.
         persist_current_overlay_position(&app)?;
+        windows::destroy_window(&app, "overlay")?;
+        return Ok(false);
     }
-    Ok(visible)
+    let saved_position = load_overlay_position(&state.data_dir)?;
+    windows::show_overlay(&app, saved_position)?;
+    Ok(true)
 }
 
 #[tauri::command]

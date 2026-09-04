@@ -136,21 +136,22 @@ fn create_ocr_select_window(
     Ok(window)
 }
 
-pub fn toggle_overlay(
+pub fn overlay_is_visible(app: &AppHandle) -> Result<bool, String> {
+    app.get_webview_window("overlay")
+        .map(|window| window.is_visible().map_err(|error| error.to_string()))
+        .transpose()
+        .map(|visible| visible.unwrap_or(false))
+}
+
+pub fn show_overlay(
     app: &AppHandle,
     saved_position: Option<OverlayPosition>,
-) -> Result<bool, String> {
+) -> Result<(), String> {
     let window = ensure_overlay_window(app)?;
-    let visible = window.is_visible().map_err(|error| error.to_string())?;
-    if visible {
-        window.hide().map_err(|error| error.to_string())?;
-    } else {
-        if let Some(position) = saved_position {
-            set_window_position(&window, position)?;
-        }
-        window.show().map_err(|error| error.to_string())?;
+    if let Some(position) = saved_position {
+        set_window_position(&window, position)?;
     }
-    Ok(!visible)
+    window.show().map_err(|error| error.to_string())
 }
 
 pub fn minimize_main(app: &AppHandle) -> Result<(), String> {
@@ -348,7 +349,10 @@ fn toast_height(payload: &serde_json::Value) -> f64 {
 
 pub fn hide_toast(app: &AppHandle) -> Result<(), String> {
     if let Some(window) = app.get_webview_window("toast") {
-        window.hide().map_err(|error| error.to_string())?;
+        // Toasts are infrequent and already restore their latest payload when
+        // recreated. Destroying the transparent WebView releases its renderer
+        // and GPU composition resources instead of retaining them while idle.
+        window.destroy().map_err(|error| error.to_string())?;
     }
     Ok(())
 }
