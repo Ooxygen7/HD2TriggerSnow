@@ -33,6 +33,7 @@ const ocrHelpSource = readUiFile("ocr-help.html");
 const mainSource = fs.readFileSync(path.join(root, "src-tauri", "src", "main.rs"), "utf8");
 const hooksSource = fs.readFileSync(path.join(root, "src-tauri", "src", "hooks.rs"), "utf8");
 const inputSource = fs.readFileSync(path.join(root, "src-tauri", "src", "input.rs"), "utf8");
+const windowsSource = fs.readFileSync(path.join(root, "src-tauri", "src", "windows.rs"), "utf8");
 const runtimeDiagnosticsSource = fs.readFileSync(path.join(root, "src-tauri", "src", "runtime_diagnostics.rs"), "utf8");
 const updatesSource = fs.readFileSync(path.join(root, "src-tauri", "src", "updates.rs"), "utf8");
 const networkSource = fs.readFileSync(path.join(root, "src-tauri", "src", "network.rs"), "utf8");
@@ -85,12 +86,12 @@ const tauriConfig = JSON.parse(
 );
 const installerHooks = tauriConfig.bundle?.windows?.nsis?.installerHooks;
 assert.equal(installerHooks, "windows/installer-hooks.nsh");
-assert.equal(tauriConfig.version, "2.0.6", "the bundled version must match the application version");
+assert.equal(tauriConfig.version, "2.0.7", "the bundled version must match the application version");
 const packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
 const packageLock = JSON.parse(fs.readFileSync(path.join(root, "package-lock.json"), "utf8"));
-assert.equal(packageJson.version, "2.0.6");
-assert.equal(packageLock.version, "2.0.6");
-assert.equal(packageLock.packages[""].version, "2.0.6");
+assert.equal(packageJson.version, "2.0.7");
+assert.equal(packageLock.version, "2.0.7");
+assert.equal(packageLock.packages[""].version, "2.0.7");
 const installerHookSource = fs.readFileSync(path.join(root, "src-tauri", installerHooks), "utf8");
 assert.match(installerHookSource, /CheckIfAppIsRunning "HD2 Macro Terminal\.exe"/);
 assert.match(installerHookSource, /CheckIfAppIsRunning "HD2-Trigger\.exe"/);
@@ -113,6 +114,27 @@ for (const command of [
     `${command} must stay async because it can create a WebView window on Windows`,
   );
 }
+
+assert.match(
+  indexSource,
+  /\.modal-overlay\s*{[\s\S]{0,500}visibility:\s*hidden;[\s\S]{0,500}\.modal-overlay\.active\s*{[^}]*visibility:\s*visible;/,
+  "inactive full-window blur layers must be excluded from rendering",
+);
+assert.match(
+  indexSource,
+  /#global-status\s*{[\s\S]{0,500}visibility:\s*hidden;[\s\S]{0,500}#global-status\.show\s*{[^}]*visibility:\s*visible;/,
+  "the hidden status blur layer must be excluded from rendering",
+);
+assert.match(
+  mainSource,
+  /if windows::overlay_is_visible\(&app\)\?\s*{[\s\S]{0,300}persist_current_overlay_position\(&app\)\?;[\s\S]{0,200}destroy_window\(&app, "overlay"\)\?;/,
+  "overlay position must be persisted before its idle WebView is destroyed",
+);
+assert.match(
+  windowsSource,
+  /pub fn hide_toast[\s\S]{0,500}window\.destroy\(\)/,
+  "expired toast WebViews must release their renderer instead of remaining hidden",
+);
 
 const helperStart = indexSource.indexOf("const CANONICAL_GLOBAL_KEYS");
 const helperEnd = indexSource.indexOf("function normalizeOverlayPosition", helperStart);
