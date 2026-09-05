@@ -1,4 +1,4 @@
-use crate::{input, runtime_diagnostics};
+﻿use crate::{input, runtime_diagnostics};
 use serde::{Deserialize, Serialize};
 use std::{
     sync::{
@@ -13,7 +13,7 @@ use windows::Win32::{
     Foundation::{LPARAM, LRESULT, WPARAM},
     System::Threading::GetCurrentThreadId,
     UI::{
-        Input::KeyboardAndMouse::GetAsyncKeyState,
+        Input::KeyboardAndMouse::{GetAsyncKeyState, GetKeyState},
         WindowsAndMessaging::{
             CallNextHookEx, GetMessageW, PostThreadMessageW, SetWindowsHookExW,
             UnhookWindowsHookEx, HC_ACTION, KBDLLHOOKSTRUCT, MSG, MSLLHOOKSTRUCT, WH_KEYBOARD_LL,
@@ -1298,17 +1298,24 @@ fn should_ignore_mouse_event(flags: u32, extra_info: usize) -> bool {
 /// 0x47..=0x53, so the scan code identifies the physical key; main-keyboard
 /// navigation keys (arrows, editing cluster) are extended and untouched.
 fn shifted_numpad_vk(vk_code: u32, scan_code: u32, flags: u32) -> Option<u32> {
-    // Only rewrite while Shift is physically held: that is the only
-    // combination where Windows reports digits as navigation keys. Checked
-    // through our own pressed-state first, then the asynchronous state (covers
-    // Shift held before the hook started).
-    if !(key_is_marked_pressed(0xa0)
-        || key_is_marked_pressed(0xa1)
-        || async_key_is_pressed(0x10))
-    {
+    // Rewriting only happens while NumLock is on. When Shift is held, Windows
+    // lifts Shift (a synthetic key-up pulse) *before* delivering the rewritten
+    // navigation key, so an "is Shift still held" check never matches for the
+    // very events this function exists to fix. The NumLock gate plus the
+    // physical scan-code fingerprint in `shifted_numpad_vk_inner` is enough:
+    // with NumLock on, a non-extended navigation/editing virtual code can only
+    // originate from a shifted physical numpad digit.
+    if !numlock_is_on() {
         return None;
     }
     shifted_numpad_vk_inner(vk_code, scan_code, flags)
+}
+
+fn numlock_is_on() -> bool {
+    // SAFETY: GetKeyState accepts any virtual-key code and does not retain
+    // pointers. The low-level hook thread runs a message loop, so its
+    // per-thread input state is valid for toggle-key (NumLock) reads.
+    unsafe { GetKeyState(0x90) & 1 != 0 }
 }
 
 fn shifted_numpad_vk_inner(vk_code: u32, scan_code: u32, flags: u32) -> Option<u32> {
@@ -1827,3 +1834,4 @@ mod tests {
         );
     }
 }
+
