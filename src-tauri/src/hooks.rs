@@ -1114,7 +1114,14 @@ unsafe extern "system" fn keyboard_hook(code: i32, wparam: WPARAM, lparam: LPARA
             if event.flags.0 & LLKHF_INJECTED_FLAG != 0 {
                 EXTERNAL_INJECTED_EVENTS_ACCEPTED.fetch_add(1, Ordering::Relaxed);
             }
-            if let Some(key) = key_name(event.vkCode, event.scanCode, event.flags.0) {
+            // While Shift is held with NumLock enabled, Windows reports
+            // physical numpad digits as navigation/editing keys (for example
+            // Numpad1 -> VK_END). Resolve the physical numpad key from the
+            // non-extended flag and numpad scan code so bindings such as
+            // "ShiftLeft + Numpad1" keep matching.
+            let resolved_vk = shifted_numpad_vk(event.vkCode, event.scanCode, event.flags.0)
+                .unwrap_or(event.vkCode);
+            if let Some(key) = key_name(resolved_vk, event.scanCode, event.flags.0) {
                 let state_code = pressed_state_code(key, event.vkCode);
                 match wparam.0 as u32 {
                     WM_KEYUP | WM_SYSKEYUP => mark_key_released(state_code),
@@ -1125,10 +1132,10 @@ unsafe extern "system" fn keyboard_hook(code: i32, wparam: WPARAM, lparam: LPARA
                         // missed and this is a real new press, not auto-repeat.
                         reconcile_current_key_before_down(
                             state_code,
-                            async_key_is_pressed(event.vkCode),
+                            async_key_is_pressed(resolved_vk),
                         );
                         if mark_key_pressed_at(state_code, event.time)
-                            && key_is_relevant(event.vkCode)
+                            && key_is_relevant(resolved_vk)
                         {
                             let captured_for_binding = forwards_all_inputs();
                             reconcile_pressed_inputs(captured_for_binding, key);
@@ -1283,6 +1290,53 @@ fn should_ignore_mouse_event(flags: u32, extra_info: usize) -> bool {
     flags & LLMHF_INJECTED_FLAG != 0 && extra_info == input::SYNTHETIC_INPUT_MARKER
 }
 
+/// Returns the physical numpad virtual key when a low-level keyboard event
+/// should be treated as a numpad digit press instead of the (Shift-rewritten)
+/// navigation/editing virtual code. With NumLock on, holding Shift makes
+/// Windows report numpad digits as e.g. VK_END (Numpad1) or VK_DOWN (Numpad2).
+/// Physical numpad keys are never extended and use set-1 scan codes
+/// 0x47..=0x53, so the scan code identifies the physical key; main-keyboard
+/// navigation keys (arrows, editing cluster) are extended and untouched.
+fn shifted_numpad_vk(vk_code: u32, scan_code: u32, flags: u32) -> Option<u32> {
+    // Only rewrite while Shift is physically held: that is the only
+    // combination where Windows reports digits as navigation keys. Checked
+    // through our own pressed-state first, then the asynchronous state (covers
+    // Shift held before the hook started).
+    if !(key_is_marked_pressed(0xa0)
+        || key_is_marked_pressed(0xa1)
+        || async_key_is_pressed(0x10))
+    {
+        return None;
+    }
+    shifted_numpad_vk_inner(vk_code, scan_code, flags)
+}
+
+fn shifted_numpad_vk_inner(vk_code: u32, scan_code: u32, flags: u32) -> Option<u32> {
+    if flags & 1 != 0 {
+        return None;
+    }
+    // VK_CLEAR (0x0c), Home/End/PageUp/PageDown (0x21..=0x24, 0x2d, 0x2e) and
+    // arrows (0x25..=0x28) are the codes Windows can report for shifted
+    // numpad digits.
+    if !matches!(vk_code, 0x0c | 0x21..=0x28 | 0x2d | 0x2e) {
+        return None;
+    }
+    match scan_code {
+        0x47 => Some(0x67), // Numpad7
+        0x48 => Some(0x68), // Numpad8
+        0x49 => Some(0x69), // Numpad9
+        0x4b => Some(0x64), // Numpad4
+        0x4c => Some(0x65), // Numpad5
+        0x4d => Some(0x66), // Numpad6
+        0x4f => Some(0x61), // Numpad1
+        0x50 => Some(0x62), // Numpad2
+        0x51 => Some(0x63), // Numpad3
+        0x52 => Some(0x60), // Numpad0
+        0x53 => Some(0x6e), // NumpadDecimal
+        _ => None,
+    }
+}
+
 fn key_name(vk: u32, scan_code: u32, flags: u32) -> Option<&'static str> {
     let extended = flags & 1 != 0;
     match vk {
@@ -1411,6 +1465,26 @@ fn key_name(vk: u32, scan_code: u32, flags: u32) -> Option<&'static str> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn shifted_numpad_events_are_resolved_to_physical_digits() {
+        // NumLock on + Shift: Numpad1 is reported as VK_END (0x23), scan 0x4f.
+        assert_eq!(shifted_numpad_vk_inner(0x23, 0x4f, 0), Some(0x61));
+        // Numpad5 as VK_CLEAR (0x0c), scan 0x4c.
+        assert_eq!(shifted_numpad_vk_inner(0x0c, 0x4c, 0), Some(0x65));
+        // Numpad2 as VK_DOWN (0x28), scan 0x50.
+        assert_eq!(shifted_numpad_vk_inner(0x28, 0x50, 0), Some(0x62));
+        // Numpad0 as VK_INSERT (0x2d), scan 0x52.
+        assert_eq!(shifted_numpad_vk_inner(0x2d, 0x52, 0), Some(0x60));
+        // NumpadDecimal as VK_DELETE (0x2e), scan 0x53.
+        assert_eq!(shifted_numpad_vk_inner(0x2e, 0x53, 0), Some(0x6e));
+        // Extended events (main-keyboard arrows / editing cluster) untouched.
+        assert_eq!(shifted_numpad_vk_inner(0x23, 0x4f, 1), None);
+        // Non-numpad scan codes are not rewritten.
+        assert_eq!(shifted_numpad_vk_inner(0x23, 0x01, 0), None);
+        // Unrelated virtual codes are not rewritten.
+        assert_eq!(shifted_numpad_vk_inner(0x61, 0x4f, 0), None);
+    }
 
     fn macro_payload() -> input::MacroPayload {
         input::MacroPayload {
